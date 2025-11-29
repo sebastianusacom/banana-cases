@@ -108,7 +108,7 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-white relative overflow-hidden flex flex-col">
+    <div className="h-[100dvh] bg-[#0f0f10] text-white relative overflow-hidden flex flex-col">
       {/* Background Glow */}
       <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0f10] to-[#0f0f10] pointer-events-none" />
 
@@ -139,31 +139,40 @@ const CaseDetailPage: React.FC = () => {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center justify-start px-4 pb-24 relative z-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center px-4 pb-6 relative z-10 overflow-hidden">
         
-        <div className="text-center mb-6">
-             <h1 className="text-3xl font-black tracking-tight mb-1">{caseItem.name}</h1>
-             <div className="flex items-center justify-center gap-2 text-[var(--tg-theme-hint-color)] text-sm">
+        <div className="text-center mb-4 flex-shrink-0">
+             <h1 className="text-2xl font-black tracking-tight mb-1">{caseItem.name}</h1>
+             <div className="flex items-center justify-center gap-2 text-[var(--tg-theme-hint-color)] text-xs">
                 <span>Contains {caseItem.items.length} Items</span>
              </div>
         </div>
 
         {/* Roulette Section */}
-        <div className="w-full max-w-md space-y-4 mb-8">
-            {Array.from({ length: count }).map((_, index) => (
-                <Roulette
-                    key={`${index}-${isOpening ? 'open' : 'idle'}`}
-                    items={caseItem.items}
-                    winningItem={isOpening ? winningPrizes[index] : undefined}
-                    idle={!isOpening}
-                    onComplete={handleSpinComplete}
-                    delay={index * 0.2}
-                />
-            ))}
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 mb-4">
+            <AnimatePresence mode="popLayout">
+                {Array.from({ length: count }).map((_, index) => (
+                    <motion.div
+                        key={`${index}-${isOpening ? 'open' : 'idle'}`}
+                        initial={{ opacity: 0, height: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, height: 'auto', scale: 1 }}
+                        exit={{ opacity: 0, height: 0, scale: 0.9 }}
+                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                    >
+                        <Roulette
+                            items={caseItem.items}
+                            winningItem={isOpening ? winningPrizes[index] : undefined}
+                            idle={!isOpening}
+                            onComplete={handleSpinComplete}
+                            delay={index * 0.2}
+                        />
+                    </motion.div>
+                ))}
+            </AnimatePresence>
         </div>
 
         {/* Controls */}
-        <div className="w-full max-w-md space-y-4 mt-auto">
+        <div className="w-full max-w-md space-y-3 mt-auto flex-shrink-0 bg-[#0f0f10]/50 backdrop-blur-md pt-2">
             {/* Count Selector */}
             <div className="flex justify-center gap-2 mb-4">
                 {[1, 2, 3].map((c) => (

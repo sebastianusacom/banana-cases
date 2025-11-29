@@ -90,7 +90,7 @@ export const Roulette: React.FC<RouletteProps> = ({
           controls.start({
               x: -totalWidth,
               transition: {
-                  duration: 10, // Speed of idle spin
+                  duration: 30, // Slower speed of idle spin
                   ease: "linear",
                   repeat: Infinity,
               }
@@ -124,11 +124,11 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [rouletteItems, controls, delay, onComplete, idle]);
 
   return (
-    <div className="relative w-full h-40 bg-black/40 backdrop-blur-sm border-y border-white/10 overflow-hidden mb-4 shadow-inner">
+    <div className="relative w-full h-28 bg-black/40 backdrop-blur-sm border-y border-white/10 overflow-hidden mb-2 shadow-inner">
       {/* Center Indicator - Only show on result spin or maybe always? Always looks cool. */}
       <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-yellow-400 z-30 -translate-x-1/2 shadow-[0_0_15px_rgba(250,204,21,1)]" />
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-yellow-400 rotate-45 z-30 shadow-lg" />
-      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-4 h-4 bg-yellow-400 rotate-45 z-30 shadow-lg" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-400 rotate-45 z-30 shadow-lg" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-3 h-3 bg-yellow-400 rotate-45 z-30 shadow-lg" />
 
       {/* Fade Gradients */}
       <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0f0f10] to-transparent z-20" />
@@ -147,7 +147,7 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH }}
           >
             <div 
-                className="w-full h-28 bg-[#1e1e24] rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group"
+                className="w-full h-20 bg-[#1e1e24] rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group"
             >
                 {/* Rarity Glow Background */}
                 <div 
@@ -155,7 +155,7 @@ export const Roulette: React.FC<RouletteProps> = ({
                     style={{ backgroundColor: item.color }}
                 />
                 
-                <div className="w-20 h-20 mb-1 relative z-10">
+                <div className="w-14 h-14 mb-1 relative z-10">
                      <img src={item.image} alt="" className="w-full h-full object-contain drop-shadow-md" />
                 </div>
                 
