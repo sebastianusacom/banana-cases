@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import type { Case } from '../store/caseStore';
 import { useHaptics } from '../hooks/useHaptics';
+import { Star } from 'lucide-react';
 
 interface CaseCardProps {
   caseItem: Case;
@@ -14,26 +15,37 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem }) => {
   return (
     <Link to={`/cases/${caseItem.id}`} onClick={() => selectionChanged()}>
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="bg-[var(--tg-theme-secondary-bg-color)] rounded-2xl p-4 flex flex-col items-center relative overflow-hidden border border-white/5 shadow-lg"
+        whileHover={{ y: -5 }}
+        whileTap={{ scale: 0.96 }}
+        className="group relative flex flex-col items-center p-5 rounded-[2rem] overflow-hidden transition-all duration-300"
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-white/5 to-transparent opacity-50" />
+        {/* Glass Background */}
+        <div className="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] transition-colors duration-300 group-hover:bg-white/10" />
         
-        <div className="w-32 h-32 mb-4 relative z-10">
+        {/* Glow Effect behind image */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-[var(--tg-theme-button-color)] opacity-20 blur-[40px] rounded-full group-hover:opacity-30 transition-opacity" />
+
+        {/* Image */}
+        <div className="w-28 h-28 mb-4 relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
           <img
             src={caseItem.image}
             alt={caseItem.name}
-            className="w-full h-full object-contain drop-shadow-xl"
+            className="w-full h-full object-contain"
           />
         </div>
 
-        <h3 className="text-lg font-bold mb-1 relative z-10">{caseItem.name}</h3>
-        <div className="bg-[var(--tg-theme-button-color)] text-white px-3 py-1 rounded-full text-sm font-medium relative z-10">
-          {caseItem.price} Stars
+        {/* Text Content */}
+        <div className="relative z-10 text-center w-full">
+          <h3 className="text-base font-semibold tracking-tight mb-1 text-white/90">
+            {caseItem.name}
+          </h3>
+          
+          <div className="flex items-center justify-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]">
+            <span className="text-yellow-400">{caseItem.price}</span>
+            <Star size={12} className="fill-yellow-400 text-yellow-400" />
+          </div>
         </div>
       </motion.div>
     </Link>
   );
 };
-
