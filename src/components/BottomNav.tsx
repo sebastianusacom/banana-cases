@@ -11,7 +11,7 @@ export const BottomNav: React.FC = () => {
     clsx(
       'relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300',
       isActive 
-        ? 'text-white bg-[var(--tg-theme-button-color)] shadow-[0_0_20px_rgba(0,122,255,0.4)] scale-110' 
+        ? 'text-white bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] scale-110' 
         : 'text-[var(--tg-theme-hint-color)] hover:bg-white/5'
     );
 

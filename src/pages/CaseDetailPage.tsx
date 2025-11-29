@@ -162,18 +162,18 @@ const CaseDetailPage: React.FC = () => {
                           "flex-1 h-11 flex items-center justify-center gap-2 rounded-xl transition-all border",
                           isDemoMode 
                               ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/20" 
-                              : "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/20"
+                              : "bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500/20"
                       )}
                   >
                       <div className={clsx(
                           "w-8 h-5 rounded-full p-0.5 transition-colors relative",
-                          "bg-yellow-500/20"
+                          isDemoMode ? "bg-yellow-500/20" : "bg-green-500/20"
                       )}>
                           <motion.div 
                               layout
                               className={clsx(
                                   "w-4 h-4 rounded-full shadow-sm",
-                                  "bg-yellow-500"
+                                  isDemoMode ? "bg-yellow-500" : "bg-green-500"
                               )}
                               animate={{ x: isDemoMode ? 12 : 0 }}
                               transition={{ type: "spring", stiffness: 500, damping: 30 }}
@@ -193,7 +193,7 @@ const CaseDetailPage: React.FC = () => {
                             className={clsx(
                                 "h-9 w-11 rounded-lg font-bold transition-all text-sm",
                                 count === c 
-                                    ? "bg-yellow-500 text-black shadow-sm" 
+                                    ? "bg-[#0f0f10] text-white shadow-sm" 
                                     : "text-white/40 hover:text-white/80"
                             )}
                         >
