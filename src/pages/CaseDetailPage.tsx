@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ChevronLeft, Star, Info, ShieldCheck } from 'lucide-react';
+import { ChevronLeft, Star, ShieldCheck } from 'lucide-react';
 import { useCaseStore } from '../store/caseStore';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
