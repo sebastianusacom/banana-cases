@@ -21,7 +21,7 @@ function App() {
   }, [tg]);
 
   return (
-    <Router>
+    <Router basename="/banana-cases">
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<Navigate to="/cases" replace />} />
