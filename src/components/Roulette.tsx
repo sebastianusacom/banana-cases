@@ -27,54 +27,55 @@ export const Roulette: React.FC<RouletteProps> = ({
   const controls = useAnimation();
   const viewportRef = useRef<HTMLDivElement>(null);
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
-  const hasSpunRef = useRef(false);
+  const [isSpinning, setIsSpinning] = useState(false);
   const x = useMotionValue(0);
   const lastHapticIndex = useRef(0);
+  const hasSpunRef = useRef(false);
 
   useEffect(() => {
-    if (!winningItem) {
-      hasSpunRef.current = false;
-    }
-  }, [winningItem]);
-
-  useEffect(() => {
+    if (!idle || items.length === 0) return;
+    
+    hasSpunRef.current = false;
     controls.stop();
     
-    if (idle) {
-      const baseItems = items.length > 0 ? items : [];
-      if (baseItems.length === 0) return;
-
-      const repeatCount = Math.max(3, Math.ceil(20 / baseItems.length));
-      const loopItems: Prize[] = [];
-      for (let i = 0; i < repeatCount + 2; i++) {
-        loopItems.push(...baseItems.map(item => ({ ...item, id: `idle-${i}-${item.id}` })));
-      }
-      setRouletteItems(loopItems);
-      
-      const viewportWidth = viewportRef.current?.offsetWidth || 400;
-      const totalWidth = baseItems.length * CARD_WIDTH;
-      const startX = viewportWidth / 2;
-      
-      x.set(startX);
-
-      controls.start({
-        x: [startX, startX - totalWidth],
-        transition: {
-          x: {
-            repeat: Infinity,
-            repeatType: "loop",
-            duration: totalWidth / 50,
-            ease: "linear",
-          }
-        }
-      });
-      
-      return () => controls.stop();
+    const repeatCount = Math.max(3, Math.ceil(20 / items.length));
+    const loopItems: Prize[] = [];
+    for (let i = 0; i < repeatCount + 2; i++) {
+      loopItems.push(...items.map(item => ({ ...item, id: `idle-${i}-${item.id}` })));
     }
+    setRouletteItems(loopItems);
+    setIsSpinning(false);
+    
+    const viewportWidth = viewportRef.current?.offsetWidth || 400;
+    const totalWidth = items.length * CARD_WIDTH;
+    const startX = viewportWidth / 2;
+    
+    x.set(startX);
 
-    if (!winningItem || hasSpunRef.current) return;
+    controls.start({
+      x: [startX, startX - totalWidth],
+      transition: {
+        x: {
+          repeat: Infinity,
+          repeatType: "loop",
+          duration: totalWidth / 50,
+          ease: "linear",
+        }
+      }
+    });
+    
+    return () => {
+      controls.stop();
+    };
+  }, [idle, items, controls, x]);
+
+  useEffect(() => {
+    if (idle || !winningItem || isSpinning || hasSpunRef.current) return;
+    
     hasSpunRef.current = true;
-
+    setIsSpinning(true);
+    controls.stop();
+    
     const generatedItems: Prize[] = [];
     const getRandom = () => items[Math.floor(Math.random() * items.length)];
     const sorted = [...items].sort((a, b) => b.value - a.value);
@@ -99,7 +100,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     }
     
     setRouletteItems(generatedItems);
-
+    
     const runAnimation = async () => {
       const viewportWidth = viewportRef.current?.offsetWidth || 0;
       const viewportCenter = viewportWidth / 2;
@@ -122,13 +123,12 @@ export const Roulette: React.FC<RouletteProps> = ({
 
       impactHeavy();
       await new Promise((resolve) => setTimeout(resolve, 1000));
+      
       onComplete();
     };
 
     runAnimation();
-    
-    return () => controls.stop();
-  }, [items, winningItem, idle, delay, controls, x, impactHeavy, onComplete]);
+  }, [winningItem, idle, items, controls, delay, onComplete, x, impactHeavy, isSpinning]);
 
   useEffect(() => {
     if (idle) return;
@@ -151,8 +151,8 @@ export const Roulette: React.FC<RouletteProps> = ({
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
 
       <div className="absolute top-0 bottom-0 left-1/2 w-[2px] bg-yellow-500/50 z-30 -translate-x-1/2 shadow-[0_0_15px_rgba(234,179,8,0.5)]">
-         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
-         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
+        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
+        <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
       </div>
 
       <motion.div
@@ -168,7 +168,10 @@ export const Roulette: React.FC<RouletteProps> = ({
           >
             <div className="w-24 h-24 flex flex-col items-center justify-center relative">
               <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg">
+              
+              <div 
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg"
+              >
                 <Star size={12} className="text-yellow-400 fill-yellow-400" />
                 <span className="font-black text-white tracking-wide text-xs">{item.value}</span>
               </div>
