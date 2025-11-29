@@ -161,7 +161,12 @@ const CaseDetailPage: React.FC = () => {
                  <button 
                       onClick={toggleDemoMode}
                       disabled={isOpening}
-                      className="flex-1 h-12 flex items-center justify-center gap-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                      className={clsx(
+                          "flex-1 h-12 flex items-center justify-center gap-2 rounded-xl transition-all border",
+                          isDemoMode 
+                              ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/20" 
+                              : "bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500/20"
+                      )}
                   >
                       <div className={clsx(
                           "w-8 h-5 rounded-full p-0.5 transition-colors relative",
@@ -177,11 +182,8 @@ const CaseDetailPage: React.FC = () => {
                               transition={{ type: "spring", stiffness: 500, damping: 30 }}
                           />
                       </div>
-                      <span className={clsx(
-                          "text-xs font-bold uppercase tracking-wide",
-                          isDemoMode ? "text-yellow-500" : "text-green-500"
-                      )}>
-                          {isDemoMode ? 'Demo' : 'Real'}
+                      <span className="text-xs font-bold uppercase tracking-wide">
+                          {isDemoMode ? 'Demo Mode' : 'Real Mode'}
                       </span>
                   </button>
 
@@ -214,18 +216,22 @@ const CaseDetailPage: React.FC = () => {
                         ? 'bg-white/5 text-white/20 cursor-wait'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                            : 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/10 hover:bg-yellow-300'
+                            : 'bg-[#eab308] text-white shadow-lg shadow-yellow-500/10 hover:bg-[#ca8a04]'
                 )}
             >
                 {isOpening ? (
                     <span className="opacity-80 font-medium">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
-                        <span className="uppercase tracking-wide font-black text-xl">OPEN FOR</span>
-                        <div className="flex items-center gap-1.5 bg-black/10 px-3 py-1.5 rounded-lg">
-                            <span className="text-black font-black text-xl">{totalPrice}</span>
-                            <Star size={20} className="fill-black text-black" />
-                        </div>
+                        <span className="uppercase tracking-wide font-black text-xl">
+                            {isDemoMode ? "OPEN FOR FREE" : "OPEN FOR"}
+                        </span>
+                        {!isDemoMode && (
+                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-lg">
+                                <span className="text-white font-black text-xl">{totalPrice}</span>
+                                <Star size={20} className="fill-white text-white" />
+                            </div>
+                        )}
                     </>
                 )}
             </motion.button>
