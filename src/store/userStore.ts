@@ -7,6 +7,7 @@ export interface Prize {
   image: string;
   value: number;
   chance: number;
+  wonAt?: number;
 }
 
 interface UserState {

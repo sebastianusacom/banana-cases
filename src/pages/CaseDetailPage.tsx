@@ -74,7 +74,7 @@ const CaseDetailPage: React.FC = () => {
 
     for (let i = 0; i < count; i++) {
       const winner = pickWinner(caseItem.items);
-      const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}` };
+      const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() };
       generatedPrizes.push(prizeInstance);
       addItem(prizeInstance);
     }
