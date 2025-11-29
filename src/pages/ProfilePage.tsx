@@ -28,7 +28,7 @@ const ProfilePage: React.FC = () => {
       {/* Inventory Header */}
       <div className="flex items-center justify-between mb-4 px-2">
           <h3 className="text-xl font-bold flex items-center">
-              <PackageOpen className="mr-2 text-[var(--tg-theme-button-color)]" />
+              <PackageOpen className="mr-2 text-[#eab308]" />
               Inventory <span className="ml-2 text-sm text-[var(--tg-theme-hint-color)] font-normal">({inventory.length})</span>
           </h3>
       </div>

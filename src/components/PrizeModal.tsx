@@ -74,7 +74,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
       <div className="w-full p-6 pb-10 bg-[#0f0f10] border-t border-white/5 space-y-3 z-20">
           <motion.button
             whileTap={{ scale: 0.98 }}
-            className="w-full py-4 rounded-2xl bg-[var(--tg-theme-button-color)] text-white font-bold text-lg shadow-lg shadow-blue-500/20 flex items-center justify-center gap-2 relative overflow-hidden"
+            className="w-full py-4 rounded-2xl bg-[#eab308] text-white font-bold text-lg shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2 relative overflow-hidden"
             onClick={() => {
                 impactMedium();
                 // Share logic here

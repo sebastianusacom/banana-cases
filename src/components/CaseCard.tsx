@@ -23,7 +23,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem }) => {
         <div className="absolute inset-0 bg-white/5 backdrop-blur-md border border-white/10 rounded-[2rem] transition-colors duration-300 group-hover:bg-white/10" />
         
         {/* Glow Effect behind image */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-[var(--tg-theme-button-color)] opacity-20 blur-[40px] rounded-full group-hover:opacity-30 transition-opacity" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 bg-[#eab308] opacity-20 blur-[40px] rounded-full group-hover:opacity-30 transition-opacity" />
 
         {/* Image */}
         <div className="w-28 h-28 mb-4 relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">

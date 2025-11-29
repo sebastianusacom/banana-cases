@@ -173,7 +173,7 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
             <div className="w-24 h-24 flex flex-col items-center justify-center relative">
-              <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
+              <img src={item.image} alt="" className="w-20 h-20 object-contain drop-shadow-2xl mb-1" />
               
               <div 
                 className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg"
