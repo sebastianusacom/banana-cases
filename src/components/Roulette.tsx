@@ -60,60 +60,25 @@ export const Roulette: React.FC<RouletteProps> = ({
 
     const generatedItems: Prize[] = [];
     const getRandom = () => items[Math.floor(Math.random() * items.length)];
+    const sorted = [...items].sort((a, b) => b.value - a.value);
+    const bestItem = sorted[0];
 
     for (let i = 0; i < EXTRA_CARDS; i++) {
       generatedItems.push({ ...getRandom(), id: `roulette-${i}` });
     }
     
-    const sorted = [...items].sort((a, b) => b.value - a.value);
-    const bestItem = sorted[0];
-    
-    if (Math.random() < 0.4 && bestItem.id !== winningItem.id) {
-        // Place bait at position EXTRA_CARDS + 1 (just after winner)
-        // The winner is at index EXTRA_CARDS
-        const pos = EXTRA_CARDS + 1;
-        generatedItems[pos] = { ...bestItem, id: `bait-${pos}` };
+    if (Math.random() < 0.5 && bestItem.id !== winningItem.id) {
+      generatedItems[EXTRA_CARDS - 1] = { ...bestItem, id: `bait-prev` };
     }
 
     generatedItems.push({ ...winningItem, id: `roulette-winner` });
     
-    // Ensure winner is at index EXTRA_CARDS
-    // Before this line, generatedItems has length EXTRA_CARDS (indices 0 to EXTRA_CARDS-1)
-    // The push above adds winningItem at index EXTRA_CARDS.
-    
     for (let i = 0; i < 5; i++) {
-       // We are adding items AFTER the winner.
-       // These will be at indices EXTRA_CARDS + 1 + i
-       // Check if we already placed a bait at EXTRA_CARDS + 1 (which corresponds to i=0 here conceptually if we just appended)
-       // But actually, generatedItems already has the winner at EXTRA_CARDS.
-       // Let's just fill the rest.
-       
-       // If we wanted a bait right after, we should have inserted it or handle it here.
-       // Let's simplify: we already handled bait insertion logic above? No wait.
-       
-       // Correct logic:
-       // Winner is at index EXTRA_CARDS.
-       // We need items at EXTRA_CARDS + 1, +2, etc.
-       
-       if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
-            // This is the item immediately to the right of the winner
-           generatedItems.push({ ...bestItem, id: `bait-after` });
-       } else {
-           generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
-       }
-    }
-    
-    // Actually, the previous logic for bait was:
-    // generatedItems[pos] = ... where pos = EXTRA_CARDS - 1 (item BEFORE winner)
-    // That is a "near miss" stopping just before.
-    
-    // Let's refine "Near Miss":
-    // 1. Stop just BEFORE a high value item (Winner is low, Next is High) -> "Oh I almost got it" (doesn't apply here as we stop ON winner)
-    // 2. Stop just AFTER a high value item (Winner is low, Previous was High) -> "Oh it just passed it"
-    
-    // Let's implement type 2: A high value item appears just before the winner.
-    if (Math.random() < 0.5 && bestItem.id !== winningItem.id) {
-         generatedItems[EXTRA_CARDS - 1] = { ...bestItem, id: `bait-prev` };
+      if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
+        generatedItems.push({ ...bestItem, id: `bait-after` });
+      } else {
+        generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
+      }
     }
     
     setRouletteItems(generatedItems);
@@ -153,11 +118,7 @@ export const Roulette: React.FC<RouletteProps> = ({
       const winningCardCenter = (EXTRA_CARDS * CARD_WIDTH) + (CARD_WIDTH / 2);
       const containerCenter = containerWidth / 2;
       
-      // Random offset for "imperfect" landing, but keeps it within the card
-      // Limit to +/- 40% of card width to stay well within the card bounds
-      const randomOffset = (Math.random() * 0.8 - 0.4) * CARD_WIDTH * 0.5; 
-      
-      const targetX = -winningCardCenter + containerCenter + randomOffset;
+      const targetX = -winningCardCenter + containerCenter;
 
       await controls.start({
         x: targetX,
@@ -198,38 +159,57 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
              <div className={clsx(
-                 "w-24 h-24 flex flex-col items-center justify-center relative transition-all",
+                 "flex flex-col items-center justify-center relative transition-all duration-300",
                  item.id.includes('winner') && !idle 
-                    ? "scale-110 z-10" 
-                    : "opacity-40 scale-90 grayscale-[0.8]"
+                    ? "scale-125 z-20" 
+                    : "opacity-25 scale-75 grayscale"
              )}>
-                 <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
+                 <img 
+                    src={item.image} 
+                    alt="" 
+                    className={clsx(
+                        "object-contain mb-1 transition-all duration-300",
+                        item.id.includes('winner') && !idle 
+                            ? "w-20 h-20 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" 
+                            : "w-14 h-14 drop-shadow-none"
+                    )} 
+                 />
                  
                  <motion.div 
                     layout
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg origin-center"
+                    className={clsx(
+                        "flex items-center gap-1.5 rounded-full backdrop-blur-md origin-center",
+                        item.id.includes('winner') && !idle 
+                            ? "px-3 py-1.5 bg-[#0f0f10] border-2 shadow-xl" 
+                            : "px-2 py-0.5 bg-[#0f0f10]/60 border border-white/5"
+                    )}
                     style={{ 
-                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' 
+                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.05)' 
                     }}
                     animate={item.id.includes('winner') && !idle ? {
-                        scale: [1, 1.15, 1],
+                        scale: [1, 1.1, 1],
                         boxShadow: [
-                            `0 0 0px ${item.color}00`, 
-                            `0 0 20px ${item.color}80`, 
-                            `0 0 0px ${item.color}00`
+                            `0 0 10px ${item.color}40`, 
+                            `0 0 25px ${item.color}90`, 
+                            `0 0 10px ${item.color}40`
                         ],
-                        borderColor: [item.color, '#ffffff', item.color]
                     } : { scale: 1, boxShadow: 'none' }}
                     transition={{
-                        duration: 1.5,
+                        duration: 1.2,
                         repeat: Infinity,
                         ease: "easeInOut"
                     }}
                  >
-                    <Star size={item.id.includes('winner') && !idle ? 14 : 12} className="text-yellow-400 fill-yellow-400" />
+                    <Star 
+                        size={item.id.includes('winner') && !idle ? 16 : 10} 
+                        className={clsx(
+                            "fill-yellow-400",
+                            item.id.includes('winner') && !idle ? "text-yellow-400" : "text-yellow-400/50"
+                        )} 
+                    />
                     <span className={clsx(
-                        "font-black text-white tracking-wide transition-all",
-                        item.id.includes('winner') && !idle ? "text-sm" : "text-xs"
+                        "font-black tracking-wide transition-all",
+                        item.id.includes('winner') && !idle ? "text-base text-white" : "text-[10px] text-white/50"
                     )}>{item.value}</span>
                  </motion.div>
              </div>
