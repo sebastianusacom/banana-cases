@@ -29,25 +29,33 @@ export const Roulette: React.FC<RouletteProps> = ({
   const viewportRef = useRef<HTMLDivElement>(null);
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
   const [showWinnerEffect, setShowWinnerEffect] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const animationRef = useRef<{ cancelled: boolean }>({ cancelled: false });
   
   useEffect(() => {
+    animationRef.current.cancelled = true;
+    animationRef.current = { cancelled: false };
+    const currentAnimation = animationRef.current;
+    
+    controls.stop();
+    
     if (idle) {
         const baseItems = items.length > 0 ? items : [];
         if (baseItems.length === 0) return;
 
         const repeatCount = Math.max(3, Math.ceil(20 / baseItems.length));
-        const loopItems = [];
+        const loopItems: Prize[] = [];
         for(let i=0; i < repeatCount + 2; i++) {
             loopItems.push(...baseItems.map(item => ({...item, id: `idle-${i}-${item.id}`})));
         }
         setRouletteItems(loopItems);
         setShowWinnerEffect(false);
+        setIsAnimating(false);
         
         const viewportWidth = viewportRef.current?.offsetWidth || 400;
         const totalWidth = baseItems.length * CARD_WIDTH;
         const startX = viewportWidth / 2;
         
-        // Reset position immediately to avoid weird jumps
         x.set(startX);
 
         controls.start({
@@ -61,12 +69,17 @@ export const Roulette: React.FC<RouletteProps> = ({
                 }
             }
         });
-        return;
+        
+        return () => {
+            currentAnimation.cancelled = true;
+            controls.stop();
+        };
     }
 
     if (!winningItem) return;
 
     setShowWinnerEffect(false);
+    setIsAnimating(true);
     const generatedItems: Prize[] = [];
     const getRandom = () => items[Math.floor(Math.random() * items.length)];
     const sorted = [...items].sort((a, b) => b.value - a.value);
@@ -91,7 +104,12 @@ export const Roulette: React.FC<RouletteProps> = ({
     }
     
     setRouletteItems(generatedItems);
-  }, [items, winningItem, idle, controls]);
+    
+    return () => {
+        currentAnimation.cancelled = true;
+        controls.stop();
+    };
+  }, [items, winningItem, idle]);
 
   const x = useMotionValue(0);
   const lastHapticIndex = useRef(0);
@@ -109,9 +127,10 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [x, impactLight, idle]);
 
   useEffect(() => {
-    // Prevent starting animation if we're in game mode but still have idle items
     const hasIdleItems = rouletteItems.some(item => item.id.startsWith('idle-'));
-    if (idle || rouletteItems.length === 0 || !winningItem || (!idle && hasIdleItems)) return;
+    if (idle || rouletteItems.length === 0 || !winningItem || hasIdleItems || !isAnimating) return;
+
+    let cancelled = false;
 
     const startAnimation = async () => {
       const viewportWidth = viewportRef.current?.offsetWidth || 0;
@@ -122,8 +141,11 @@ export const Roulette: React.FC<RouletteProps> = ({
       const targetX = viewportCenter - winnerCenter;
       
       x.set(startX);
+      
+      if (cancelled) return;
       await new Promise((resolve) => setTimeout(resolve, delay * 1000));
-
+      
+      if (cancelled) return;
       await controls.start({
         x: targetX,
         transition: {
@@ -132,14 +154,21 @@ export const Roulette: React.FC<RouletteProps> = ({
         },
       });
 
+      if (cancelled) return;
       setShowWinnerEffect(true);
       impactHeavy();
       await new Promise((resolve) => setTimeout(resolve, 1000)); 
+      
+      if (cancelled) return;
       onComplete();
     };
 
     startAnimation();
-  }, [rouletteItems, controls, delay, onComplete, idle, x, impactHeavy, winningItem]);
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [rouletteItems, controls, delay, onComplete, idle, x, impactHeavy, winningItem, isAnimating]);
 
   return (
     <div 

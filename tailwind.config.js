@@ -13,7 +13,7 @@ export default {
           text: 'var(--tg-theme-text-color, #ffffff)',
           hint: 'var(--tg-theme-hint-color, #98989e)',
           link: 'var(--tg-theme-link-color, #007aff)',
-          button: 'var(--tg-theme-button-color, #007aff)',
+          button: 'var(--tg-theme-button-color, #eab308)',
           buttonText: 'var(--tg-theme-button-text-color, #ffffff)',
         }
       }
