@@ -14,12 +14,32 @@ function App() {
     tg.ready();
     tg.expand();
     tg.requestFullscreen?.();
+    
     if (tg.themeParams.bg_color) {
       document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
     }
-    const safeTop = tg.safeAreaInset?.top ?? 0;
-    const contentTop = tg.contentSafeAreaInset?.top ?? 0;
-    document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop + contentTop}px`);
+
+    const updateSafeArea = () => {
+      const safeTop = tg.safeAreaInset?.top ?? 0;
+      const contentTop = tg.contentSafeAreaInset?.top ?? 0;
+      document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop + contentTop}px`);
+    };
+
+    updateSafeArea();
+
+    const onFullscreenChanged = () => {
+      setTimeout(updateSafeArea, 100);
+    };
+
+    (tg as any).onEvent?.('fullscreenChanged', onFullscreenChanged);
+    (tg as any).onEvent?.('safeAreaChanged', updateSafeArea);
+    (tg as any).onEvent?.('contentSafeAreaChanged', updateSafeArea);
+
+    return () => {
+      (tg as any).offEvent?.('fullscreenChanged', onFullscreenChanged);
+      (tg as any).offEvent?.('safeAreaChanged', updateSafeArea);
+      (tg as any).offEvent?.('contentSafeAreaChanged', updateSafeArea);
+    };
   }, [tg]);
 
   return (
