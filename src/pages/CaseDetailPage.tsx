@@ -161,7 +161,7 @@ const CaseDetailPage: React.FC = () => {
         </div>
 
         {/* Roulette Section - Takes available space, centered */}
-        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 my-4">
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 my-4 no-scrollbar items-center">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
