@@ -47,6 +47,9 @@ export const Roulette: React.FC<RouletteProps> = ({
         const totalWidth = baseItems.length * CARD_WIDTH;
         const startX = viewportWidth / 2;
         
+        // Reset position immediately to avoid weird jumps
+        x.set(startX);
+
         controls.start({
             x: [startX, startX - totalWidth],
             transition: {
@@ -141,7 +144,7 @@ export const Roulette: React.FC<RouletteProps> = ({
   return (
     <div 
       ref={viewportRef}
-      className="relative w-full h-full min-h-[120px] max-h-[180px] overflow-hidden select-none flex items-center"
+      className="relative w-full h-full min-h-[80px] overflow-hidden select-none flex items-center"
     >
       <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />

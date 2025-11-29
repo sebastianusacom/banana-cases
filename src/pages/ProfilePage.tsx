@@ -9,9 +9,9 @@ const ProfilePage: React.FC = () => {
   const { impactMedium } = useHaptics();
 
   return (
-    <div className="pt-4">
+    <div className="pt-4 px-2">
       {/* User Stats */}
-      <div className="bg-gradient-to-br from-[var(--tg-theme-button-color)] to-purple-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl" />
           
           <div className="flex items-center justify-between mb-2">
