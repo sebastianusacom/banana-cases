@@ -13,8 +13,8 @@ interface RouletteProps {
   idle?: boolean;
 }
 
-const CARD_WIDTH = 140; 
-const CARD_HEIGHT = 140;
+const CARD_WIDTH = 120; 
+const CARD_HEIGHT = 120;
 const EXTRA_CARDS = 40;
 
 export const Roulette: React.FC<RouletteProps> = ({
@@ -176,9 +176,9 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [rouletteItems, controls, delay, onComplete, idle, x, impactHeavy, winningItem]);
 
   return (
-    <div className="relative w-full h-52 overflow-hidden mb-2 select-none flex items-center justify-center">
-      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
+    <div className="relative w-full h-full min-h-[120px] max-h-[180px] overflow-hidden select-none flex items-center justify-center">
+      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/90 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/90 to-transparent z-10 pointer-events-none" />
 
       <div className="absolute top-0 bottom-0 left-1/2 w-px bg-yellow-400/40 z-30 -translate-x-1/2">
          <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
@@ -198,12 +198,12 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
              <div className={clsx(
-                 "w-28 h-28 flex flex-col items-center justify-center relative transition-all",
+                 "w-24 h-24 flex flex-col items-center justify-center relative transition-all",
                  item.id.includes('winner') && !idle 
                     ? "scale-110 z-10" 
                     : "opacity-40 scale-90 grayscale-[0.8]"
              )}>
-                 <img src={item.image} alt="" className="w-20 h-20 object-contain drop-shadow-2xl mb-2" />
+                 <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
                  
                  <div 
                     className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm"

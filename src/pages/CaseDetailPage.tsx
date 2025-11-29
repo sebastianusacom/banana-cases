@@ -124,12 +124,10 @@ const CaseDetailPage: React.FC = () => {
   return (
     <div className="h-[100dvh] flex flex-col bg-[#0f0f10] overflow-hidden">
       
-      {/* Top Spacer */}
-      <div className="flex-shrink-0 h-16 relative z-20" />
+      <div className="flex-shrink-0 h-[env(safe-area-inset-top,12px)]" />
 
-      {/* Main Content - Roulette */}
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full">
-        <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-4">
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
+        <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-2 h-full">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
@@ -138,7 +136,7 @@ const CaseDetailPage: React.FC = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ duration: 0.3 }}
-                        className="w-full"
+                        className="w-full flex-1 min-h-0 flex items-center"
                     >
                         <Roulette
                             items={caseItem.items}
@@ -153,16 +151,15 @@ const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom Controls */}
-      <div className="flex-shrink-0 w-full z-30 pb-8 bg-[#0f0f10]">
-        <div className="w-full max-w-md mx-auto px-4 space-y-4">
+      <div className="flex-shrink-0 w-full z-30 pb-[env(safe-area-inset-bottom,16px)] bg-[#0f0f10]">
+        <div className="w-full max-w-md mx-auto px-4 space-y-2">
             
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center justify-between gap-2">
                  <button 
                       onClick={toggleDemoMode}
                       disabled={isOpening}
                       className={clsx(
-                          "flex-1 h-12 flex items-center justify-center gap-2 rounded-xl transition-all border",
+                          "flex-1 h-11 flex items-center justify-center gap-2 rounded-xl transition-all border",
                           isDemoMode 
                               ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/20" 
                               : "bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500/20"
@@ -183,18 +180,18 @@ const CaseDetailPage: React.FC = () => {
                           />
                       </div>
                       <span className="text-xs font-bold uppercase tracking-wide">
-                          {isDemoMode ? 'Demo Mode' : 'Real Mode'}
+                          {isDemoMode ? 'Demo' : 'Real'}
                       </span>
                   </button>
 
-                <div className="flex gap-2 bg-white/5 p-1 rounded-xl">
+                <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
                     {[1, 2, 3].map((c) => (
                         <button
                             key={c}
                             onClick={() => handleCountChange(c as 1 | 2 | 3)}
                             disabled={isOpening}
                             className={clsx(
-                                "h-10 w-12 rounded-lg font-bold transition-all text-sm",
+                                "h-9 w-11 rounded-lg font-bold transition-all text-sm",
                                 count === c 
                                     ? "bg-[#0f0f10] text-white shadow-sm" 
                                     : "text-white/40 hover:text-white/80"
@@ -211,7 +208,7 @@ const CaseDetailPage: React.FC = () => {
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
+                    "w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
                     isOpening 
                         ? 'bg-white/5 text-white/20 cursor-wait'
                         : (!isDemoMode && !canAfford)
@@ -223,13 +220,13 @@ const CaseDetailPage: React.FC = () => {
                     <span className="opacity-80 font-medium">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
-                        <span className="uppercase tracking-wide font-black text-xl">
+                        <span className="uppercase tracking-wide font-black text-lg">
                             {isDemoMode ? "OPEN FOR FREE" : "OPEN FOR"}
                         </span>
                         {!isDemoMode && (
-                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-lg">
-                                <span className="text-white font-black text-xl">{totalPrice}</span>
-                                <Star size={20} className="fill-white text-white" />
+                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-lg">
+                                <span className="text-white font-black text-lg">{totalPrice}</span>
+                                <Star size={18} className="fill-white text-white" />
                             </div>
                         )}
                     </>
@@ -239,7 +236,7 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full py-4 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest rounded-xl hover:bg-white/5"
+                className="w-full py-2 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest rounded-xl hover:bg-white/5"
             >
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
