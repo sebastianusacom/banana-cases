@@ -26,19 +26,16 @@ function App() {
     };
 
     updateSafeArea();
-
-    const onFullscreenChanged = () => {
-      setTimeout(updateSafeArea, 100);
-    };
-
-    (tg as any).onEvent?.('fullscreenChanged', onFullscreenChanged);
-    (tg as any).onEvent?.('safeAreaChanged', updateSafeArea);
-    (tg as any).onEvent?.('contentSafeAreaChanged', updateSafeArea);
+    tg.onEvent('safeAreaChanged', updateSafeArea);
+    tg.onEvent('contentSafeAreaChanged', updateSafeArea);
+    tg.onEvent('fullscreenChanged', updateSafeArea);
+    tg.onEvent('viewportChanged', updateSafeArea);
 
     return () => {
-      (tg as any).offEvent?.('fullscreenChanged', onFullscreenChanged);
-      (tg as any).offEvent?.('safeAreaChanged', updateSafeArea);
-      (tg as any).offEvent?.('contentSafeAreaChanged', updateSafeArea);
+      tg.offEvent('safeAreaChanged', updateSafeArea);
+      tg.offEvent('contentSafeAreaChanged', updateSafeArea);
+      tg.offEvent('fullscreenChanged', updateSafeArea);
+      tg.offEvent('viewportChanged', updateSafeArea);
     };
   }, [tg]);
 
