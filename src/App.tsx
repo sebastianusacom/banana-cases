@@ -13,7 +13,7 @@ function App() {
   useEffect(() => {
     tg.ready();
     tg.expand();
-    // Ensure dark mode colors match Telegram theme
+    tg.requestFullscreen?.();
     if (tg.themeParams.bg_color) {
         document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
     }
