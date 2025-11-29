@@ -41,6 +41,7 @@ export const Roulette: React.FC<RouletteProps> = ({
             loopItems.push(...baseItems.map(item => ({...item, id: `idle-${i}-${item.id}`})));
         }
         setRouletteItems(loopItems);
+        setShowWinnerEffect(false);
         
         const viewportWidth = viewportRef.current?.offsetWidth || 400;
         const totalWidth = baseItems.length * CARD_WIDTH;
@@ -62,6 +63,7 @@ export const Roulette: React.FC<RouletteProps> = ({
 
     if (!winningItem) return;
 
+    setShowWinnerEffect(false);
     const generatedItems: Prize[] = [];
     const getRandom = () => items[Math.floor(Math.random() * items.length)];
     const sorted = [...items].sort((a, b) => b.value - a.value);
@@ -104,7 +106,9 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [x, impactLight, idle]);
 
   useEffect(() => {
-    if (idle || rouletteItems.length === 0 || !winningItem) return;
+    // Prevent starting animation if we're in game mode but still have idle items
+    const hasIdleItems = rouletteItems.some(item => item.id.startsWith('idle-'));
+    if (idle || rouletteItems.length === 0 || !winningItem || (!idle && hasIdleItems)) return;
 
     const startAnimation = async () => {
       const viewportWidth = viewportRef.current?.offsetWidth || 0;
