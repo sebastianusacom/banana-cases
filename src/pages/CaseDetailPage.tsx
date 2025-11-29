@@ -33,7 +33,6 @@ const CaseDetailPage: React.FC = () => {
     }
   }, [caseItem, navigate]);
 
-  // Handle Telegram Back Button
   useEffect(() => {
     if (!isOpening) {
         tg.BackButton.show();
@@ -66,13 +65,11 @@ const CaseDetailPage: React.FC = () => {
 
     impactMedium();
     
-    // Deduct stars
     if (!isDemoMode) {
         const success = subtractStars(totalPrice);
         if (!success) return; 
     }
 
-    // Determine winnings
     const generatedPrizes: Prize[] = [];
     const sortedItems = [...caseItem.items].sort((a, b) => a.value - b.value);
 
@@ -80,7 +77,6 @@ const CaseDetailPage: React.FC = () => {
       const rand = Math.random();
       let winner;
       
-      // Rarity logic (same as CaseOpeningPage)
       if (rand > 0.98) winner = sortedItems[sortedItems.length - 1];
       else if (rand > 0.90) winner = sortedItems[Math.floor(sortedItems.length * 0.8)];
       else if (rand > 0.60) winner = sortedItems[Math.floor(sortedItems.length * 0.5)];
@@ -126,57 +122,28 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col relative">
-      {/* Main Content - Roulette Area */}
-      <div className="flex-1 flex flex-col items-center px-4 relative z-10 min-h-0 pt-16 pb-[180px]">
-        
-        {/* Demo Toggle - Moved to top right corner */}
-        <div className="absolute top-4 right-4 z-20">
-            <button 
-                onClick={toggleDemoMode}
-                disabled={isOpening}
-                className="group flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 transition-all hover:bg-black/60"
-            >
-                <div className={clsx(
-                    "w-8 h-5 rounded-full p-0.5 transition-colors relative",
-                    isDemoMode ? "bg-yellow-500/20" : "bg-green-500/20"
-                )}>
-                    <motion.div 
-                        layout
-                        className={clsx(
-                            "w-4 h-4 rounded-full shadow-sm",
-                            isDemoMode ? "bg-yellow-500" : "bg-green-500"
-                        )}
-                        animate={{ x: isDemoMode ? 12 : 0 }}
-                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    />
-                </div>
-                <span className={clsx(
-                    "text-xs font-bold uppercase tracking-wide",
-                    isDemoMode ? "text-yellow-500" : "text-green-500"
-                )}>
-                    {isDemoMode ? 'Demo' : 'Real'}
-                </span>
-            </button>
-        </div>
+    <div className="h-[100dvh] flex flex-col bg-[#1c1c1e] overflow-hidden">
+      
+      <div className="flex-shrink-0 h-14 relative z-20" />
 
-        {/* Roulette Section - Takes available space, centered */}
-        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 my-4 no-scrollbar items-center">
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full">
+        <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-4">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
                         key={`${index}-${isOpening ? 'open' : 'idle'}`}
-                        initial={{ opacity: 0, height: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, height: 'auto', scale: 1 }}
-                        exit={{ opacity: 0, height: 0, scale: 0.9 }}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                        className="w-full"
                     >
                         <Roulette
                             items={caseItem.items}
                             winningItem={isOpening ? winningPrizes[index] : undefined}
                             idle={!isOpening}
                             onComplete={handleSpinComplete}
-                            delay={index * 0.2}
+                            delay={index * 0.5}
                         />
                     </motion.div>
                 ))}
@@ -184,73 +151,97 @@ const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Controls - Fixed to Bottom */}
-      <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#0f0f10]/80 backdrop-blur-xl pt-4 pb-6 border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
-        <div className="w-full max-w-md mx-auto px-4 space-y-3">
-            {/* Count Selector */}
-            <div className="flex justify-center gap-2 mb-2">
-                {[1, 2, 3].map((c) => (
-                    <button
-                        key={c}
-                        onClick={() => handleCountChange(c as 1 | 2 | 3)}
-                        disabled={isOpening}
-                        className={clsx(
-                            "h-10 px-6 rounded-xl font-bold transition-all border flex items-center justify-center",
-                            count === c 
-                                ? "bg-white text-black border-white shadow-lg scale-105" 
-                                : "bg-white/5 border-transparent text-white/40 hover:bg-white/10 hover:text-white/80"
-                        )}
-                    >
-                        {c}x
-                    </button>
-                ))}
+      <div className="flex-shrink-0 w-full z-30 pb-safe bg-gradient-to-t from-black via-[#1c1c1e]/50 to-transparent pt-8">
+        <div className="w-full max-w-md mx-auto px-4 pb-6 space-y-4">
+            
+            <div className="flex items-center justify-between gap-4">
+                 <button 
+                      onClick={toggleDemoMode}
+                      disabled={isOpening}
+                      className="flex-1 h-10 flex items-center justify-center gap-2 bg-white/5 rounded-xl border border-white/5 transition-all hover:bg-white/10"
+                  >
+                      <div className={clsx(
+                          "w-8 h-5 rounded-full p-0.5 transition-colors relative",
+                          isDemoMode ? "bg-yellow-500/20" : "bg-green-500/20"
+                      )}>
+                          <motion.div 
+                              layout
+                              className={clsx(
+                                  "w-4 h-4 rounded-full shadow-sm",
+                                  isDemoMode ? "bg-yellow-500" : "bg-green-500"
+                              )}
+                              animate={{ x: isDemoMode ? 12 : 0 }}
+                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                          />
+                      </div>
+                      <span className={clsx(
+                          "text-xs font-bold uppercase tracking-wide",
+                          isDemoMode ? "text-yellow-500" : "text-green-500"
+                      )}>
+                          {isDemoMode ? 'Demo' : 'Real'}
+                      </span>
+                  </button>
+
+                <div className="flex gap-2">
+                    {[1, 2, 3].map((c) => (
+                        <button
+                            key={c}
+                            onClick={() => handleCountChange(c as 1 | 2 | 3)}
+                            disabled={isOpening}
+                            className={clsx(
+                                "h-10 w-12 rounded-xl font-bold transition-all border flex items-center justify-center text-sm",
+                                count === c 
+                                    ? "bg-white text-black border-white shadow-lg scale-105" 
+                                    : "bg-white/5 border-transparent text-white/40 hover:bg-white/10 hover:text-white/80"
+                            )}
+                        >
+                            {c}x
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {/* Open Button */}
             <motion.button
                 whileTap={{ scale: 0.98 }}
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-14 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
+                    "w-full h-14 rounded-2xl font-bold text-lg shadow-[0_4px_20px_rgba(250,204,21,0.2)] flex items-center justify-center gap-3 transition-all relative overflow-hidden",
                     isOpening 
                         ? 'bg-white/10 text-white/50 cursor-wait'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                            : 'bg-[var(--tg-theme-button-color)] text-white shadow-[0_4px_20px_rgba(0,122,255,0.3)]'
+                            : 'bg-[linear-gradient(110deg,#facc15_20%,#fef08a_45%,#facc15_80%)] bg-[length:200%_100%] animate-shimmer text-black border border-yellow-300/50 shadow-[0_0_30px_rgba(250,204,21,0.4)]'
                 )}
             >
                 {isOpening ? (
-                    <span>Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
+                    <span className="opacity-80">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
-                        <span className="uppercase tracking-wide">Open for</span>
-                        <div className="flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded-lg">
-                            <span className="text-yellow-400">{totalPrice}</span>
-                            <Star size={14} className="fill-yellow-400 text-yellow-400" />
+                        <span className="uppercase tracking-wide drop-shadow-sm font-black text-xl">OPEN FOR</span>
+                        <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-xl backdrop-blur-sm border border-black/10">
+                            <span className="text-black font-black text-xl">{totalPrice}</span>
+                            <Star size={20} className="fill-black text-black" />
                         </div>
                     </>
                 )}
             </motion.button>
 
-            {/* View Contents Button */}
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full h-10 rounded-xl text-sm font-medium text-[var(--tg-theme-hint-color)] hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                className="w-full py-2 text-xs font-medium text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest"
             >
-                <ShieldCheck size={16} />
-                <span>View Possible Drops</span>
+                <ShieldCheck size={14} />
+                <span>Possible Drops</span>
             </button>
         </div>
       </div>
 
-      {/* Prize Modal */}
       {showPrizeModal && (
           <PrizeModal prizes={winningPrizes} onClose={resetOpening} />
       )}
 
-      {/* Drops Drawer */}
       <AnimatePresence>
         {showDropsDrawer && (
             <>
