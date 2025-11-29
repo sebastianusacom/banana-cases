@@ -69,18 +69,51 @@ export const Roulette: React.FC<RouletteProps> = ({
     const bestItem = sorted[0];
     
     if (Math.random() < 0.4 && bestItem.id !== winningItem.id) {
-        const pos = EXTRA_CARDS - 1;
+        // Place bait at position EXTRA_CARDS + 1 (just after winner)
+        // The winner is at index EXTRA_CARDS
+        const pos = EXTRA_CARDS + 1;
         generatedItems[pos] = { ...bestItem, id: `bait-${pos}` };
     }
 
     generatedItems.push({ ...winningItem, id: `roulette-winner` });
     
+    // Ensure winner is at index EXTRA_CARDS
+    // Before this line, generatedItems has length EXTRA_CARDS (indices 0 to EXTRA_CARDS-1)
+    // The push above adds winningItem at index EXTRA_CARDS.
+    
     for (let i = 0; i < 5; i++) {
+       // We are adding items AFTER the winner.
+       // These will be at indices EXTRA_CARDS + 1 + i
+       // Check if we already placed a bait at EXTRA_CARDS + 1 (which corresponds to i=0 here conceptually if we just appended)
+       // But actually, generatedItems already has the winner at EXTRA_CARDS.
+       // Let's just fill the rest.
+       
+       // If we wanted a bait right after, we should have inserted it or handle it here.
+       // Let's simplify: we already handled bait insertion logic above? No wait.
+       
+       // Correct logic:
+       // Winner is at index EXTRA_CARDS.
+       // We need items at EXTRA_CARDS + 1, +2, etc.
+       
        if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
+            // This is the item immediately to the right of the winner
            generatedItems.push({ ...bestItem, id: `bait-after` });
        } else {
            generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
        }
+    }
+    
+    // Actually, the previous logic for bait was:
+    // generatedItems[pos] = ... where pos = EXTRA_CARDS - 1 (item BEFORE winner)
+    // That is a "near miss" stopping just before.
+    
+    // Let's refine "Near Miss":
+    // 1. Stop just BEFORE a high value item (Winner is low, Next is High) -> "Oh I almost got it" (doesn't apply here as we stop ON winner)
+    // 2. Stop just AFTER a high value item (Winner is low, Previous was High) -> "Oh it just passed it"
+    
+    // Let's implement type 2: A high value item appears just before the winner.
+    if (Math.random() < 0.5 && bestItem.id !== winningItem.id) {
+         generatedItems[EXTRA_CARDS - 1] = { ...bestItem, id: `bait-prev` };
     }
     
     setRouletteItems(generatedItems);
@@ -109,16 +142,28 @@ export const Roulette: React.FC<RouletteProps> = ({
       await new Promise((resolve) => setTimeout(resolve, delay * 1000));
       
       const containerWidth = containerRef.current?.offsetWidth || 0;
-      const centerOffset = containerWidth / 2 - CARD_WIDTH / 2;
+      // We want the center of the container to align with the center of the winning card.
+      // The winning card is at index EXTRA_CARDS.
+      // Its center position relative to the start of the strip is:
+      // (EXTRA_CARDS * CARD_WIDTH) + (CARD_WIDTH / 2)
       
-      const randomOffset = (Math.random() * 0.4 - 0.2) * CARD_WIDTH; 
-      const targetX = -(EXTRA_CARDS * CARD_WIDTH) + centerOffset + randomOffset;
+      // But we are moving the strip to the LEFT (negative x).
+      // So we want to shift it by -(position of winning card center) + (container center)
+      
+      const winningCardCenter = (EXTRA_CARDS * CARD_WIDTH) + (CARD_WIDTH / 2);
+      const containerCenter = containerWidth / 2;
+      
+      // Random offset for "imperfect" landing, but keeps it within the card
+      // Limit to +/- 40% of card width to stay well within the card bounds
+      const randomOffset = (Math.random() * 0.8 - 0.4) * CARD_WIDTH * 0.5; 
+      
+      const targetX = -winningCardCenter + containerCenter + randomOffset;
 
       await controls.start({
         x: targetX,
         transition: {
           duration: 5.5,
-          ease: [0.15, 0.85, 0.30, 1.0],
+          ease: [0.15, 0.85, 0.30, 1.0], // Custom cubic bezier for realistic friction
         },
       });
 
@@ -135,9 +180,9 @@ export const Roulette: React.FC<RouletteProps> = ({
       <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
 
-      <div className="absolute top-6 bottom-6 left-1/2 w-0.5 bg-yellow-400/20 z-20 -translate-x-1/2">
-         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
-         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-yellow-400/40 z-30 -translate-x-1/2">
+         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
       </div>
 
       <motion.div
