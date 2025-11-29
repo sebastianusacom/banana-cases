@@ -177,12 +177,12 @@ export const Roulette: React.FC<RouletteProps> = ({
 
   return (
     <div className="relative w-full h-full min-h-[120px] max-h-[180px] overflow-hidden select-none flex items-center justify-center">
-      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/90 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/90 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
 
-      <div className="absolute top-0 bottom-0 left-1/2 w-px bg-yellow-400/40 z-30 -translate-x-1/2">
-         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
-         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+      <div className="absolute top-0 bottom-0 left-1/2 w-[2px] bg-yellow-500/50 z-30 -translate-x-1/2 shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
+         <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
       </div>
 
       <motion.div
@@ -206,11 +206,11 @@ export const Roulette: React.FC<RouletteProps> = ({
                  <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
                  
                  <div 
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm"
-                    style={{ borderColor: item.id.includes('winner') && !idle ? item.color : 'transparent' }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg"
+                    style={{ borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' }}
                  >
-                    <Star size={10} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-[10px] font-bold text-white">{item.value}</span>
+                    <Star size={12} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-xs font-black text-white tracking-wide">{item.value}</span>
                  </div>
              </div>
           </div>

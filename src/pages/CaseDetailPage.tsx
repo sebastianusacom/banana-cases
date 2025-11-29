@@ -208,25 +208,25 @@ const CaseDetailPage: React.FC = () => {
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
+                    "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
                     isOpening 
                         ? 'bg-white/5 text-white/20 cursor-wait'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                            : 'bg-[#eab308] text-white shadow-lg shadow-yellow-500/10 hover:bg-[#ca8a04]'
+                            : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
                 )}
             >
                 {isOpening ? (
-                    <span className="opacity-80 font-medium">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
+                    <span className="opacity-80 font-medium animate-pulse">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
-                        <span className="uppercase tracking-wide font-black text-lg">
-                            {isDemoMode ? "OPEN FOR FREE" : "OPEN FOR"}
+                        <span className="uppercase tracking-wide font-black text-lg opacity-90">
+                            {isDemoMode ? "OPEN FREE" : "OPEN FOR"}
                         </span>
                         {!isDemoMode && (
-                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-lg">
-                                <span className="text-white font-black text-lg">{totalPrice}</span>
-                                <Star size={18} className="fill-white text-white" />
+                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                                <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
+                                <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                             </div>
                         )}
                     </>
