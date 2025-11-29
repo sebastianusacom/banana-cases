@@ -14,56 +14,120 @@ interface CaseState {
   getCaseById: (id: string) => Case | undefined;
 }
 
-const RARITY_COLORS = {
-  common: '#b0c3d9',
-  uncommon: '#5e98d9',
-  rare: '#4b69ff',
-  mythical: '#8847ff',
-  legendary: '#d32ce6',
-};
+export function pickWinner(items: Prize[]): Prize {
+  const totalChance = items.reduce((sum, item) => sum + item.chance, 0);
+  let rand = Math.random() * totalChance;
+  
+  for (const item of items) {
+    rand -= item.chance;
+    if (rand <= 0) {
+      return item;
+    }
+  }
+  
+  return items[items.length - 1];
+}
 
-// Mock Data Generation
-const generateItems = (count: number): Prize[] => {
-  return Array.from({ length: count }).map((_, i) => {
-    const rand = Math.random();
-    let rarity: Prize['rarity'] = 'common';
-    if (rand > 0.98) rarity = 'legendary';
-    else if (rand > 0.9) rarity = 'mythical';
-    else if (rand > 0.75) rarity = 'rare';
-    else if (rand > 0.5) rarity = 'uncommon';
+const STARTER_CASE_ITEMS: Prize[] = [
+  {
+    id: 'starter-banana-1',
+    name: 'Nail Bracelet',
+    image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
+    value: 50,
+    chance: 50,
+  },
+  {
+    id: 'starter-banana-2',
+    name: 'Snoop Dogg',
+    image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
+    value: 75,
+    chance: 30,
+  },
+  {
+    id: 'starter-banana-3',
+    name: 'Diamond Ring',
+    image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
+    value: 150,
+    chance: 15,
+  },
+  {
+    id: 'starter-banana-4',
+    name: 'Plush Pepe',
+    image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+    value: 400,
+    chance: 5,
+  },
+];
 
-    return {
-      id: `item-${i}-${Date.now()}`,
-      name: `Banana Skin ${i + 1}`,
-      rarity,
-      image: 'https://placehold.co/200x200/png', // Placeholder
-      value: Math.floor(Math.random() * 1000) + 10,
-      color: RARITY_COLORS[rarity],
-    };
-  });
-};
+const RARE_CASE_ITEMS: Prize[] = [
+  {
+    id: 'rare-banana-1',
+    name: 'Blue Banana',
+    image: 'https://placehold.co/200x200/0000ff/ffffff?text=Blue',
+    value: 500,
+    chance: 60,
+  },
+  {
+    id: 'rare-banana-2',
+    name: 'Neon Banana',
+    image: 'https://placehold.co/200x200/ff00ff/ffffff?text=Neon',
+    value: 1200,
+    chance: 30,
+  },
+  {
+    id: 'rare-banana-3',
+    name: 'Crystal Banana',
+    image: 'https://placehold.co/200x200/00ffff/000000?text=Crystal',
+    value: 3000,
+    chance: 10,
+  },
+];
+
+const LEGENDARY_CASE_ITEMS: Prize[] = [
+  {
+    id: 'leg-banana-1',
+    name: 'Golden Banana',
+    image: 'https://placehold.co/200x200/ffd700/000000?text=Gold',
+    value: 5000,
+    chance: 5,
+  },
+  {
+    id: 'leg-banana-2',
+    name: 'Diamond Banana',
+    image: 'https://placehold.co/200x200/b9f2ff/000000?text=Diamond',
+    value: 10000,
+    chance: 2,
+  },
+  {
+    id: 'leg-banana-3',
+    name: 'Galaxy Banana',
+    image: 'https://placehold.co/200x200/4b0082/ffffff?text=Galaxy',
+    value: 2500,
+    chance: 93,
+  },
+];
 
 const mockCases: Case[] = [
   {
     id: 'case-1',
     name: 'Starter Case',
-    image: 'https://placehold.co/300x300/png?text=Starter',
+    image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
     price: 100,
-    items: generateItems(20),
+    items: STARTER_CASE_ITEMS,
   },
   {
     id: 'case-2',
     name: 'Rare Case',
-    image: 'https://placehold.co/300x300/png?text=Rare',
+    image: 'https://placehold.co/300x300/3b82f6/ffffff?text=Rare',
     price: 250,
-    items: generateItems(20),
+    items: RARE_CASE_ITEMS,
   },
   {
     id: 'case-3',
-    name: 'Legendary Case',
-    image: 'https://placehold.co/300x300/png?text=Legendary',
+    name: 'Pepe Case',
+    image: 'https://placehold.co/300x300/a855f7/ffffff?text=Legendary',
     price: 500,
-    items: generateItems(20),
+    items: LEGENDARY_CASE_ITEMS,
   },
 ];
 
@@ -71,4 +135,3 @@ export const useCaseStore = create<CaseState>((_set, get) => ({
   cases: mockCases,
   getCaseById: (id) => get().cases.find((c) => c.id === id),
 }));
-

@@ -4,10 +4,9 @@ import { persist } from 'zustand/middleware';
 export interface Prize {
   id: string;
   name: string;
-  rarity: 'common' | 'uncommon' | 'rare' | 'mythical' | 'legendary';
   image: string;
-  value: number; // Value in stars
-  color: string;
+  value: number;
+  chance: number;
 }
 
 interface UserState {
@@ -25,7 +24,7 @@ interface UserState {
 export const useUserStore = create<UserState>()(
   persist(
     (set, get) => ({
-      stars: 1000, // Starting balance
+      stars: 1000,
       inventory: [],
       isDemoMode: false,
       toggleDemoMode: () => set((state) => ({ isDemoMode: !state.isDemoMode })),
@@ -59,4 +58,3 @@ export const useUserStore = create<UserState>()(
     }
   )
 );
-

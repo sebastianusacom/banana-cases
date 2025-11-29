@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ShieldCheck, X } from 'lucide-react';
-import { useCaseStore } from '../store/caseStore';
+import { useCaseStore, pickWinner } from '../store/caseStore';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTelegram } from '../hooks/useTelegram';
@@ -71,19 +71,9 @@ const CaseDetailPage: React.FC = () => {
     }
 
     const generatedPrizes: Prize[] = [];
-    const sortedItems = [...caseItem.items].sort((a, b) => a.value - b.value);
 
     for (let i = 0; i < count; i++) {
-      const rand = Math.random();
-      let winner;
-      
-      if (rand > 0.98) winner = sortedItems[sortedItems.length - 1];
-      else if (rand > 0.90) winner = sortedItems[Math.floor(sortedItems.length * 0.8)];
-      else if (rand > 0.60) winner = sortedItems[Math.floor(sortedItems.length * 0.5)];
-      else winner = sortedItems[Math.floor(Math.random() * (sortedItems.length / 2))];
-
-      if (!winner) winner = sortedItems[0];
-
+      const winner = pickWinner(caseItem.items);
       const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}` };
       generatedPrizes.push(prizeInstance);
       addItem(prizeInstance);
@@ -283,11 +273,13 @@ const CaseDetailPage: React.FC = () => {
                                         <div className="w-full aspect-square mb-2 bg-black/20 rounded-xl p-2">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                                         </div>
-                                        <div className="h-1 w-8 rounded-full mb-2 opacity-50" style={{ backgroundColor: item.color }} />
                                         <p className="text-[10px] font-medium leading-tight line-clamp-1 opacity-80">{item.name}</p>
-                                        <div className="flex items-center gap-1 mt-1">
-                                            <Star size={8} className="text-yellow-400 fill-yellow-400" />
-                                            <span className="text-[10px] text-yellow-400">{item.value}</span>
+                                        <div className="flex items-center justify-between gap-1 mt-1">
+                                            <div className="flex items-center gap-1">
+                                                <Star size={8} className="text-yellow-400 fill-yellow-400" />
+                                                <span className="text-[10px] text-yellow-400">{item.value}</span>
+                                            </div>
+                                            <span className="text-[10px] text-white/40">{item.chance}%</span>
                                         </div>
                                     </div>
                                 ))}
