@@ -126,9 +126,9 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="h-full flex flex-col">
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-4 pb-6 relative z-10 min-h-0 pt-16">
+    <div className="h-[100dvh] flex flex-col relative">
+      {/* Main Content - Roulette Area */}
+      <div className="flex-1 flex flex-col items-center px-4 relative z-10 min-h-0 pt-16 pb-[180px]">
         
         {/* Demo Toggle - Moved to top right corner */}
         <div className="absolute top-4 right-4 z-20">
@@ -182,9 +182,11 @@ const CaseDetailPage: React.FC = () => {
                 ))}
             </AnimatePresence>
         </div>
+      </div>
 
-        {/* Controls - Pinned to Bottom */}
-        <div className="w-full max-w-md space-y-3 flex-shrink-0 bg-[#0f0f10]/80 backdrop-blur-xl pt-4 pb-2 rounded-t-3xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] -mx-4 px-4">
+      {/* Controls - Fixed to Bottom */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 bg-[#0f0f10]/80 backdrop-blur-xl pt-4 pb-6 border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <div className="w-full max-w-md mx-auto px-4 space-y-3">
             {/* Count Selector */}
             <div className="flex justify-center gap-2 mb-2">
                 {[1, 2, 3].map((c) => (
