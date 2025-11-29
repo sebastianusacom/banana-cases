@@ -1,7 +1,15 @@
 import React from 'react';
-import { useCaseStore } from '../store/caseStore';
+import { useCaseStore, type Case } from '../store/caseStore';
 import { CaseCard } from '../components/CaseCard';
 import { motion } from 'framer-motion';
+
+const freeCase: Case = {
+  id: 'free-case',
+  name: 'Free Case',
+  image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+  price: 0,
+  items: []
+};
 
 const CasesPage: React.FC = () => {
   const { cases } = useCaseStore();
@@ -16,6 +24,14 @@ const CasesPage: React.FC = () => {
       </motion.div>
 
       <div className="grid grid-cols-2 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="col-span-2"
+        >
+          <CaseCard caseItem={freeCase} variant="yellow" />
+        </motion.div>
+
         {cases.map((caseItem, index) => (
           <motion.div
             key={caseItem.id}
