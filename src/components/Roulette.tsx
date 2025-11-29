@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
+import clsx from 'clsx';
 
 interface RouletteProps {
   items: Prize[];
@@ -65,9 +66,6 @@ export const Roulette: React.FC<RouletteProps> = ({
       await new Promise((resolve) => setTimeout(resolve, delay * 1000));
       
       // Calculate target position
-      // We want the winner (index: EXTRA_CARDS) to be centered
-      // Center of container is width / 2
-      // Item center is CARD_WIDTH / 2
       const containerWidth = containerRef.current?.offsetWidth || 0;
       const centerOffset = containerWidth / 2 - CARD_WIDTH / 2;
       
@@ -91,9 +89,15 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [rouletteItems, controls, delay, onComplete]);
 
   return (
-    <div className="relative w-full h-48 bg-[var(--tg-theme-secondary-bg-color)] border-y-4 border-[var(--tg-theme-button-color)] overflow-hidden mb-4 shadow-inner">
+    <div className="relative w-full h-48 bg-black/40 backdrop-blur-sm border-y border-white/10 overflow-hidden mb-6 shadow-inner">
       {/* Center Indicator */}
-      <div className="absolute top-0 bottom-0 left-1/2 w-1 bg-yellow-400 z-20 -translate-x-1/2 shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+      <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-yellow-400 z-30 -translate-x-1/2 shadow-[0_0_15px_rgba(250,204,21,1)]" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-yellow-400 rotate-45 z-30 shadow-lg" />
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-4 h-4 bg-yellow-400 rotate-45 z-30 shadow-lg" />
+
+      {/* Fade Gradients */}
+      <div className="absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[#0f0f10] to-transparent z-20" />
+      <div className="absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[#0f0f10] to-transparent z-20" />
 
       <motion.div
         ref={containerRef}
@@ -104,21 +108,26 @@ export const Roulette: React.FC<RouletteProps> = ({
         {rouletteItems.map((item) => (
           <div
             key={item.id}
-            className="flex-shrink-0 p-1"
+            className="flex-shrink-0 p-2"
             style={{ width: CARD_WIDTH }}
           >
             <div 
-                className="w-full h-36 bg-[#1e1e24] rounded-lg border-b-4 flex flex-col items-center justify-center relative overflow-hidden"
-                style={{ borderColor: item.color }}
+                className="w-full h-36 bg-[#1e1e24] rounded-xl border border-white/5 flex flex-col items-center justify-center relative overflow-hidden group"
             >
-                <div className="w-24 h-24 mb-2">
-                     <img src={item.image} alt="" className="w-full h-full object-contain" />
+                {/* Rarity Glow Background */}
+                <div 
+                    className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity duration-300"
+                    style={{ backgroundColor: item.color }}
+                />
+                
+                <div className="w-24 h-24 mb-2 relative z-10">
+                     <img src={item.image} alt="" className="w-full h-full object-contain drop-shadow-md" />
                 </div>
-                <div className="absolute bottom-1 left-0 right-0 text-center">
-                     <span className="text-[10px] font-bold px-1 bg-black/50 rounded text-white/90 truncate max-w-full block">
-                         {item.name}
-                     </span>
-                </div>
+                
+                <div 
+                    className="absolute bottom-0 left-0 right-0 h-1 w-full"
+                    style={{ backgroundColor: item.color }}
+                />
             </div>
           </div>
         ))}
@@ -126,4 +135,3 @@ export const Roulette: React.FC<RouletteProps> = ({
     </div>
   );
 };
-
