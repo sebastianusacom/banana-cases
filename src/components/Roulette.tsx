@@ -29,10 +29,33 @@ export const Roulette: React.FC<RouletteProps> = ({
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
   
   useEffect(() => {
-    if (idle || !winningItem) {
-        setRouletteItems(items.slice(0, 15));
+    if (idle) {
+        const baseItems = items.length > 0 ? items : [];
+        if (baseItems.length === 0) return;
+
+        const repeatCount = Math.max(3, Math.ceil(20 / baseItems.length));
+        const loopItems = [];
+        for(let i=0; i < repeatCount + 2; i++) {
+            loopItems.push(...baseItems.map(item => ({...item, id: `idle-${i}-${item.id}`})));
+        }
+        setRouletteItems(loopItems);
+        
+        const totalWidth = baseItems.length * CARD_WIDTH;
+        controls.start({
+            x: [0, -totalWidth],
+            transition: {
+                x: {
+                    repeat: Infinity,
+                    repeatType: "loop",
+                    duration: totalWidth / 50,
+                    ease: "linear",
+                }
+            }
+        });
         return;
     }
+
+    if (!winningItem) return;
 
     const generatedItems: Prize[] = [];
     const getRandom = () => items[Math.floor(Math.random() * items.length)];
@@ -60,7 +83,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     }
     
     setRouletteItems(generatedItems);
-  }, [items, winningItem, idle]);
+  }, [items, winningItem, idle, controls]);
 
   const x = useMotionValue(0);
   const lastHapticIndex = useRef(0);

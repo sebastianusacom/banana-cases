@@ -131,11 +131,11 @@ const CaseDetailPage: React.FC = () => {
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
-                        key={`${index}-${isOpening ? 'open' : 'idle'}`}
-                        initial={{ opacity: 0, scale: 0.9 }}
+                        key={index}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.3 }}
                         className="w-full"
                     >
                         <Roulette
@@ -206,20 +206,20 @@ const CaseDetailPage: React.FC = () => {
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-14 rounded-2xl font-bold text-lg shadow-[0_4px_20px_rgba(250,204,21,0.2)] flex items-center justify-center gap-3 transition-all relative overflow-hidden",
+                    "w-full h-14 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
                     isOpening 
-                        ? 'bg-white/10 text-white/50 cursor-wait'
+                        ? 'bg-white/5 text-white/20 cursor-wait'
                         : (!isDemoMode && !canAfford)
-                            ? 'bg-white/5 text-white/30 cursor-not-allowed'
-                            : 'bg-[linear-gradient(110deg,#facc15_20%,#fef08a_45%,#facc15_80%)] bg-[length:200%_100%] animate-shimmer text-black border border-yellow-300/50 shadow-[0_0_30px_rgba(250,204,21,0.4)]'
+                            ? 'bg-white/5 text-white/20 cursor-not-allowed'
+                            : 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20'
                 )}
             >
                 {isOpening ? (
                     <span className="opacity-80">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
-                        <span className="uppercase tracking-wide drop-shadow-sm font-black text-xl">OPEN FOR</span>
-                        <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-xl backdrop-blur-sm border border-black/10">
+                        <span className="uppercase tracking-wide font-black text-xl">OPEN FOR</span>
+                        <div className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-lg">
                             <span className="text-black font-black text-xl">{totalPrice}</span>
                             <Star size={20} className="fill-black text-black" />
                         </div>
@@ -230,7 +230,7 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full py-2 text-xs font-medium text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest"
+                className="w-full py-3 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest bg-white/5 rounded-xl hover:bg-white/10"
             >
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
