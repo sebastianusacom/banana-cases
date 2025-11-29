@@ -49,8 +49,9 @@ export const TopLiveBar: React.FC = () => {
   };
 
   return (
-    <div className="fixed left-0 right-0 z-50 h-16 px-4 flex items-center justify-between pointer-events-none" style={{ top: 'var(--tg-safe-area-inset-top)' }}>
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f10] to-transparent backdrop-blur-[2px] -z-10" />
+    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none" style={{ paddingTop: 'var(--tg-safe-area-inset-top)' }}>
+      <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-[#0f0f10] to-transparent backdrop-blur-[2px] -z-10" style={{ height: 'calc(var(--tg-safe-area-inset-top) + 4rem)' }} />
+      <div className="h-16 px-4 flex items-center justify-between">
       
       {/* Left Side: Live Feed */}
       <div className="flex items-center flex-1 overflow-hidden mr-4 pointer-events-auto h-full">
@@ -121,7 +122,7 @@ export const TopLiveBar: React.FC = () => {
              </button>
         </div>
       </div>
-
+      </div>
     </div>
   );
 };
