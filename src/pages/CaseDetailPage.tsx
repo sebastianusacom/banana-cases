@@ -14,7 +14,7 @@ const CaseDetailPage: React.FC = () => {
   const { getCaseById } = useCaseStore();
   const { stars, isDemoMode, toggleDemoMode } = useUserStore();
   const { selectionChanged, impactLight, impactMedium } = useHaptics();
-  const { onToggleButton, tg } = useTelegram();
+  const { tg } = useTelegram();
 
   const caseItem = getCaseById(id || '');
   const [count, setCount] = useState<1 | 2 | 3>(1);

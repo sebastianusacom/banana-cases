@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Layout } from './components/Layout';
+import { useEffect } from 'react';
 import { useTelegram } from './hooks/useTelegram';
 
 import CasesPage from './pages/CasesPage';

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useUserStore } from '../store/userStore';
 
 interface LiveDrop {
   id: string;

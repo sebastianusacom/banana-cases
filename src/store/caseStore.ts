@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Prize } from './userStore';
+import type { Prize } from './userStore';
 
 export interface Case {
   id: string;
@@ -67,7 +67,7 @@ const mockCases: Case[] = [
   },
 ];
 
-export const useCaseStore = create<CaseState>((set, get) => ({
+export const useCaseStore = create<CaseState>((_set, get) => ({
   cases: mockCases,
   getCaseById: (id) => get().cases.find((c) => c.id === id),
 }));

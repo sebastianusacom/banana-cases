@@ -1,7 +1,8 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useCaseStore } from '../store/caseStore';
-import { useUserStore, Prize } from '../store/userStore';
+import { useUserStore } from '../store/userStore';
+import type { Prize } from '../store/userStore';
 import { Roulette } from '../components/Roulette';
 import { PrizeModal } from '../components/PrizeModal';
 import { useHaptics } from '../hooks/useHaptics';
@@ -18,7 +19,7 @@ const CaseOpeningPage: React.FC = () => {
 
   const caseItem = getCaseById(caseId || '');
   const [winningPrizes, setWinningPrizes] = useState<Prize[]>([]);
-  const [completedCount, setCompletedCount] = useState(0);
+  const [, setCompletedCount] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
 

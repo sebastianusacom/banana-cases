@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Case } from '../store/caseStore';
+import type { Case } from '../store/caseStore';
 import { useHaptics } from '../hooks/useHaptics';
 
 interface CaseCardProps {

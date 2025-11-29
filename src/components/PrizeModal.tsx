@@ -1,7 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Prize, useUserStore } from '../store/userStore';
-import { Star, Share2, X } from 'lucide-react';
+import type { Prize } from '../store/userStore';
+import { useUserStore } from '../store/userStore';
+import { Star, Share2 } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 
 interface PrizeModalProps {
@@ -10,7 +11,7 @@ interface PrizeModalProps {
 }
 
 export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
-  const { sellItem, stars } = useUserStore();
+  const { sellItem } = useUserStore();
   const { impactMedium, notificationSuccess } = useHaptics();
 
   // Calculate total value of prizes

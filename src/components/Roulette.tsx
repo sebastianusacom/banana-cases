@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
-import { Prize } from '../store/userStore';
+import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 
 interface RouletteProps {
@@ -11,7 +11,6 @@ interface RouletteProps {
 }
 
 const CARD_WIDTH = 140; // Width + margin
-const VISIBLE_CARDS = 3; // Actually we show more, but this is for calculation center
 const EXTRA_CARDS = 25; // How many random cards before the winner
 
 export const Roulette: React.FC<RouletteProps> = ({
@@ -102,7 +101,7 @@ export const Roulette: React.FC<RouletteProps> = ({
         style={{ x, display: 'flex', paddingLeft: '50%' }} // Start from center-ish
         className="h-full items-center"
       >
-        {rouletteItems.map((item, i) => (
+        {rouletteItems.map((item) => (
           <div
             key={item.id}
             className="flex-shrink-0 p-1"
