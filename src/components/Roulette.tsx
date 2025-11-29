@@ -205,13 +205,33 @@ export const Roulette: React.FC<RouletteProps> = ({
              )}>
                  <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
                  
-                 <div 
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg"
-                    style={{ borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' }}
+                 <motion.div 
+                    layout
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg origin-center"
+                    style={{ 
+                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' 
+                    }}
+                    animate={item.id.includes('winner') && !idle ? {
+                        scale: [1, 1.15, 1],
+                        boxShadow: [
+                            `0 0 0px ${item.color}00`, 
+                            `0 0 20px ${item.color}80`, 
+                            `0 0 0px ${item.color}00`
+                        ],
+                        borderColor: [item.color, '#ffffff', item.color]
+                    } : { scale: 1, boxShadow: 'none' }}
+                    transition={{
+                        duration: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                    }}
                  >
-                    <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-xs font-black text-white tracking-wide">{item.value}</span>
-                 </div>
+                    <Star size={item.id.includes('winner') && !idle ? 14 : 12} className="text-yellow-400 fill-yellow-400" />
+                    <span className={clsx(
+                        "font-black text-white tracking-wide transition-all",
+                        item.id.includes('winner') && !idle ? "text-sm" : "text-xs"
+                    )}>{item.value}</span>
+                 </motion.div>
              </div>
           </div>
         ))}
