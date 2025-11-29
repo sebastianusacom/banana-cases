@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, Star, ShieldCheck, X } from 'lucide-react';
+import { Star, ShieldCheck, X } from 'lucide-react';
 import { useCaseStore } from '../store/caseStore';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
@@ -15,7 +15,7 @@ const CaseDetailPage: React.FC = () => {
   const navigate = useNavigate();
   const { getCaseById } = useCaseStore();
   const { stars, isDemoMode, toggleDemoMode, addItem, subtractStars } = useUserStore();
-  const { selectionChanged, impactLight, impactMedium, impactHeavy, notificationSuccess } = useHaptics();
+  const { selectionChanged, impactMedium, impactHeavy, notificationSuccess } = useHaptics();
   const { tg } = useTelegram();
 
   const caseItem = getCaseById(id || '');
@@ -32,6 +32,24 @@ const CaseDetailPage: React.FC = () => {
       navigate('/cases');
     }
   }, [caseItem, navigate]);
+
+  // Handle Telegram Back Button
+  useEffect(() => {
+    if (!isOpening) {
+        tg.BackButton.show();
+        const handleBack = () => {
+            navigate(-1);
+        };
+        tg.BackButton.onClick(handleBack);
+        return () => {
+            tg.BackButton.offClick(handleBack);
+            tg.BackButton.hide();
+        };
+    } else {
+        tg.BackButton.hide();
+    }
+  }, [isOpening, navigate, tg]);
+
 
   if (!caseItem) return null;
 
@@ -108,48 +126,27 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] bg-[#0f0f10] text-white relative overflow-hidden flex flex-col">
-      {/* Background Glow */}
-      <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-[#0f0f10] to-[#0f0f10] pointer-events-none" />
-
-      {/* Navbar */}
-      <div className="relative z-10 flex items-center justify-between px-4 pt-6 mb-6">
-        <button
-          onClick={() => {
-            impactLight();
-            navigate(-1);
-          }}
-          disabled={isOpening}
-          className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors border border-white/5 backdrop-blur-md disabled:opacity-50"
-        >
-          <ChevronLeft size={24} />
-        </button>
-        
-        <button 
-            onClick={toggleDemoMode}
-            disabled={isOpening}
-            className={clsx(
-                "px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all disabled:opacity-50",
-                isDemoMode ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500" : "bg-green-500/10 border-green-500/20 text-green-500"
-            )}
-        >
-            <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", isDemoMode ? "bg-yellow-500" : "bg-green-500")} />
-            {isDemoMode ? 'Demo Mode' : 'Real Mode'}
-        </button>
-      </div>
-
+    <div className="h-full flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-4 pb-6 relative z-10 overflow-hidden">
+      <div className="flex-1 flex flex-col items-center px-4 pb-4 relative z-10 min-h-0 pt-16">
         
-        <div className="text-center mb-4 flex-shrink-0">
-             <h1 className="text-2xl font-black tracking-tight mb-1">{caseItem.name}</h1>
-             <div className="flex items-center justify-center gap-2 text-[var(--tg-theme-hint-color)] text-xs">
-                <span>Contains {caseItem.items.length} Items</span>
-             </div>
+        {/* Demo Toggle - Moved to top right corner since we removed navbar */}
+        <div className="absolute top-4 right-4 z-20">
+            <button 
+                onClick={toggleDemoMode}
+                disabled={isOpening}
+                className={clsx(
+                    "px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all disabled:opacity-50 backdrop-blur-md",
+                    isDemoMode ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500" : "bg-green-500/10 border-green-500/20 text-green-500"
+                )}
+            >
+                <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", isDemoMode ? "bg-yellow-500" : "bg-green-500")} />
+                {isDemoMode ? 'Demo' : 'Real'}
+            </button>
         </div>
 
-        {/* Roulette Section */}
-        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 mb-4">
+        {/* Roulette Section - Flex 1 to take available space */}
+        <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 my-4">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
@@ -171,10 +168,10 @@ const CaseDetailPage: React.FC = () => {
             </AnimatePresence>
         </div>
 
-        {/* Controls */}
-        <div className="w-full max-w-md space-y-3 mt-auto flex-shrink-0 bg-[#0f0f10]/50 backdrop-blur-md pt-2">
+        {/* Controls - Compact */}
+        <div className="w-full max-w-md space-y-3 flex-shrink-0 bg-[#0f0f10]/50 backdrop-blur-md pt-2 rounded-t-2xl">
             {/* Count Selector */}
-            <div className="flex justify-center gap-2 mb-4">
+            <div className="flex justify-center gap-2 mb-2">
                 {[1, 2, 3].map((c) => (
                     <button
                         key={c}
