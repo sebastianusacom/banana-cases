@@ -15,7 +15,7 @@ function App() {
     tg.expand();
     tg.requestFullscreen?.();
     if (tg.themeParams.bg_color) {
-        document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
+      document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
     }
   }, [tg]);
 

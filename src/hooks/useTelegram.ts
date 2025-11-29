@@ -4,11 +4,9 @@ declare global {
       WebApp: {
         ready: () => void;
         expand: () => void;
+        requestFullscreen?: () => void;
         close: () => void;
         showAlert: (message: string) => void;
-        requestFullscreen: () => void;
-        exitFullscreen: () => void;
-        isFullscreen: boolean;
         HapticFeedback: {
           impactOccurred: (style: 'light' | 'medium' | 'heavy' | 'rigid' | 'soft') => void;
           notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
