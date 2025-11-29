@@ -128,24 +128,39 @@ const CaseDetailPage: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-4 pb-4 relative z-10 min-h-0 pt-16">
+      <div className="flex-1 flex flex-col items-center px-4 pb-6 relative z-10 min-h-0 pt-16">
         
-        {/* Demo Toggle - Moved to top right corner since we removed navbar */}
+        {/* Demo Toggle - Moved to top right corner */}
         <div className="absolute top-4 right-4 z-20">
             <button 
                 onClick={toggleDemoMode}
                 disabled={isOpening}
-                className={clsx(
-                    "px-3 py-1.5 rounded-full border text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all disabled:opacity-50 backdrop-blur-md",
-                    isDemoMode ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500" : "bg-green-500/10 border-green-500/20 text-green-500"
-                )}
+                className="group flex items-center gap-2 bg-black/40 backdrop-blur-md rounded-full p-1 pr-3 border border-white/10 transition-all hover:bg-black/60"
             >
-                <div className={clsx("w-1.5 h-1.5 rounded-full animate-pulse", isDemoMode ? "bg-yellow-500" : "bg-green-500")} />
-                {isDemoMode ? 'Demo' : 'Real'}
+                <div className={clsx(
+                    "w-8 h-5 rounded-full p-0.5 transition-colors relative",
+                    isDemoMode ? "bg-yellow-500/20" : "bg-green-500/20"
+                )}>
+                    <motion.div 
+                        layout
+                        className={clsx(
+                            "w-4 h-4 rounded-full shadow-sm",
+                            isDemoMode ? "bg-yellow-500" : "bg-green-500"
+                        )}
+                        animate={{ x: isDemoMode ? 12 : 0 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    />
+                </div>
+                <span className={clsx(
+                    "text-xs font-bold uppercase tracking-wide",
+                    isDemoMode ? "text-yellow-500" : "text-green-500"
+                )}>
+                    {isDemoMode ? 'Demo' : 'Real'}
+                </span>
             </button>
         </div>
 
-        {/* Roulette Section - Flex 1 to take available space */}
+        {/* Roulette Section - Takes available space, centered */}
         <div className="w-full max-w-md flex-1 flex flex-col justify-center gap-2 overflow-y-auto min-h-0 my-4">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
@@ -168,8 +183,8 @@ const CaseDetailPage: React.FC = () => {
             </AnimatePresence>
         </div>
 
-        {/* Controls - Compact */}
-        <div className="w-full max-w-md space-y-3 flex-shrink-0 bg-[#0f0f10]/50 backdrop-blur-md pt-2 rounded-t-2xl">
+        {/* Controls - Pinned to Bottom */}
+        <div className="w-full max-w-md space-y-3 flex-shrink-0 bg-[#0f0f10]/80 backdrop-blur-xl pt-4 pb-2 rounded-t-3xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.5)] -mx-4 px-4">
             {/* Count Selector */}
             <div className="flex justify-center gap-2 mb-2">
                 {[1, 2, 3].map((c) => (
@@ -178,10 +193,10 @@ const CaseDetailPage: React.FC = () => {
                         onClick={() => handleCountChange(c as 1 | 2 | 3)}
                         disabled={isOpening}
                         className={clsx(
-                            "px-6 py-2 rounded-xl font-bold transition-all border",
+                            "h-10 px-6 rounded-xl font-bold transition-all border flex items-center justify-center",
                             count === c 
-                                ? "bg-white/10 border-white/20 text-white shadow-lg scale-105" 
-                                : "bg-transparent border-transparent text-white/40 hover:bg-white/5 hover:text-white/80"
+                                ? "bg-white text-black border-white shadow-lg scale-105" 
+                                : "bg-white/5 border-transparent text-white/40 hover:bg-white/10 hover:text-white/80"
                         )}
                     >
                         {c}x
@@ -195,7 +210,7 @@ const CaseDetailPage: React.FC = () => {
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full py-4 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
+                    "w-full h-14 rounded-2xl font-bold text-lg shadow-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
                     isOpening 
                         ? 'bg-white/10 text-white/50 cursor-wait'
                         : (!isDemoMode && !canAfford)
@@ -220,7 +235,7 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full py-3 rounded-xl text-sm font-medium text-[var(--tg-theme-hint-color)] hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                className="w-full h-10 rounded-xl text-sm font-medium text-[var(--tg-theme-hint-color)] hover:text-white hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
             >
                 <ShieldCheck size={16} />
                 <span>View Possible Drops</span>
