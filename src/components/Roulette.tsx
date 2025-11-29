@@ -26,7 +26,7 @@ export const Roulette: React.FC<RouletteProps> = ({
 }) => {
   const { impactLight, impactHeavy } = useHaptics();
   const controls = useAnimation();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
   
   useEffect(() => {
@@ -41,9 +41,12 @@ export const Roulette: React.FC<RouletteProps> = ({
         }
         setRouletteItems(loopItems);
         
+        const viewportWidth = viewportRef.current?.offsetWidth || 400;
         const totalWidth = baseItems.length * CARD_WIDTH;
+        const startX = viewportWidth / 2;
+        
         controls.start({
-            x: [0, -totalWidth],
+            x: [startX, startX - totalWidth],
             transition: {
                 x: {
                     repeat: Infinity,
@@ -74,11 +77,11 @@ export const Roulette: React.FC<RouletteProps> = ({
     generatedItems.push({ ...winningItem, id: `roulette-winner` });
     
     for (let i = 0; i < 5; i++) {
-      if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
-        generatedItems.push({ ...bestItem, id: `bait-after` });
-      } else {
-        generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
-      }
+       if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
+           generatedItems.push({ ...bestItem, id: `bait-after` });
+       } else {
+           generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
+       }
     }
     
     setRouletteItems(generatedItems);
@@ -103,28 +106,21 @@ export const Roulette: React.FC<RouletteProps> = ({
     if (idle || rouletteItems.length === 0 || !winningItem) return;
 
     const startAnimation = async () => {
-      x.set(0);
+      const viewportWidth = viewportRef.current?.offsetWidth || 0;
+      const viewportCenter = viewportWidth / 2;
+      const winnerIndex = EXTRA_CARDS;
+      const winnerCenter = (winnerIndex * CARD_WIDTH) + (CARD_WIDTH / 2);
+      const startX = viewportCenter - (CARD_WIDTH / 2);
+      const targetX = viewportCenter - winnerCenter;
+      
+      x.set(startX);
       await new Promise((resolve) => setTimeout(resolve, delay * 1000));
-      
-      const containerWidth = containerRef.current?.offsetWidth || 0;
-      // We want the center of the container to align with the center of the winning card.
-      // The winning card is at index EXTRA_CARDS.
-      // Its center position relative to the start of the strip is:
-      // (EXTRA_CARDS * CARD_WIDTH) + (CARD_WIDTH / 2)
-      
-      // But we are moving the strip to the LEFT (negative x).
-      // So we want to shift it by -(position of winning card center) + (container center)
-      
-      const winningCardCenter = (EXTRA_CARDS * CARD_WIDTH) + (CARD_WIDTH / 2);
-      const containerCenter = containerWidth / 2;
-      
-      const targetX = -winningCardCenter + containerCenter;
 
       await controls.start({
         x: targetX,
         transition: {
           duration: 5.5,
-          ease: [0.15, 0.85, 0.30, 1.0], // Custom cubic bezier for realistic friction
+          ease: [0.15, 0.85, 0.30, 1.0],
         },
       });
 
@@ -137,7 +133,10 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [rouletteItems, controls, delay, onComplete, idle, x, impactHeavy, winningItem]);
 
   return (
-    <div className="relative w-full h-full min-h-[120px] max-h-[180px] overflow-hidden select-none flex items-center justify-center">
+    <div 
+      ref={viewportRef}
+      className="relative w-full h-full min-h-[120px] max-h-[180px] overflow-hidden select-none flex items-center"
+    >
       <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
 
@@ -147,10 +146,9 @@ export const Roulette: React.FC<RouletteProps> = ({
       </div>
 
       <motion.div
-        ref={containerRef}
         animate={controls}
         style={{ x, display: 'flex' }}
-        className="items-center pl-[50%]"
+        className="items-center"
       >
         {rouletteItems.map((item) => (
           <div
@@ -159,57 +157,38 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
              <div className={clsx(
-                 "flex flex-col items-center justify-center relative transition-all duration-300",
+                 "w-24 h-24 flex flex-col items-center justify-center relative transition-all",
                  item.id.includes('winner') && !idle 
-                    ? "scale-125 z-20" 
-                    : "opacity-25 scale-75 grayscale"
+                    ? "scale-110 z-10 opacity-100" 
+                    : "opacity-30 scale-85 grayscale-[0.9]"
              )}>
-                 <img 
-                    src={item.image} 
-                    alt="" 
-                    className={clsx(
-                        "object-contain mb-1 transition-all duration-300",
-                        item.id.includes('winner') && !idle 
-                            ? "w-20 h-20 drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]" 
-                            : "w-14 h-14 drop-shadow-none"
-                    )} 
-                 />
+                 <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
                  
                  <motion.div 
                     layout
-                    className={clsx(
-                        "flex items-center gap-1.5 rounded-full backdrop-blur-md origin-center",
-                        item.id.includes('winner') && !idle 
-                            ? "px-3 py-1.5 bg-[#0f0f10] border-2 shadow-xl" 
-                            : "px-2 py-0.5 bg-[#0f0f10]/60 border border-white/5"
-                    )}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg origin-center"
                     style={{ 
-                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.05)' 
+                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' 
                     }}
                     animate={item.id.includes('winner') && !idle ? {
-                        scale: [1, 1.1, 1],
+                        scale: [1, 1.15, 1],
                         boxShadow: [
-                            `0 0 10px ${item.color}40`, 
-                            `0 0 25px ${item.color}90`, 
-                            `0 0 10px ${item.color}40`
+                            `0 0 0px ${item.color}00`, 
+                            `0 0 20px ${item.color}80`, 
+                            `0 0 0px ${item.color}00`
                         ],
+                        borderColor: [item.color, '#ffffff', item.color]
                     } : { scale: 1, boxShadow: 'none' }}
                     transition={{
-                        duration: 1.2,
+                        duration: 1.5,
                         repeat: Infinity,
                         ease: "easeInOut"
                     }}
                  >
-                    <Star 
-                        size={item.id.includes('winner') && !idle ? 16 : 10} 
-                        className={clsx(
-                            "fill-yellow-400",
-                            item.id.includes('winner') && !idle ? "text-yellow-400" : "text-yellow-400/50"
-                        )} 
-                    />
+                    <Star size={item.id.includes('winner') && !idle ? 14 : 12} className="text-yellow-400 fill-yellow-400" />
                     <span className={clsx(
-                        "font-black tracking-wide transition-all",
-                        item.id.includes('winner') && !idle ? "text-base text-white" : "text-[10px] text-white/50"
+                        "font-black text-white tracking-wide transition-all",
+                        item.id.includes('winner') && !idle ? "text-sm" : "text-xs"
                     )}>{item.value}</span>
                  </motion.div>
              </div>
