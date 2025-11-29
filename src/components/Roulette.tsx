@@ -14,7 +14,8 @@ interface RouletteProps {
 
 const CARD_WIDTH = 120; 
 const CARD_HEIGHT = 120;
-const EXTRA_CARDS = 40;
+const EXTRA_CARDS_BEFORE = 50;
+const EXTRA_CARDS_AFTER = 20;
 
 export const Roulette: React.FC<RouletteProps> = ({
   items,
@@ -38,17 +39,19 @@ export const Roulette: React.FC<RouletteProps> = ({
     hasSpunRef.current = false;
     controls.stop();
     
-    const repeatCount = Math.max(3, Math.ceil(20 / items.length));
+    const viewportWidth = viewportRef.current?.offsetWidth || 400;
+    const minCards = Math.ceil(viewportWidth / CARD_WIDTH) + 4;
+    const repeatCount = Math.max(5, Math.ceil(minCards / items.length) + 3);
+    
     const loopItems: Prize[] = [];
-    for (let i = 0; i < repeatCount + 2; i++) {
+    for (let i = 0; i < repeatCount; i++) {
       loopItems.push(...items.map(item => ({ ...item, id: `idle-${i}-${item.id}` })));
     }
     setRouletteItems(loopItems);
     setIsSpinning(false);
     
-    const viewportWidth = viewportRef.current?.offsetWidth || 400;
     const totalWidth = items.length * CARD_WIDTH;
-    const startX = viewportWidth / 2;
+    const startX = 0;
     
     x.set(startX);
 
@@ -81,18 +84,18 @@ export const Roulette: React.FC<RouletteProps> = ({
     const sorted = [...items].sort((a, b) => b.value - a.value);
     const bestItem = sorted[0];
 
-    for (let i = 0; i < EXTRA_CARDS; i++) {
-      generatedItems.push({ ...getRandom(), id: `roulette-${i}` });
+    for (let i = 0; i < EXTRA_CARDS_BEFORE; i++) {
+      generatedItems.push({ ...getRandom(), id: `roulette-before-${i}` });
     }
     
-    if (Math.random() < 0.5 && bestItem.id !== winningItem.id) {
-      generatedItems[EXTRA_CARDS - 1] = { ...bestItem, id: `bait-prev` };
+    if (Math.random() < 0.6 && bestItem.id !== winningItem.id) {
+      generatedItems[EXTRA_CARDS_BEFORE - 1] = { ...bestItem, id: `bait-prev` };
     }
 
     generatedItems.push({ ...winningItem, id: `roulette-winner` });
     
-    for (let i = 0; i < 5; i++) {
-      if (i === 0 && Math.random() < 0.4 && bestItem.id !== winningItem.id) {
+    for (let i = 0; i < EXTRA_CARDS_AFTER; i++) {
+      if (i === 0 && Math.random() < 0.5 && bestItem.id !== winningItem.id) {
         generatedItems.push({ ...bestItem, id: `bait-after` });
       } else {
         generatedItems.push({ ...getRandom(), id: `roulette-after-${i}` });
@@ -104,10 +107,13 @@ export const Roulette: React.FC<RouletteProps> = ({
     const runAnimation = async () => {
       const viewportWidth = viewportRef.current?.offsetWidth || 0;
       const viewportCenter = viewportWidth / 2;
-      const winnerIndex = EXTRA_CARDS;
+      const winnerIndex = EXTRA_CARDS_BEFORE;
       const winnerCenter = (winnerIndex * CARD_WIDTH) + (CARD_WIDTH / 2);
-      const startX = viewportCenter - (CARD_WIDTH / 2);
-      const targetX = viewportCenter - winnerCenter;
+      
+      const nearMissOffset = (Math.random() > 0.5 ? 1 : -1) * (CARD_WIDTH * 0.25 + Math.random() * CARD_WIDTH * 0.2);
+      
+      const startX = viewportCenter;
+      const targetX = viewportCenter - winnerCenter + nearMissOffset;
       
       x.set(startX);
       
