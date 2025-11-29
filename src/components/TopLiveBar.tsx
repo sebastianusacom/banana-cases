@@ -44,23 +44,21 @@ export const TopLiveBar: React.FC = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-16 px-4 flex items-center justify-between pointer-events-none">
-      {/* Glass Background with Gradient Fade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f10] via-[#0f0f10]/95 to-transparent backdrop-blur-xl -z-10" />
-      <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent opacity-50" />
-
+      {/* Minimal Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0f0f10] to-transparent backdrop-blur-[2px] -z-10" />
+      
       {/* Left Side: Live Feed */}
       <div className="flex items-center flex-1 overflow-hidden mr-4 pointer-events-auto h-full">
-          <div className="flex items-center gap-2 mr-3 flex-shrink-0 bg-red-500/10 px-2 py-1 rounded-full border border-red-500/20">
-            <div className="relative flex h-2 w-2">
+          {/* Minimal Live Badge */}
+          <div className="flex items-center gap-2 mr-4 flex-shrink-0 opacity-80">
+            <div className="relative flex h-1.5 w-1.5">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-red-500"></span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Live</span>
+            <span className="text-[10px] font-bold tracking-widest text-white/60 uppercase">Live</span>
           </div>
 
-          <div className="flex items-center gap-3 overflow-hidden w-full relative">
-            {/* Fade mask for drops */}
-            <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#0f0f10] to-transparent z-10" />
+          <div className="flex items-center gap-3 overflow-hidden w-full relative h-full">
             
             <AnimatePresence initial={false} mode="popLayout">
               {drops.map((drop) => (
@@ -72,19 +70,20 @@ export const TopLiveBar: React.FC = () => {
                   exit={{ opacity: 0, scale: 0, transition: { duration: 0.2 } }}
                   className="flex-shrink-0 flex flex-col items-center group cursor-pointer"
                 >
-                  <div className="relative">
+                  <div className="relative w-8 h-8">
+                    {/* Rarity Glow */}
                     <div 
-                        className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-[#1c1c1e] relative z-10"
-                        style={{ borderColor: drop.rarityColor }}
+                        className="absolute inset-0 rounded-md opacity-0 group-hover:opacity-50 transition-opacity duration-300 blur-sm"
+                        style={{ backgroundColor: drop.rarityColor }} 
+                    />
+                    {/* Image Container */}
+                    <div 
+                        className="w-full h-full rounded-md overflow-hidden bg-[#1c1c1e] relative z-10"
                     >
-                        <div 
-                            className="absolute inset-0 opacity-20 transition-opacity duration-300 group-hover:opacity-40" 
-                            style={{ backgroundColor: drop.rarityColor }} 
-                        />
-                        <img src={drop.itemImage} alt="" className="w-full h-full object-cover relative z-10" />
+                        <img src={drop.itemImage} alt="" className="w-full h-full object-cover" />
                     </div>
                   </div>
-
+                  
                   <div className="mt-1 flex items-center gap-0.5 bg-[#1c1c1e]/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/5">
                      <Star size={8} className="text-yellow-400 fill-yellow-400" />
                      <span className="text-[9px] font-bold text-white/90 tabular-nums leading-none">
@@ -94,23 +93,26 @@ export const TopLiveBar: React.FC = () => {
                 </motion.div>
               ))}
             </AnimatePresence>
+
+            {/* Fixed Fade Mask - Higher Z-Index and placed after content */}
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#0f0f10] to-transparent z-20 pointer-events-none" />
           </div>
       </div>
 
-      {/* Right Side: Balance Capsule */}
+      {/* Right Side: Minimal Balance Capsule */}
       <div className="pointer-events-auto flex-shrink-0">
-        <div className="flex items-center gap-1 pl-1 pr-1 py-1 bg-[#1c1c1e] rounded-full border border-white/10 shadow-lg">
-             <div className="flex items-center gap-1.5 px-2">
-                <Star size={12} className="fill-yellow-400 text-yellow-400" />
-                <span className="text-sm font-bold text-white tabular-nums tracking-tight">
+        <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md pl-3 pr-1 py-1 rounded-full border border-white/5 transition-all hover:bg-black/40">
+             <div className="flex items-center gap-1.5">
+                <Star size={10} className="fill-yellow-400 text-yellow-400" />
+                <span className="text-xs font-bold text-white/90 tabular-nums">
                     {stars.toLocaleString()}
                 </span>
              </div>
              <button 
                 onClick={handleAddStars}
-                className="w-6 h-6 rounded-full bg-gradient-to-b from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 flex items-center justify-center border border-white/5 transition-all active:scale-95"
+                className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all active:scale-95"
              >
-                <Plus size={12} className="text-white/70" />
+                <Plus size={10} className="text-white/80" />
              </button>
         </div>
       </div>
