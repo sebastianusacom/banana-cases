@@ -233,7 +233,7 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full py-2 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest rounded-xl hover:bg-white/5"
+                className="w-full h-12 text-xs font-bold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 uppercase tracking-widest rounded-xl"
             >
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
