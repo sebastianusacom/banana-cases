@@ -145,34 +145,44 @@ const CaseDetailPage: React.FC = () => {
         <div className="w-full max-w-md mx-auto px-4 space-y-2">
             
             <div className="flex items-center justify-between gap-2">
-                 <button 
-                      onClick={toggleDemoMode}
-                      disabled={isOpening}
-                      className={clsx(
-                          "flex-1 h-11 flex items-center justify-center gap-2 rounded-xl transition-all border",
-                          isDemoMode 
-                              ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-500 hover:bg-yellow-500/20" 
-                              : "bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500/20"
-                      )}
-                  >
-                      <div className={clsx(
-                          "w-8 h-5 rounded-full p-0.5 transition-colors relative",
-                          isDemoMode ? "bg-yellow-500/20" : "bg-green-500/20"
-                      )}>
-                          <motion.div 
-                              layout
-                              className={clsx(
-                                  "w-4 h-4 rounded-full shadow-sm",
-                                  isDemoMode ? "bg-yellow-500" : "bg-green-500"
-                              )}
-                              animate={{ x: isDemoMode ? 12 : 0 }}
-                              transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                          />
-                      </div>
-                      <span className="text-xs font-bold uppercase tracking-wide">
-                          {isDemoMode ? 'Demo' : 'Real'}
-                      </span>
-                  </button>
+                <div className="flex-1 h-11 bg-white/5 p-1 rounded-xl flex relative isolate">
+                    <button
+                        onClick={() => isDemoMode && toggleDemoMode()}
+                        disabled={isOpening}
+                        className={clsx(
+                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors",
+                            !isDemoMode ? "text-green-500" : "text-white/40 hover:text-white/60"
+                        )}
+                    >
+                        {!isDemoMode && (
+                            <motion.div
+                                layoutId="mode-active"
+                                className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-sm"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-colors", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
+                        <span className="relative z-10">Real</span>
+                    </button>
+                    <button
+                        onClick={() => !isDemoMode && toggleDemoMode()}
+                        disabled={isOpening}
+                        className={clsx(
+                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-colors",
+                            isDemoMode ? "text-yellow-500" : "text-white/40 hover:text-white/60"
+                        )}
+                    >
+                        {isDemoMode && (
+                            <motion.div
+                                layoutId="mode-active"
+                                className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                            />
+                        )}
+                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-colors", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
+                        <span className="relative z-10">Demo</span>
+                    </button>
+                </div>
 
                 <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
                     {[1, 2, 3].map((c) => (
