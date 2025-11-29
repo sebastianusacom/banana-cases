@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useAnimation, useMotionValue } from 'framer-motion';
-import { Prize } from '../store/userStore';
+import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import clsx from 'clsx';
 
