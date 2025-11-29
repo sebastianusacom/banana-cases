@@ -12,7 +12,7 @@ export const Layout: React.FC = () => {
   const shouldHideBottomNav = isOpeningPage || isCaseDetailPage;
 
   return (
-    <div className="min-h-screen bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] pb-24 pt-16 flex flex-col">
+    <div className="min-h-screen bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] pb-24 flex flex-col" style={{ paddingTop: 'calc(var(--tg-safe-area-inset-top) + 4rem)' }}>
       <TopLiveBar />
       <main className="w-full max-w-md mx-auto flex-1 flex flex-col min-h-0">
         <Outlet />

@@ -5,6 +5,18 @@ declare global {
         ready: () => void;
         expand: () => void;
         requestFullscreen?: () => void;
+        safeAreaInset?: {
+          top: number;
+          bottom: number;
+          left: number;
+          right: number;
+        };
+        contentSafeAreaInset?: {
+          top: number;
+          bottom: number;
+          left: number;
+          right: number;
+        };
         close: () => void;
         showAlert: (message: string) => void;
         HapticFeedback: {

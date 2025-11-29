@@ -17,6 +17,9 @@ function App() {
     if (tg.themeParams.bg_color) {
       document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
     }
+    const safeTop = tg.safeAreaInset?.top ?? 0;
+    const contentTop = tg.contentSafeAreaInset?.top ?? 0;
+    document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop + contentTop}px`);
   }, [tg]);
 
   return (

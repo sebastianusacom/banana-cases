@@ -10,6 +10,7 @@
   --tg-theme-secondary-bg-color: #1c1c1e;
   --glass-bg: rgba(28, 28, 30, 0.7);
   --glass-border: rgba(255, 255, 255, 0.08);
+  --tg-safe-area-inset-top: 0px;
 }
 
 body {
