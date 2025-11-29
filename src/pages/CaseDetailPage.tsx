@@ -122,10 +122,12 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-[#1c1c1e] overflow-hidden">
+    <div className="h-[100dvh] flex flex-col bg-[#0f0f10] overflow-hidden">
       
-      <div className="flex-shrink-0 h-14 relative z-20" />
+      {/* Top Spacer */}
+      <div className="flex-shrink-0 h-16 relative z-20" />
 
+      {/* Main Content - Roulette */}
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full">
         <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-4">
             <AnimatePresence mode="popLayout">
@@ -151,14 +153,15 @@ const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-shrink-0 w-full z-30 pb-safe bg-gradient-to-t from-black via-[#1c1c1e]/50 to-transparent pt-8">
-        <div className="w-full max-w-md mx-auto px-4 pb-6 space-y-4">
+      {/* Bottom Controls */}
+      <div className="flex-shrink-0 w-full z-30 pb-8 bg-[#0f0f10]">
+        <div className="w-full max-w-md mx-auto px-4 space-y-4">
             
-            <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center justify-between gap-3">
                  <button 
                       onClick={toggleDemoMode}
                       disabled={isOpening}
-                      className="flex-1 h-10 flex items-center justify-center gap-2 bg-white/5 rounded-xl border border-white/5 transition-all hover:bg-white/10"
+                      className="flex-1 h-12 flex items-center justify-center gap-2 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
                   >
                       <div className={clsx(
                           "w-8 h-5 rounded-full p-0.5 transition-colors relative",
@@ -182,17 +185,17 @@ const CaseDetailPage: React.FC = () => {
                       </span>
                   </button>
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 bg-white/5 p-1 rounded-xl">
                     {[1, 2, 3].map((c) => (
                         <button
                             key={c}
                             onClick={() => handleCountChange(c as 1 | 2 | 3)}
                             disabled={isOpening}
                             className={clsx(
-                                "h-10 w-12 rounded-xl font-bold transition-all border flex items-center justify-center text-sm",
+                                "h-10 w-12 rounded-lg font-bold transition-all text-sm",
                                 count === c 
-                                    ? "bg-white text-black border-white shadow-lg scale-105" 
-                                    : "bg-white/5 border-transparent text-white/40 hover:bg-white/10 hover:text-white/80"
+                                    ? "bg-[#0f0f10] text-white shadow-sm" 
+                                    : "text-white/40 hover:text-white/80"
                             )}
                         >
                             {c}x
@@ -206,20 +209,20 @@ const CaseDetailPage: React.FC = () => {
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-14 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
+                    "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden",
                     isOpening 
                         ? 'bg-white/5 text-white/20 cursor-wait'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                            : 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/20'
+                            : 'bg-yellow-400 text-black shadow-lg shadow-yellow-400/10 hover:bg-yellow-300'
                 )}
             >
                 {isOpening ? (
-                    <span className="opacity-80">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
+                    <span className="opacity-80 font-medium">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
                 ) : (
                     <>
                         <span className="uppercase tracking-wide font-black text-xl">OPEN FOR</span>
-                        <div className="flex items-center gap-1 bg-black/10 px-3 py-1 rounded-lg">
+                        <div className="flex items-center gap-1.5 bg-black/10 px-3 py-1.5 rounded-lg">
                             <span className="text-black font-black text-xl">{totalPrice}</span>
                             <Star size={20} className="fill-black text-black" />
                         </div>
@@ -230,7 +233,7 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-full py-3 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest bg-white/5 rounded-xl hover:bg-white/10"
+                className="w-full py-4 text-xs font-bold text-white/30 hover:text-white transition-colors flex items-center justify-center gap-2 uppercase tracking-widest rounded-xl hover:bg-white/5"
             >
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
