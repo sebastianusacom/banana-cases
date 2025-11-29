@@ -3,6 +3,7 @@ import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import clsx from 'clsx';
+import { Star } from 'lucide-react';
 
 interface RouletteProps {
   items: Prize[];
@@ -12,8 +13,8 @@ interface RouletteProps {
   idle?: boolean;
 }
 
-const CARD_WIDTH = 120; 
-const CARD_HEIGHT = 120;
+const CARD_WIDTH = 140; 
+const CARD_HEIGHT = 140;
 const EXTRA_CARDS = 40;
 
 export const Roulette: React.FC<RouletteProps> = ({
@@ -122,6 +123,7 @@ export const Roulette: React.FC<RouletteProps> = ({
       });
 
       impactHeavy();
+      await new Promise((resolve) => setTimeout(resolve, 1000)); 
       onComplete();
     };
 
@@ -129,13 +131,13 @@ export const Roulette: React.FC<RouletteProps> = ({
   }, [rouletteItems, controls, delay, onComplete, idle, x, impactHeavy, winningItem]);
 
   return (
-    <div className="relative w-full h-44 overflow-hidden mb-2 select-none flex items-center justify-center">
-      <div className="absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#1c1c1e] via-[#1c1c1e]/80 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-[#1c1c1e] via-[#1c1c1e]/80 to-transparent z-10 pointer-events-none" />
+    <div className="relative w-full h-52 overflow-hidden mb-2 select-none flex items-center justify-center">
+      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#1c1c1e] via-[#1c1c1e]/90 to-transparent z-10 pointer-events-none" />
 
-      <div className="absolute top-4 bottom-4 left-1/2 w-0.5 bg-gradient-to-b from-transparent via-yellow-400/50 to-transparent z-20 -translate-x-1/2 shadow-[0_0_15px_rgba(250,204,21,0.5)]">
-         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[6px] border-t-yellow-400" />
-         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-b-[6px] border-b-yellow-400" />
+      <div className="absolute top-6 bottom-6 left-1/2 w-0.5 bg-yellow-400/20 z-20 -translate-x-1/2">
+         <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
+         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
       </div>
 
       <motion.div
@@ -151,17 +153,20 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
              <div className={clsx(
-                 "w-24 h-24 rounded-2xl bg-[#252527] flex items-center justify-center p-4 relative transition-all",
+                 "w-28 h-28 flex flex-col items-center justify-center relative transition-all",
                  item.id.includes('winner') && !idle 
-                    ? "shadow-[0_0_30px_rgba(255,255,255,0.15)] bg-[#2c2c2e] scale-105 z-10 border border-white/10" 
-                    : "opacity-60 scale-90 grayscale-[0.5]"
+                    ? "scale-110 z-10" 
+                    : "opacity-40 scale-90 grayscale-[0.8]"
              )}>
-                 <img src={item.image} alt="" className="w-full h-full object-contain drop-shadow-lg" />
+                 <img src={item.image} alt="" className="w-20 h-20 object-contain drop-shadow-2xl mb-2" />
                  
                  <div 
-                    className="absolute bottom-0 left-0 right-0 h-0.5 opacity-50"
-                    style={{ backgroundColor: item.color, boxShadow: `0 -4px 10px ${item.color}` }}
-                 />
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm"
+                    style={{ borderColor: item.id.includes('winner') && !idle ? item.color : 'transparent' }}
+                 >
+                    <Star size={10} className="text-yellow-400 fill-yellow-400" />
+                    <span className="text-[10px] font-bold text-white">{item.value}</span>
+                 </div>
              </div>
           </div>
         ))}
