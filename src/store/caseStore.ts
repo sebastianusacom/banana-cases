@@ -118,14 +118,14 @@ const mockCases: Case[] = [
   {
     id: 'case-2',
     name: 'Rare Case',
-    image: 'https://placehold.co/300x300/3b82f6/ffffff?text=Rare',
+    image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     price: 250,
     items: RARE_CASE_ITEMS,
   },
   {
     id: 'case-3',
     name: 'Pepe Case',
-    image: 'https://placehold.co/300x300/a855f7/ffffff?text=Legendary',
+    image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
     price: 500,
     items: LEGENDARY_CASE_ITEMS,
   },
