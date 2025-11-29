@@ -112,10 +112,7 @@ const CaseDetailPage: React.FC = () => {
   };
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-[#0f0f10] overflow-hidden">
-      
-      <div className="flex-shrink-0 h-[env(safe-area-inset-top,12px)]" />
-
+    <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
         <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-2 h-full">
             <AnimatePresence mode="popLayout">
@@ -141,7 +138,7 @@ const CaseDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="flex-shrink-0 w-full z-30 pb-[env(safe-area-inset-bottom,16px)] bg-[#0f0f10]">
+      <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
         <div className="w-full max-w-md mx-auto px-4 space-y-2">
             
             <div className="flex items-center justify-between gap-2">
