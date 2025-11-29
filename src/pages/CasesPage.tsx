@@ -13,9 +13,6 @@ const CasesPage: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         className="mb-6 text-center relative"
       >
-        <h1 className="text-4xl font-black tracking-tight text-white mb-2">
-          Loot<span className="text-[var(--tg-theme-button-color)]">Box</span>
-        </h1>
       </motion.div>
 
       <div className="grid grid-cols-2 gap-4">
