@@ -13,6 +13,13 @@ interface LiveDrop {
   price: number;
 }
 
+const LIVE_ITEMS = [
+  { name: 'Nail Bracelet', image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png', value: 9400, color: '#d32ce6' },
+  { name: 'Snoop Dogg', image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png', value: 350, color: '#5e98d9' },
+  { name: 'Diamond Ring', image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png', value: 2000, color: '#8847ff' },
+  { name: 'Plush Pepe', image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png', value: 100000, color: '#eab308' },
+];
+
 export const TopLiveBar: React.FC = () => {
   const [drops, setDrops] = useState<LiveDrop[]>([]);
   const { stars, addStars } = useUserStore();
@@ -20,15 +27,14 @@ export const TopLiveBar: React.FC = () => {
 
   useEffect(() => {
     const addDrop = () => {
+      const item = LIVE_ITEMS[Math.floor(Math.random() * LIVE_ITEMS.length)];
       const newDrop: LiveDrop = {
         id: Date.now().toString(),
         username: `User${Math.floor(Math.random() * 1000)}`,
-        itemName: `Skin #${Math.floor(Math.random() * 999)}`,
-        itemImage: 'https://placehold.co/40x40/png',
-        rarityColor: ['#b0c3d9', '#5e98d9', '#4b69ff', '#8847ff', '#d32ce6'][
-          Math.floor(Math.random() * 5)
-        ],
-        price: Math.floor(Math.random() * 2000) + 100,
+        itemName: item.name,
+        itemImage: item.image,
+        rarityColor: item.color,
+        price: item.value,
       };
       setDrops((prev) => [newDrop, ...prev].slice(0, 8));
     };
