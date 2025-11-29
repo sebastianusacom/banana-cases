@@ -129,6 +129,35 @@ const mockCases: Case[] = [
     price: 500,
     items: LEGENDARY_CASE_ITEMS,
   },
+  {
+    id: 'free-case',
+    name: 'Free Case',
+    image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+    price: 0,
+    items: [
+      {
+        id: 'free-banana-1',
+        name: 'Common Banana',
+        image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
+        value: 50,
+        chance: 70,
+      },
+      {
+        id: 'free-banana-2',
+        name: 'Uncommon Banana',
+        image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
+        value: 150,
+        chance: 25,
+      },
+      {
+        id: 'free-banana-3',
+        name: 'Rare Banana',
+        image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
+        value: 500,
+        chance: 5,
+      },
+    ]
+  },
 ];
 
 export const useCaseStore = create<CaseState>((_set, get) => ({

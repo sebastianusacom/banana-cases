@@ -1,40 +1,13 @@
 import React from 'react';
-import { useCaseStore, type Case } from '../store/caseStore';
+import { useCaseStore } from '../store/caseStore';
 import { CaseCard } from '../components/CaseCard';
 import { motion } from 'framer-motion';
 
-const freeCase: Case = {
-  id: 'free-case',
-  name: 'Free Case',
-  image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
-  price: 0,
-  items: [
-    {
-      id: 'free-banana-1',
-      name: 'Common Banana',
-      image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
-      value: 50,
-      chance: 70,
-    },
-    {
-      id: 'free-banana-2',
-      name: 'Uncommon Banana',
-      image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
-      value: 150,
-      chance: 25,
-    },
-    {
-      id: 'free-banana-3',
-      name: 'Rare Banana',
-      image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
-      value: 500,
-      chance: 5,
-    },
-  ]
-};
-
 const CasesPage: React.FC = () => {
   const { cases } = useCaseStore();
+  
+  const freeCase = cases.find(c => c.price === 0);
+  const otherCases = cases.filter(c => c.price > 0);
 
   return (
     <div className="pt-6 px-2 pb-32">
@@ -46,15 +19,17 @@ const CasesPage: React.FC = () => {
       </motion.div>
 
       <div className="grid grid-cols-2 gap-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="col-span-2"
-        >
-          <CaseCard caseItem={freeCase} variant="yellow" />
-        </motion.div>
+        {freeCase && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="col-span-2"
+          >
+            <CaseCard caseItem={freeCase} variant="yellow" />
+          </motion.div>
+        )}
 
-        {cases.map((caseItem, index) => (
+        {otherCases.map((caseItem, index) => (
           <motion.div
             key={caseItem.id}
             initial={{ opacity: 0, y: 20 }}
