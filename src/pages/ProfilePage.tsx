@@ -54,11 +54,10 @@ const ProfilePage: React.FC = () => {
                       >
                            <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300 bg-white" />
                            <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                           <div className="absolute top-2 right-2 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style={{ backgroundColor: item.color }} />
                       </div>
                       
                       <div className="flex-1">
-                          <p className="font-bold text-sm mb-1 truncate" style={{ color: item.color }}>{item.name}</p>
+                          <p className="font-bold text-sm mb-1 truncate text-white">{item.name}</p>
                           <div className="flex items-center text-xs text-[var(--tg-theme-hint-color)] mb-3">
                               <Star size={10} className="mr-1 text-yellow-400" /> {item.value}
                           </div>
