@@ -10,6 +10,7 @@ interface LiveDrop {
   itemName: string;
   itemImage: string;
   rarityColor: string;
+  price: number;
 }
 
 export const TopLiveBar: React.FC = () => {
@@ -27,8 +28,9 @@ export const TopLiveBar: React.FC = () => {
         rarityColor: ['#b0c3d9', '#5e98d9', '#4b69ff', '#8847ff', '#d32ce6'][
           Math.floor(Math.random() * 5)
         ],
+        price: Math.floor(Math.random() * 2000) + 100,
       };
-      setDrops((prev) => [newDrop, ...prev].slice(0, 8)); // Keep fewer for cleaner look
+      setDrops((prev) => [newDrop, ...prev].slice(0, 8));
     };
 
     const interval = setInterval(addDrop, 2000);
@@ -56,7 +58,7 @@ export const TopLiveBar: React.FC = () => {
             <span className="text-[10px] font-black uppercase tracking-wider text-red-500">Live</span>
           </div>
 
-          <div className="flex items-center gap-2 overflow-hidden w-full relative">
+          <div className="flex items-center gap-3 overflow-hidden w-full relative">
             {/* Fade mask for drops */}
             <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#0f0f10] to-transparent z-10" />
             
@@ -68,23 +70,25 @@ export const TopLiveBar: React.FC = () => {
                   initial={{ opacity: 0, x: -20, scale: 0.8 }}
                   animate={{ opacity: 1, x: 0, scale: 1 }}
                   exit={{ opacity: 0, scale: 0, transition: { duration: 0.2 } }}
-                  className="flex-shrink-0 flex items-center bg-[#1c1c1e] rounded-full pr-3 pl-1 py-1 border border-white/5 shadow-sm relative overflow-hidden group"
+                  className="flex-shrink-0 flex flex-col items-center group cursor-pointer"
                 >
-                   {/* Rarity Glow */}
-                  <div 
-                    className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity duration-300" 
-                    style={{ backgroundColor: drop.rarityColor }} 
-                  />
-
-                  <div className="w-5 h-5 rounded-full overflow-hidden mr-2 border border-white/10 bg-black/20 relative z-10">
-                    <img src={drop.itemImage} alt="" className="w-full h-full object-cover" />
+                  <div className="relative">
+                    <div 
+                        className="w-8 h-8 rounded-lg overflow-hidden border border-white/10 bg-[#1c1c1e] relative z-10"
+                        style={{ borderColor: drop.rarityColor }}
+                    >
+                        <div 
+                            className="absolute inset-0 opacity-20 transition-opacity duration-300 group-hover:opacity-40" 
+                            style={{ backgroundColor: drop.rarityColor }} 
+                        />
+                        <img src={drop.itemImage} alt="" className="w-full h-full object-cover relative z-10" />
+                    </div>
                   </div>
-                  <div className="flex flex-col justify-center min-w-[50px] relative z-10">
-                     <span className="text-[9px] font-bold leading-none truncate" style={{ color: drop.rarityColor }}>
-                        {drop.itemName}
-                     </span>
-                     <span className="text-[8px] text-gray-500 leading-none truncate mt-0.5">
-                        {drop.username}
+
+                  <div className="mt-1 flex items-center gap-0.5 bg-[#1c1c1e]/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full border border-white/5">
+                     <Star size={8} className="text-yellow-400 fill-yellow-400" />
+                     <span className="text-[9px] font-bold text-white/90 tabular-nums leading-none">
+                        {drop.price}
                      </span>
                   </div>
                 </motion.div>
