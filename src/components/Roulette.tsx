@@ -29,6 +29,7 @@ export const Roulette: React.FC<RouletteProps> = ({
   const viewportRef = useRef<HTMLDivElement>(null);
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
   const x = useMotionValue(0);
   const lastHapticIndex = useRef(0);
   const hasSpunRef = useRef(false);
@@ -49,6 +50,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     }
     setRouletteItems(loopItems);
     setIsSpinning(false);
+    setIsFinished(false);
     
     const totalWidth = items.length * CARD_WIDTH;
     const startX = 0;
@@ -77,6 +79,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     
     hasSpunRef.current = true;
     setIsSpinning(true);
+    setIsFinished(false);
     controls.stop();
     
     const generatedItems: Prize[] = [];
@@ -128,6 +131,7 @@ export const Roulette: React.FC<RouletteProps> = ({
       });
 
       impactHeavy();
+      setIsFinished(true);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       onComplete();
@@ -167,12 +171,34 @@ export const Roulette: React.FC<RouletteProps> = ({
         className="items-center"
       >
         {rouletteItems.map((item) => (
-          <div
+          <motion.div
             key={item.id}
             className="flex-shrink-0 flex flex-col items-center justify-center relative"
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
+            animate={
+              item.id === 'roulette-winner' && isFinished
+                ? {
+                    scale: [1, 1.15, 1],
+                  }
+                : {}
+            }
+            transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <div className="w-24 h-24 flex flex-col items-center justify-center relative">
+            <motion.div 
+              className="w-24 h-24 flex flex-col items-center justify-center relative"
+              animate={
+                item.id === 'roulette-winner' && isFinished
+                  ? {
+                      filter: [
+                        'brightness(1) drop-shadow(0 0 0px rgba(234,179,8,0))',
+                        'brightness(1.2) drop-shadow(0 0 20px rgba(234,179,8,0.5))',
+                        'brightness(1) drop-shadow(0 0 0px rgba(234,179,8,0))'
+                      ]
+                    }
+                  : {}
+              }
+              transition={{ duration: 0.5, ease: "easeOut" }}
+            >
               <img src={item.image} alt="" className="w-20 h-20 object-contain drop-shadow-2xl mb-1" />
               
               <div 
@@ -181,8 +207,8 @@ export const Roulette: React.FC<RouletteProps> = ({
                 <Star size={12} className="text-yellow-400 fill-yellow-400" />
                 <span className="font-black text-white tracking-wide text-xs">{item.value}</span>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         ))}
       </motion.div>
     </div>
