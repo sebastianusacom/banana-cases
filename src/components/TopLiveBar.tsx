@@ -84,9 +84,9 @@ export const TopLiveBar: React.FC = () => {
                     />
                     {/* Image Container */}
                     <div 
-                        className="w-full h-full rounded-md overflow-hidden bg-[#1c1c1e] relative z-10"
+                        className="w-full h-full rounded-md overflow-hidden relative z-10"
                     >
-                        <img src={drop.itemImage} alt="" className="w-full h-full object-cover" />
+                        <img src={drop.itemImage} alt="" className="w-full h-full object-contain" />
                     </div>
                   </div>
                   
