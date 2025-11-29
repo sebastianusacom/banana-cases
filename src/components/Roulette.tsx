@@ -110,7 +110,7 @@ export const Roulette: React.FC<RouletteProps> = ({
       const winnerIndex = EXTRA_CARDS_BEFORE;
       const winnerCenter = (winnerIndex * CARD_WIDTH) + (CARD_WIDTH / 2);
       
-      const nearMissOffset = (Math.random() > 0.5 ? 1 : -1) * (CARD_WIDTH * 0.25 + Math.random() * CARD_WIDTH * 0.2);
+      const nearMissOffset = (Math.random() > 0.5 ? 1 : -1) * (Math.random() * CARD_WIDTH * 0.45);
       
       const startX = viewportCenter;
       const targetX = viewportCenter - winnerCenter + nearMissOffset;

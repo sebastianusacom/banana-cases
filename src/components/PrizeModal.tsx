@@ -51,27 +51,15 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               }}
               className="flex flex-col items-center"
             >
-               <div 
-                 className="w-40 h-40 rounded-[2rem] bg-[#1c1c1e] border border-white/10 flex items-center justify-center relative mb-4 shadow-2xl"
-                 style={{ borderColor: prize.color }}
-               >
-                   {/* Inner Glow */}
-                   <div 
-                    className="absolute inset-0 opacity-20 blur-2xl rounded-full" 
-                    style={{ backgroundColor: prize.color }} 
-                   />
-                   
+               <div className="flex items-center justify-center relative mb-4">
                    <img 
                     src={prize.image} 
                     alt={prize.name} 
-                    className="w-32 h-32 object-contain drop-shadow-2xl relative z-10" 
+                    className="w-40 h-40 object-contain drop-shadow-2xl relative z-10" 
                    />
                </div>
                
                <div className="text-center space-y-1">
-                   <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-80" style={{ color: prize.color }}>
-                     {prize.rarity}
-                   </p>
                    <div className="flex items-center justify-center gap-1.5 bg-white/5 px-4 py-1.5 rounded-full border border-white/5">
                       <Star size={14} className="text-yellow-400 fill-yellow-400" />
                       <span className="text-lg font-black text-white tracking-wide">{prize.value}</span>
@@ -94,7 +82,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
           >
             <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity" />
             <Share2 size={20} />
-            <span>Share Prize</span>
+            <span>Share (2x Luck)</span>
           </motion.button>
 
           <div className="grid grid-cols-2 gap-3">
