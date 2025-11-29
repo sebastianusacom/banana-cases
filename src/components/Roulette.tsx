@@ -28,6 +28,7 @@ export const Roulette: React.FC<RouletteProps> = ({
   const controls = useAnimation();
   const viewportRef = useRef<HTMLDivElement>(null);
   const [rouletteItems, setRouletteItems] = useState<Prize[]>([]);
+  const [showWinnerEffect, setShowWinnerEffect] = useState(false);
   
   useEffect(() => {
     if (idle) {
@@ -124,6 +125,7 @@ export const Roulette: React.FC<RouletteProps> = ({
         },
       });
 
+      setShowWinnerEffect(true);
       impactHeavy();
       await new Promise((resolve) => setTimeout(resolve, 1000)); 
       onComplete();
@@ -157,10 +159,12 @@ export const Roulette: React.FC<RouletteProps> = ({
             style={{ width: CARD_WIDTH, height: CARD_HEIGHT }}
           >
              <div className={clsx(
-                 "w-24 h-24 flex flex-col items-center justify-center relative transition-all",
-                 item.id.includes('winner') && !idle 
+                 "w-24 h-24 flex flex-col items-center justify-center relative transition-all duration-300",
+                 item.id.includes('winner') && !idle && showWinnerEffect
                     ? "scale-110 z-10 opacity-100" 
-                    : "opacity-30 scale-85 grayscale-[0.9]"
+                    : showWinnerEffect && !idle
+                        ? "opacity-30 scale-85 grayscale-[0.9]"
+                        : "opacity-100 scale-95"
              )}>
                  <img src={item.image} alt="" className="w-16 h-16 object-contain drop-shadow-2xl mb-1" />
                  
@@ -168,9 +172,9 @@ export const Roulette: React.FC<RouletteProps> = ({
                     layout
                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg origin-center"
                     style={{ 
-                        borderColor: item.id.includes('winner') && !idle ? item.color : 'rgba(255,255,255,0.1)' 
+                        borderColor: item.id.includes('winner') && !idle && showWinnerEffect ? item.color : 'rgba(255,255,255,0.1)' 
                     }}
-                    animate={item.id.includes('winner') && !idle ? {
+                    animate={item.id.includes('winner') && !idle && showWinnerEffect ? {
                         scale: [1, 1.15, 1],
                         boxShadow: [
                             `0 0 0px ${item.color}00`, 
@@ -185,10 +189,10 @@ export const Roulette: React.FC<RouletteProps> = ({
                         ease: "easeInOut"
                     }}
                  >
-                    <Star size={item.id.includes('winner') && !idle ? 14 : 12} className="text-yellow-400 fill-yellow-400" />
+                    <Star size={item.id.includes('winner') && !idle && showWinnerEffect ? 14 : 12} className="text-yellow-400 fill-yellow-400" />
                     <span className={clsx(
                         "font-black text-white tracking-wide transition-all",
-                        item.id.includes('winner') && !idle ? "text-sm" : "text-xs"
+                        item.id.includes('winner') && !idle && showWinnerEffect ? "text-sm" : "text-xs"
                     )}>{item.value}</span>
                  </motion.div>
              </div>
