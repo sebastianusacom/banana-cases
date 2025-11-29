@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useUserStore } from '../store/userStore';
+import { Star, Plus } from 'lucide-react';
+import { useHaptics } from '../hooks/useHaptics';
 
 interface LiveDrop {
   id: string;
@@ -11,6 +14,8 @@ interface LiveDrop {
 
 export const TopLiveBar: React.FC = () => {
   const [drops, setDrops] = useState<LiveDrop[]>([]);
+  const { stars, addStars } = useUserStore();
+  const { impactLight } = useHaptics();
 
   useEffect(() => {
     const addDrop = () => {
@@ -30,38 +35,63 @@ export const TopLiveBar: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleAddStars = () => {
+      impactLight();
+      addStars(1000); // Simple replenish for now
+  };
+
   return (
-    <div className="fixed top-0 left-0 right-0 h-16 z-40 pointer-events-none overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-black/80 to-transparent pointer-events-none" />
+    <div className="fixed top-0 left-0 right-0 z-40 bg-[#0f0f10]/95 backdrop-blur-md border-b border-white/5 shadow-lg h-14 flex items-center justify-between px-4">
       
-      <div className="flex items-center h-full px-4 space-x-3 overflow-hidden pointer-events-auto mask-image-linear-gradient">
-        <AnimatePresence initial={false} mode="popLayout">
-          {drops.map((drop) => (
-            <motion.div
-              layout
-              key={drop.id}
-              initial={{ opacity: 0, x: -50, scale: 0.8 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0 }}
-              className="flex-shrink-0 flex items-center bg-white/10 backdrop-blur-md rounded-full pr-3 pl-1 py-1 border border-white/5 shadow-lg"
-            >
-              <div
-                className="w-6 h-6 rounded-full overflow-hidden mr-2 border border-white/20"
-              >
-                <img src={drop.itemImage} alt="" className="w-full h-full object-cover" />
-              </div>
-              <div className="flex flex-col justify-center">
-                <span
-                  className="text-[10px] font-bold leading-tight"
-                  style={{ color: drop.rarityColor }}
+      {/* Left Side: Live Indicator & Drops */}
+      <div className="flex items-center flex-1 overflow-hidden mr-4">
+          <div className="flex items-center gap-2 mr-4 flex-shrink-0">
+            <div className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-white/70">Live</span>
+          </div>
+
+          <div className="flex items-center space-x-2 overflow-hidden mask-image-linear-gradient w-full">
+            <AnimatePresence initial={false} mode="popLayout">
+              {drops.map((drop) => (
+                <motion.div
+                  layout
+                  key={drop.id}
+                  initial={{ opacity: 0, x: -20, scale: 0.8 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0 }}
+                  className="flex-shrink-0 flex items-center bg-white/5 rounded-full pr-2 pl-1 py-0.5 border border-white/5"
                 >
-                  {drop.itemName}
-                </span>
-              </div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+                  <div className="w-4 h-4 rounded-full overflow-hidden mr-1.5 border border-white/10">
+                    <img src={drop.itemImage} alt="" className="w-full h-full object-cover" />
+                  </div>
+                  <span className="text-[9px] font-medium truncate max-w-[60px]" style={{ color: drop.rarityColor }}>
+                    {drop.itemName}
+                  </span>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
       </div>
+
+      {/* Right Side: Balance */}
+      <div className="flex items-center gap-2 flex-shrink-0 pl-2 border-l border-white/5">
+         <div className="flex flex-col items-end">
+            <div className="flex items-center gap-1 text-yellow-400 font-bold text-sm">
+                <span>{stars.toLocaleString()}</span>
+                <Star size={12} className="fill-yellow-400" />
+            </div>
+         </div>
+         <button 
+            onClick={handleAddStars}
+            className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+         >
+            <Plus size={14} />
+         </button>
+      </div>
+
     </div>
   );
 };
