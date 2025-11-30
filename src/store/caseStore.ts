@@ -48,14 +48,14 @@ const STARTER_CASE_ITEMS: Prize[] = [
     name: 'Diamond Ring',
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     value: 2000,
-    chance: 15,
+    chance: 19.9,
   },
   {
     id: 'starter-banana-4',
     name: 'Plush Pepe',
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
     value: 100000,
-    chance: 5,
+    chance: 0.1,
   },
 ];
 
