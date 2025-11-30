@@ -6,7 +6,6 @@ import { useTelegram } from './hooks/useTelegram';
 import CasesPage from './pages/CasesPage';
 import CaseDetailPage from './pages/CaseDetailPage';
 import ProfilePage from './pages/ProfilePage';
-import ClawMachinePage from './pages/ClawMachinePage';
 
 function App() {
   const { tg } = useTelegram();
@@ -47,7 +46,6 @@ function App() {
           <Route path="/" element={<Navigate to="/cases" replace />} />
           <Route path="/cases" element={<CasesPage />} />
           <Route path="/cases/:id" element={<CaseDetailPage />} />
-          <Route path="/claw" element={<ClawMachinePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>
