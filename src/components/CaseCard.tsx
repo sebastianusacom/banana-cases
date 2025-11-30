@@ -51,8 +51,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
           </h3>
           
           <div className={`flex ${isYellow ? 'justify-start' : 'justify-center'} items-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]`}>
-            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 px-3 py-1 rounded-full">
-              <span className="text-white font-medium">
+            <div className="inline-flex items-center gap-1.5 bg-yellow-500 px-3 py-1 rounded-full">
+              <span className="text-white font-bold">
                 {caseItem.price === 0 ? 'FREE' : caseItem.price}
               </span>
               {caseItem.price > 0 && <Star size={12} className="fill-white text-white" />}
