@@ -207,7 +207,7 @@ const CaseDetailPage: React.FC = () => {
                 className={clsx(
                     "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
                     isOpening 
-                        ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-t border-black/10'
+                        ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-t border-black/10 opacity-40'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
                             : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
