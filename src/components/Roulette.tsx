@@ -10,19 +10,16 @@ interface RouletteProps {
   onComplete: () => void;
   delay?: number;
   idle?: boolean;
+  multiplier?: 1 | 2 | 3;
 }
-
-const CARD_WIDTH = 120; 
-const CARD_HEIGHT = 120;
-const EXTRA_CARDS_BEFORE = 50;
-const EXTRA_CARDS_AFTER = 20;
 
 export const Roulette: React.FC<RouletteProps> = ({
   items,
   winningItem,
   onComplete,
   delay = 0,
-  idle = false
+  idle = false,
+  multiplier = 3
 }) => {
   const { impactLight, impactHeavy } = useHaptics();
   const controls = useAnimation();
@@ -33,6 +30,20 @@ export const Roulette: React.FC<RouletteProps> = ({
   const x = useMotionValue(0);
   const lastHapticIndex = useRef(0);
   const hasSpunRef = useRef(false);
+
+  const getSizeConfig = (m: number) => {
+    switch(m) {
+      case 1: return { card: 240, image: 'w-48 h-48', star: 20, font: 'text-lg', padding: 'px-4 py-1.5' };
+      case 2: return { card: 160, image: 'w-28 h-28', star: 14, font: 'text-sm', padding: 'px-3 py-1' };
+      default: return { card: 120, image: 'w-20 h-20', star: 12, font: 'text-xs', padding: 'px-2.5 py-1' };
+    }
+  };
+
+  const config = getSizeConfig(multiplier);
+  const CARD_WIDTH = config.card;
+  const CARD_HEIGHT = config.card;
+  const EXTRA_CARDS_BEFORE = 50;
+  const EXTRA_CARDS_AFTER = 20;
 
   useEffect(() => {
     if (!idle || items.length === 0) return;
@@ -72,7 +83,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     return () => {
       controls.stop();
     };
-  }, [idle, items, controls, x]);
+  }, [idle, items, controls, x, multiplier, CARD_WIDTH]);
 
   useEffect(() => {
     if (idle || !winningItem || isSpinning || hasSpunRef.current) return;
@@ -138,7 +149,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     };
 
     runAnimation();
-  }, [winningItem, idle, items, controls, delay, onComplete, x, impactHeavy, isSpinning]);
+  }, [winningItem, idle, items, controls, delay, onComplete, x, impactHeavy, isSpinning, multiplier, CARD_WIDTH]);
 
   useEffect(() => {
     if (idle) return;
@@ -150,15 +161,15 @@ export const Roulette: React.FC<RouletteProps> = ({
       }
     });
     return () => unsubscribe();
-  }, [x, impactLight, idle]);
+  }, [x, impactLight, idle, multiplier, CARD_WIDTH]);
 
   return (
     <div 
       ref={viewportRef}
       className="relative w-full h-full min-h-[80px] overflow-hidden select-none flex items-center"
     >
-      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10] via-[#0f0f10]/95 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[#0f0f10]/80 via-[#0f0f10]/40 to-transparent z-10 pointer-events-none" />
+      <div className="absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[#0f0f10]/80 via-[#0f0f10]/40 to-transparent z-10 pointer-events-none" />
 
       <div className="absolute top-0 bottom-0 left-1/2 w-[2px] bg-yellow-500/50 z-30 -translate-x-1/2 shadow-[0_0_15px_rgba(234,179,8,0.5)]">
         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-400 rounded-full shadow-[0_0_10px_rgba(250,204,21,1)]" />
@@ -185,7 +196,7 @@ export const Roulette: React.FC<RouletteProps> = ({
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <motion.div 
-              className="w-24 h-24 flex flex-col items-center justify-center relative"
+              className={`flex flex-col items-center justify-center relative ${multiplier === 1 ? 'w-48 h-48' : multiplier === 2 ? 'w-28 h-28' : 'w-24 h-24'}`}
               animate={
                 item.id === 'roulette-winner' && isFinished
                   ? {
@@ -199,13 +210,13 @@ export const Roulette: React.FC<RouletteProps> = ({
               }
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <img src={item.image} alt="" className="w-20 h-20 object-contain drop-shadow-2xl mb-1" />
+              <img src={item.image} alt="" className={`${config.image} object-contain drop-shadow-2xl mb-1`} />
               
               <div 
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg"
+                className={`flex items-center gap-1.5 rounded-full bg-[#0f0f10]/80 border border-white/10 backdrop-blur-md shadow-lg ${config.padding}`}
               >
-                <Star size={12} className="text-yellow-400 fill-yellow-400" />
-                <span className="font-black text-white tracking-wide text-xs">{item.value}</span>
+                <Star size={config.star} className="text-yellow-400 fill-yellow-400" />
+                <span className={`font-black text-white tracking-wide ${config.font}`}>{item.value}</span>
               </div>
             </motion.div>
           </motion.div>

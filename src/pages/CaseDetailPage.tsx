@@ -131,6 +131,7 @@ const CaseDetailPage: React.FC = () => {
                             idle={!isOpening}
                             onComplete={handleSpinComplete}
                             delay={0}
+                            multiplier={count}
                         />
                     </motion.div>
                 ))}
