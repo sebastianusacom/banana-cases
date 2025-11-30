@@ -246,7 +246,7 @@ const CaseDetailPage: React.FC = () => {
                                 {isDemoMode ? "OPEN FREE" : "OPEN FOR"}
                             </span>
                             {!isDemoMode && (
-                                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl shadow-inner">
+                                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
                                     <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
                                     <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                                 </div>

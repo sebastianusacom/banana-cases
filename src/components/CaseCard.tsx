@@ -51,10 +51,12 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
           </h3>
           
           <div className={`flex ${isYellow ? 'justify-start' : 'justify-center'} items-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]`}>
-            <span className="text-yellow-400">
-              {caseItem.price === 0 ? 'FREE' : caseItem.price}
-            </span>
-            {caseItem.price > 0 && <Star size={12} className="fill-yellow-400 text-yellow-400" />}
+            <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 to-yellow-600 px-3 py-1 rounded-full">
+              <span className="text-white font-medium">
+                {caseItem.price === 0 ? 'FREE' : caseItem.price}
+              </span>
+              {caseItem.price > 0 && <Star size={12} className="fill-white text-white" />}
+            </div>
           </div>
 
           {isYellow && (
