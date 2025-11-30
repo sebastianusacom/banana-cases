@@ -54,10 +54,12 @@ export const Roulette: React.FC<RouletteProps> = ({
     const viewportWidth = viewportRef.current?.offsetWidth || 400;
     const minCards = Math.ceil(viewportWidth / CARD_WIDTH) + 4;
     const repeatCount = Math.max(5, Math.ceil(minCards / items.length) + 3);
+
+    const shuffledItems = [...items].sort(() => Math.random() - 0.5);
     
     const loopItems: Prize[] = [];
     for (let i = 0; i < repeatCount; i++) {
-      loopItems.push(...items.map(item => ({ ...item, id: `idle-${i}-${item.id}` })));
+      loopItems.push(...shuffledItems.map(item => ({ ...item, id: `idle-${i}-${item.id}` })));
     }
     setRouletteItems(loopItems);
     setIsSpinning(false);
@@ -74,7 +76,7 @@ export const Roulette: React.FC<RouletteProps> = ({
         x: {
           repeat: Infinity,
           repeatType: "loop",
-          duration: totalWidth / 50,
+          duration: totalWidth / 100,
           ease: "linear",
         }
       }
