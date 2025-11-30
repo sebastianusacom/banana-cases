@@ -33,7 +33,7 @@ export const Roulette: React.FC<RouletteProps> = ({
 
   const getSizeConfig = (m: number) => {
     switch(m) {
-      case 1: return { card: 240, image: 'w-48 h-48', star: 20, font: 'text-lg', padding: 'px-4 py-1.5' };
+      case 1: return { card: 240, image: 'w-32 h-32', star: 20, font: 'text-lg', padding: 'px-4 py-1.5' };
       case 2: return { card: 160, image: 'w-28 h-28', star: 14, font: 'text-sm', padding: 'px-3 py-1' };
       default: return { card: 120, image: 'w-20 h-20', star: 12, font: 'text-xs', padding: 'px-2.5 py-1' };
     }
@@ -196,7 +196,7 @@ export const Roulette: React.FC<RouletteProps> = ({
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
             <motion.div 
-              className={`flex flex-col items-center justify-center relative ${multiplier === 1 ? 'w-48 h-48' : multiplier === 2 ? 'w-28 h-28' : 'w-24 h-24'}`}
+              className={`flex flex-col items-center justify-center relative ${multiplier === 1 ? 'w-32 h-32' : multiplier === 2 ? 'w-28 h-28' : 'w-24 h-24'}`}
               animate={
                 item.id === 'roulette-winner' && isFinished
                   ? {
