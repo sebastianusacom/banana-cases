@@ -158,6 +158,13 @@ const mockCases: Case[] = [
       },
     ]
   },
+  {
+    id: 'case-4',
+    name: 'Classic Starter Case',
+    image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
+    price: 150,
+    items: STARTER_CASE_ITEMS,
+  },
 ];
 
 export const useCaseStore = create<CaseState>((_set, get) => ({
