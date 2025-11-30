@@ -202,20 +202,20 @@ const CaseDetailPage: React.FC = () => {
             </div>
 
             <motion.button
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.92, y: 2 }}
                 onClick={handleOpen}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
                     "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
                     isOpening 
-                        ? 'bg-white/5 text-white/20 cursor-wait'
+                        ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-t border-black/10'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
                             : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
                 )}
             >
                 {isOpening ? (
-                    <span className="opacity-80 font-medium animate-pulse">Opening{count > 1 ? ` ${Math.min(completedSpins + 1, count)}/${count}` : '...'}</span>
+                    <span className="opacity-90 font-bold animate-pulse tracking-widest uppercase text-sm">Opening...</span>
                 ) : (
                     <>
                         <span className="uppercase tracking-wide font-black text-lg opacity-90">
