@@ -211,21 +211,46 @@ const CaseDetailPage: React.FC = () => {
                             : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
                 )}
             >
-                {isOpening ? (
-                    <span className="opacity-90 font-bold animate-pulse tracking-widest uppercase text-sm">Opening...</span>
-                ) : (
+                {isOpening && (
                     <>
-                        <span className="uppercase tracking-wide font-black text-lg opacity-90">
-                            {isDemoMode ? "OPEN FREE" : "OPEN FOR"}
-                        </span>
-                        {!isDemoMode && (
-                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
-                                <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
-                                <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                            </div>
-                        )}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: [0, 0.5, 0] }}
+                            transition={{ duration: 0.4, ease: "easeOut" }}
+                            className="absolute inset-0 bg-white z-0 pointer-events-none"
+                        />
+                        <motion.div
+                            initial={{ x: '-100%' }}
+                            animate={{ x: '200%' }}
+                            transition={{ repeat: Infinity, duration: 1, ease: "linear", repeatDelay: 0.5 }}
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
+                        />
                     </>
                 )}
+
+                <div className="relative z-10 flex items-center justify-center gap-3 w-full">
+                    {isOpening ? (
+                        <motion.span 
+                            animate={{ opacity: [0.6, 1, 0.6] }}
+                            transition={{ repeat: Infinity, duration: 1.5 }}
+                            className="font-bold tracking-widest uppercase text-sm"
+                        >
+                            Opening...
+                        </motion.span>
+                    ) : (
+                        <>
+                            <span className="uppercase tracking-wide font-black text-lg opacity-90">
+                                {isDemoMode ? "OPEN FREE" : "OPEN FOR"}
+                            </span>
+                            {!isDemoMode && (
+                                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                                    <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
+                                    <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </motion.button>
 
             <button 
