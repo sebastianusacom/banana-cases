@@ -32,19 +32,9 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
       className="fixed inset-0 z-50 flex flex-col bg-[#0f0f10]"
     >
       <div className="flex-1 w-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
+        {/* Background Ambient */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.03)_0%,_transparent_70%)] pointer-events-none" />
         
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, ease: "linear", repeat: Infinity }}
-            className="w-[200vmax] h-[200vmax]"
-            style={{
-              background: 'repeating-conic-gradient(from 0deg, transparent 0deg 15deg, rgba(255, 255, 255, 0.03) 15deg 30deg)'
-            }}
-          />
-        </div>
-
         <h2 className="text-3xl font-black text-white mb-12 z-10 tracking-tight">YOU WON!</h2>
 
         <div className="flex flex-wrap justify-center gap-6 z-10 w-full max-w-md max-h-[60vh] overflow-y-auto no-scrollbar">
