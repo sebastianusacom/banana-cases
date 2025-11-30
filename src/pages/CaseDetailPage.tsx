@@ -114,7 +114,7 @@ const CaseDetailPage: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
-        <div className="w-full max-w-md flex flex-col items-center justify-center px-4 gap-2 h-full">
+        <div className="w-full flex flex-col items-center justify-center gap-2 h-full">
             <AnimatePresence mode="popLayout">
                 {Array.from({ length: count }).map((_, index) => (
                     <motion.div
