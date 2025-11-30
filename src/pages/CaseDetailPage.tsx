@@ -139,7 +139,7 @@ const CaseDetailPage: React.FC = () => {
       <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
         <div className="w-full max-w-md mx-auto px-4 space-y-2">
             
-            <div className="flex items-center justify-between gap-2">
+            <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
                 <div className="flex-1 h-11 bg-white/5 p-1 rounded-xl flex relative isolate">
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
@@ -231,7 +231,10 @@ const CaseDetailPage: React.FC = () => {
             <button 
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
-                className="w-fit mx-auto px-6 h-10 text-xs font-bold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 uppercase tracking-widest rounded-full"
+                className={clsx(
+                    "w-fit mx-auto px-6 h-10 text-xs font-bold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 uppercase tracking-widest rounded-full",
+                    isOpening && "opacity-20 pointer-events-none"
+                )}
             >
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
