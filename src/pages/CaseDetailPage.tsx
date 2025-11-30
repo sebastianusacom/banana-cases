@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ShieldCheck, X } from 'lucide-react';
@@ -23,7 +23,7 @@ const CaseDetailPage: React.FC = () => {
   
   const [isOpening, setIsOpening] = useState(false);
   const [winningPrizes, setWinningPrizes] = useState<Prize[]>([]);
-  const [completedSpins, setCompletedSpins] = useState(0);
+  const completedSpins = useRef(0);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
 
@@ -81,27 +81,24 @@ const CaseDetailPage: React.FC = () => {
 
     setWinningPrizes(generatedPrizes);
     setIsOpening(true);
-    setCompletedSpins(0);
+    completedSpins.current = 0;
   };
 
   const handleSpinComplete = () => {
-    setCompletedSpins(prev => {
-        const newCount = prev + 1;
-        if (newCount >= count) {
-            setTimeout(() => {
-                impactHeavy();
-                notificationSuccess();
-                setShowPrizeModal(true);
-            }, 500);
-        }
-        return newCount;
-    });
+    completedSpins.current += 1;
+    if (completedSpins.current >= count) {
+        setTimeout(() => {
+            impactHeavy();
+            notificationSuccess();
+            setShowPrizeModal(true);
+        }, 500);
+    }
   };
 
   const resetOpening = () => {
       setIsOpening(false);
       setWinningPrizes([]);
-      setCompletedSpins(0);
+      completedSpins.current = 0;
       setShowPrizeModal(false);
   };
 
