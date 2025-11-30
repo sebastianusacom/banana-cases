@@ -212,20 +212,21 @@ const CaseDetailPage: React.FC = () => {
                 )}
             >
                 {isOpening && (
-                    <>
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: [0, 0.5, 0] }}
-                            transition={{ duration: 0.4, ease: "easeOut" }}
-                            className="absolute inset-0 bg-white z-0 pointer-events-none"
-                        />
-                        <motion.div
-                            initial={{ x: '-100%' }}
-                            animate={{ x: '200%' }}
-                            transition={{ repeat: Infinity, duration: 1, ease: "linear", repeatDelay: 0.5 }}
-                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
-                        />
-                    </>
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 0.5, 0] }}
+                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        className="absolute inset-0 bg-white z-0 pointer-events-none"
+                    />
+                )}
+
+                {!isOpening && (isDemoMode || canAfford) && (
+                    <motion.div
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '200%' }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: "linear", repeatDelay: 0.5 }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
+                    />
                 )}
 
                 <div className="relative z-10 flex items-center justify-center gap-3 w-full">
