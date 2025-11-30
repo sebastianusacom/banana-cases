@@ -52,6 +52,18 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               className="flex flex-col items-center"
             >
                <div className="flex items-center justify-center relative mb-4">
+                   {/* Spinning Shine */}
+                   <motion.div
+                     animate={{ rotate: 360 }}
+                     transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                     className="absolute z-0 w-64 h-64 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(234,179,8,0.2)_120deg,transparent_360deg)] blur-2xl rounded-full"
+                   />
+                   <motion.div
+                     animate={{ rotate: -360 }}
+                     transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
+                     className="absolute z-0 w-64 h-64 bg-[conic-gradient(from_180deg,transparent_0deg,rgba(255,255,255,0.1)_120deg,transparent_360deg)] blur-2xl rounded-full"
+                   />
+                   
                    <img 
                     src={prize.image} 
                     alt={prize.name} 
