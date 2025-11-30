@@ -32,9 +32,19 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
       className="fixed inset-0 z-50 flex flex-col bg-[#0f0f10]"
     >
       <div className="flex-1 w-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
-        {/* Background Ambient */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.03)_0%,_transparent_70%)] pointer-events-none" />
         
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, ease: "linear", repeat: Infinity }}
+            className="w-[200vmax] h-[200vmax]"
+            style={{
+              background: 'repeating-conic-gradient(from 0deg, transparent 0deg 15deg, rgba(255, 255, 255, 0.03) 15deg 30deg)'
+            }}
+          />
+        </div>
+
         <h2 className="text-3xl font-black text-white mb-12 z-10 tracking-tight">YOU WON!</h2>
 
         <div className="flex flex-wrap justify-center gap-6 z-10 w-full max-w-md max-h-[60vh] overflow-y-auto no-scrollbar">
@@ -52,18 +62,6 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               className="flex flex-col items-center"
             >
                <div className="flex items-center justify-center relative mb-4">
-                   {/* Spinning Shine */}
-                   <motion.div
-                     animate={{ rotate: 360 }}
-                     transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-                     className="absolute z-0 w-64 h-64 bg-[conic-gradient(from_0deg,transparent_0deg,rgba(234,179,8,0.2)_120deg,transparent_360deg)] blur-2xl rounded-full"
-                   />
-                   <motion.div
-                     animate={{ rotate: -360 }}
-                     transition={{ duration: 12, repeat: Infinity, ease: "linear" }}
-                     className="absolute z-0 w-64 h-64 bg-[conic-gradient(from_180deg,transparent_0deg,rgba(255,255,255,0.1)_120deg,transparent_360deg)] blur-2xl rounded-full"
-                   />
-                   
                    <img 
                     src={prize.image} 
                     alt={prize.name} 
