@@ -46,7 +46,7 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
         >
             <div className="aspect-square bg-black/20 rounded-xl p-2 relative overflow-hidden">
                  <img src={item.image} alt={item.name} className="w-full h-full object-contain relative z-10" />
-                 <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 z-20 border border-white/10">
+                 <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 z-20">
                     <Star size={10} className="text-yellow-400 fill-yellow-400" />
                     <span className="text-[10px] font-bold text-white">{item.value}</span>
                  </div>
@@ -96,7 +96,7 @@ const ProfilePage: React.FC = () => {
   const { stars, inventory, sellItem } = useUserStore();
 
   return (
-    <div className="flex-1 overflow-y-auto pt-4 px-2">
+    <div className="flex-1 overflow-y-auto pt-4 px-4 max-w-md mx-auto">
       {/* User Stats */}
       <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden">
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl" />

@@ -108,7 +108,7 @@ export const TopLiveBar: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-1 flex items-center gap-0.5 bg-white/10 backdrop-blur-xl px-1.5 py-0.5 rounded-full border border-white/20 shadow-xl">
+                  <div className="mt-1 flex items-center gap-0.5 bg-white/10 backdrop-blur-xl px-1.5 py-0.5 rounded-full shadow-xl">
                      <Star size={8} className="text-yellow-400 fill-yellow-400" />
                      <span className="text-[9px] font-bold text-white/90 tabular-nums leading-none">
                         {drop.price}
