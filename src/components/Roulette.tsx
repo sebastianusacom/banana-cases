@@ -34,7 +34,7 @@ export const Roulette: React.FC<RouletteProps> = ({
   const getSizeConfig = (m: number) => {
     switch(m) {
       case 1: return { card: 130, image: 'w-32 h-32', star: 20, font: 'text-lg', padding: 'px-3 py-1.5' };
-      case 2: return { card: 110, image: 'w-28 h-28', star: 14, font: 'text-sm', padding: 'px-3 py-1' };
+      case 2: return { card: 115, image: 'w-28 h-28', star: 14, font: 'text-sm', padding: 'px-3 py-1' };
       default: return { card: 85, image: 'w-20 h-20', star: 12, font: 'text-xs', padding: 'px-2.5 py-1' };
     }
   };
@@ -76,7 +76,7 @@ export const Roulette: React.FC<RouletteProps> = ({
         x: {
           repeat: Infinity,
           repeatType: "loop",
-          duration: totalWidth / 100,
+          duration: totalWidth / 100, // idle speed
           ease: "linear",
         }
       }
