@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Gift, User } from 'lucide-react';
+import { Gift, User, Gamepad2 } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 import clsx from 'clsx';
 
@@ -24,6 +24,16 @@ export const BottomNav: React.FC = () => {
           onClick={() => selectionChanged()}
         >
           <Gift size={22} strokeWidth={2.5} />
+        </NavLink>
+        
+        <div className="w-px h-8 bg-white/10" />
+
+        <NavLink
+          to="/claw"
+          className={navItemClass}
+          onClick={() => selectionChanged()}
+        >
+          <Gamepad2 size={22} strokeWidth={2.5} />
         </NavLink>
         
         <div className="w-px h-8 bg-white/10" />
