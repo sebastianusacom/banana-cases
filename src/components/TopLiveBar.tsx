@@ -24,6 +24,21 @@ export const TopLiveBar: React.FC = () => {
   const [drops, setDrops] = useState<LiveDrop[]>([]);
   const { stars, addStars } = useUserStore();
   const { impactLight } = useHaptics();
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  // Listen for spinning state from a custom event
+  useEffect(() => {
+    const handleSpinStart = () => setIsSpinning(true);
+    const handleSpinEnd = () => setIsSpinning(false);
+
+    window.addEventListener('case-spin-start', handleSpinStart);
+    window.addEventListener('case-spin-end', handleSpinEnd);
+
+    return () => {
+      window.removeEventListener('case-spin-start', handleSpinStart);
+      window.removeEventListener('case-spin-end', handleSpinEnd);
+    };
+  }, []);
 
   useEffect(() => {
     const addDrop = () => {
@@ -49,7 +64,10 @@ export const TopLiveBar: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none" style={{ paddingTop: 'var(--tg-safe-area-inset-top)' }}>
+    <div 
+      className={`fixed top-0 left-0 right-0 z-50 pointer-events-none transition-opacity duration-300 ${isSpinning ? 'opacity-20' : 'opacity-100'}`} 
+      style={{ paddingTop: 'var(--tg-safe-area-inset-top)' }}
+    >
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-[#0f0f10] to-transparent backdrop-blur-[2px] -z-10" style={{ height: 'calc(var(--tg-safe-area-inset-top) + 4rem)' }} />
       <div className="h-16 px-4 flex items-center justify-between">
       

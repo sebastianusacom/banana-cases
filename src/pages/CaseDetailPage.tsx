@@ -82,6 +82,7 @@ const CaseDetailPage: React.FC = () => {
     setWinningPrizes(generatedPrizes);
     setIsOpening(true);
     completedSpins.current = 0;
+    window.dispatchEvent(new Event('case-spin-start'));
   };
 
   const handleSpinComplete = () => {
@@ -100,6 +101,7 @@ const CaseDetailPage: React.FC = () => {
       setWinningPrizes([]);
       completedSpins.current = 0;
       setShowPrizeModal(false);
+      window.dispatchEvent(new Event('case-spin-end'));
   };
 
   const handleCountChange = (newCount: 1 | 2 | 3) => {
