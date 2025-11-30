@@ -60,7 +60,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
                </div>
                
                <div className="text-center space-y-1">
-                   <div className="flex items-center justify-center gap-1.5 bg-white/5 px-4 py-1.5 rounded-full border border-white/5 backdrop-blur-sm">
+                   <div className="flex items-center justify-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-xl shadow-xl">
                       <Star size={14} className="text-yellow-400 fill-yellow-400" />
                       <span className="text-lg font-black text-white tracking-wide">{prize.value}</span>
                    </div>

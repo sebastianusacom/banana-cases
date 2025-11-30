@@ -215,7 +215,7 @@ export const Roulette: React.FC<RouletteProps> = ({
               <img src={item.image} alt="" className={`${config.image} object-contain drop-shadow-2xl mb-1`} />
               
               <div
-                className={`flex items-center gap-1.5 rounded-full bg-white/5 border border-white/5 backdrop-blur-sm ${config.padding}`}
+                className={`flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl ${config.padding}`}
               >
                 <Star size={config.star} className="text-yellow-400 fill-yellow-400" />
                 <span className={`font-black text-white tracking-wide ${config.font}`}>{item.value}</span>
