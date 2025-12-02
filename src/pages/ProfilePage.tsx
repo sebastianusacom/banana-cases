@@ -3,6 +3,7 @@ import { useUserStore, type Prize } from '../store/userStore';
 import { Star, PackageOpen, Download, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHaptics } from '../hooks/useHaptics';
+import { UniversalMedia } from '../components/UniversalMedia';
 
 const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = ({ item, onSell }) => {
     const { impactMedium } = useHaptics();
@@ -45,7 +46,7 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
             className="bg-white/5 rounded-2xl p-3 flex flex-col gap-3 group border border-white/5"
         >
             <div className="aspect-square bg-black/20 rounded-xl p-2 relative overflow-hidden">
-                 <img src={item.image} alt={item.name} className="w-full h-full object-contain relative z-10" />
+                 <UniversalMedia src={item.image} alt={item.name} className="w-full h-full object-contain relative z-10" />
                  <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 z-20 border border-white/10">
                     <Star size={10} className="text-yellow-400 fill-yellow-400" />
                     <span className="text-[10px] font-bold text-white">{item.value}</span>

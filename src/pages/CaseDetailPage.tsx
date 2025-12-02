@@ -9,6 +9,7 @@ import { useTelegram } from '../hooks/useTelegram';
 import clsx from 'clsx';
 import { Roulette } from '../components/Roulette';
 import { PrizeModal } from '../components/PrizeModal';
+import { UniversalMedia } from '../components/UniversalMedia';
 
 const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -307,7 +308,7 @@ const CaseDetailPage: React.FC = () => {
                                 {caseItem.items.sort((a,b) => b.value - a.value).map((item) => (
                                     <div key={item.id} className="relative bg-white/5 rounded-2xl p-3 border border-white/5">
                                         <div className="w-full aspect-square mb-2 bg-black/20 rounded-xl p-2">
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                            <UniversalMedia src={item.image} alt={item.name} className="w-full h-full object-contain" />
                                         </div>
                                         <p className="text-[10px] font-medium leading-tight line-clamp-1 opacity-80">{item.name}</p>
                                         <div className="flex items-center justify-between gap-1 mt-1">

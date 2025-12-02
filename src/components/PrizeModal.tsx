@@ -4,6 +4,7 @@ import type { Prize } from '../store/userStore';
 import { useUserStore } from '../store/userStore';
 import { Star, Share2 } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
+import { UniversalMedia } from './UniversalMedia';
 
 interface PrizeModalProps {
   prizes: Prize[];
@@ -52,7 +53,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               className="flex flex-col items-center"
             >
                <div className="flex items-center justify-center relative mb-4">
-                   <img 
+                   <UniversalMedia 
                     src={prize.image} 
                     alt={prize.name} 
                     className="w-40 h-40 object-contain drop-shadow-2xl relative z-10" 

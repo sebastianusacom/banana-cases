@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useUserStore } from '../store/userStore';
 import { Star, Plus } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
+import { UniversalMedia } from './UniversalMedia';
 
 interface LiveDrop {
   id: string;
@@ -17,7 +18,7 @@ const LIVE_ITEMS = [
   { name: 'Nail Bracelet', image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png', value: 9400, color: '#d32ce6' },
   { name: 'Snoop Dogg', image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png', value: 350, color: '#5e98d9' },
   { name: 'Diamond Ring', image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png', value: 2000, color: '#8847ff' },
-  { name: 'Plush Pepe', image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png', value: 100000, color: '#eab308' },
+  { name: 'Plush Pepe', image: 'https://lottie.host/7076738d-139f-474f-bcc8-cbba369637ab/z4QM8xQ7ZG.lottie', value: 100000, color: '#eab308' },
 ];
 
 export const TopLiveBar: React.FC = () => {
@@ -104,7 +105,7 @@ export const TopLiveBar: React.FC = () => {
                     <div 
                         className="w-full h-full rounded-md overflow-hidden relative z-10"
                     >
-                        <img src={drop.itemImage} alt="" className="w-full h-full object-contain" />
+                        <UniversalMedia src={drop.itemImage} alt="" className="w-full h-full object-contain" />
                     </div>
                   </div>
                   
