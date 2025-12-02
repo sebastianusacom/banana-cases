@@ -53,7 +53,8 @@ const STARTER_CASE_ITEMS: Prize[] = [
   {
     id: 'starter-banana-4',
     name: 'Plush Pepe',
-    image: 'https://lottie.host/67ef6b92-a1e7-4338-96e1-a3c31211db6a/ASyhTwbncd.lottie',
+    image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+    lottie: 'https://lottie.host/67ef6b92-a1e7-4338-96e1-a3c31211db6a/ASyhTwbncd.lottie',
     value: 100000,
     chance: 0.2,
   },

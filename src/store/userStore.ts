@@ -5,6 +5,7 @@ export interface Prize {
   id: string;
   name: string;
   image: string;
+  lottie?: string;
   value: number;
   chance: number;
   wonAt?: number;

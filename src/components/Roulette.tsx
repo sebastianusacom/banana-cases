@@ -3,7 +3,6 @@ import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { Star } from 'lucide-react';
-import { UniversalMedia } from './UniversalMedia';
 
 interface RouletteProps {
   items: Prize[];
@@ -213,7 +212,7 @@ export const Roulette: React.FC<RouletteProps> = ({
               }
               transition={{ duration: 0.5, ease: "easeOut" }}
             >
-              <UniversalMedia src={item.image} alt="" className={`${config.image} object-contain drop-shadow-2xl mb-1`} />
+              <img src={item.image} alt="" className={`${config.image} object-contain drop-shadow-2xl mb-1`} />
               
               <div
                 className={`flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl ${config.padding}`}

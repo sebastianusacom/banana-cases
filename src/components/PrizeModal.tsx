@@ -54,7 +54,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
             >
                <div className="flex items-center justify-center relative mb-4">
                    <UniversalMedia 
-                    src={prize.image} 
+                    src={prize.lottie || prize.image} 
                     alt={prize.name} 
                     className="w-40 h-40 object-contain drop-shadow-2xl relative z-10" 
                    />

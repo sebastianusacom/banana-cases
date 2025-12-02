@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom';
 import type { Case } from '../store/caseStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { Star, Timer } from 'lucide-react';
-import { UniversalMedia } from './UniversalMedia';
 
 interface CaseCardProps {
   caseItem: Case;
@@ -38,7 +37,7 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
 
         {/* Image */}
         <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0`}>
-          <UniversalMedia
+          <img
             src={caseItem.image}
             alt={caseItem.name}
             className="w-full h-full object-contain"
