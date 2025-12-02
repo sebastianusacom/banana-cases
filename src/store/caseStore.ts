@@ -127,7 +127,7 @@ const mockCases: Case[] = [
     id: 'case-3',
     name: 'Pepe Case',
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
-    price: 500,
+    price: 5000,
     items: LEGENDARY_CASE_ITEMS,
   },
   {
