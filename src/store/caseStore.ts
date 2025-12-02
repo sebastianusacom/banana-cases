@@ -34,7 +34,7 @@ const STARTER_CASE_ITEMS: Prize[] = [
     name: 'Nail Bracelet',
     image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
     value: 9400,
-    chance: 50,
+    chance: 0.2,
   },
   {
     id: 'starter-banana-2',
@@ -56,7 +56,7 @@ const STARTER_CASE_ITEMS: Prize[] = [
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
     lottie: 'https://lottie.host/67ef6b92-a1e7-4338-96e1-a3c31211db6a/ASyhTwbncd.lottie',
     value: 100000,
-    chance: 0.2,
+    chance: 50,
   },
 ];
 
