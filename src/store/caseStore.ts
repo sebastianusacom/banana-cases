@@ -48,14 +48,14 @@ const STARTER_CASE_ITEMS: Prize[] = [
     name: 'Diamond Ring',
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     value: 2000,
-    chance: 19.9,
+    chance: 19.8,
   },
   {
     id: 'starter-banana-4',
     name: 'Plush Pepe',
-    image: 'https://lottie.host/7076738d-139f-474f-bcc8-cbba369637ab/z4QM8xQ7ZG.lottie',
+    image: 'https://lottie.host/67ef6b92-a1e7-4338-96e1-a3c31211db6a/ASyhTwbncd.lottie',
     value: 100000,
-    chance: 0.1,
+    chance: 0.2,
   },
 ];
 
