@@ -24,7 +24,7 @@ const CaseDetailPage: React.FC = () => {
   const [isOpening, setIsOpening] = useState(false);
   const [winningPrizes, setWinningPrizes] = useState<Prize[]>([]);
   const completedSpins = useRef(0);
-  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
 
@@ -115,16 +115,20 @@ const CaseDetailPage: React.FC = () => {
     window.dispatchEvent(new Event('case-spin-start'));
   };
 
-  const handleClick = () => {
-    if (clickTimeoutRef.current) {
-      clearTimeout(clickTimeoutRef.current);
-      clickTimeoutRef.current = null;
+  const handleMouseDown = () => {
+    if (holdTimeoutRef.current) return;
+
+    holdTimeoutRef.current = setTimeout(() => {
+      holdTimeoutRef.current = null;
       handleQuickSpin();
-    } else {
-      clickTimeoutRef.current = setTimeout(() => {
-        clickTimeoutRef.current = null;
-        handleOpen();
-      }, 150);
+    }, 500);
+  };
+
+  const handleMouseUp = () => {
+    if (holdTimeoutRef.current) {
+      clearTimeout(holdTimeoutRef.current);
+      holdTimeoutRef.current = null;
+      handleOpen();
     }
   };
 
@@ -245,7 +249,11 @@ const CaseDetailPage: React.FC = () => {
 
             <motion.button
                 whileTap={{ scale: 0.92, y: 2 }}
-                onClick={handleClick}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+                onMouseLeave={handleMouseUp}
+                onTouchStart={handleMouseDown}
+                onTouchEnd={handleMouseUp}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
                     "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
@@ -301,7 +309,7 @@ const CaseDetailPage: React.FC = () => {
 
             <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
               <Flame size={10} className="text-white/40" />
-              Double-click for quick spin
+              Hold for quick spin
             </p>
 
             <button
