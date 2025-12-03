@@ -54,18 +54,3 @@ body {
 .animate-shimmer {
   animation: shimmer 3s linear infinite;
 }
-
-@keyframes liquidRipple {
-  0%, 100% {
-    opacity: 0.3;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1.2);
-  }
-}
-
-.animate-liquid-ripple {
-  animation: liquidRipple 2s ease-in-out infinite;
-}
