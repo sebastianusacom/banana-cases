@@ -124,7 +124,7 @@ const CaseDetailPage: React.FC = () => {
       clickTimeoutRef.current = setTimeout(() => {
         clickTimeoutRef.current = null;
         handleOpen();
-      }, 150);
+      }, 50);
     }
   };
 
@@ -300,7 +300,7 @@ const CaseDetailPage: React.FC = () => {
             </motion.button>
 
             <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
-              <Flame size={10} className="text-white" />
+              <Flame size={10} className="text-white/40" />
               Double-click for quick spin
             </p>
 
