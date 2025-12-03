@@ -98,8 +98,8 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
   },
   {
     id: 'starter-banana-low',
-    name: 'Rotten Banana',
-    image: 'https://placehold.co/200x200/5c4033/ffffff?text=Rotten',
+    name: 'Stars',
+    image: 'https://i.postimg.cc/wTnDKrcw/IMG-1701.png',
     value: 10,
     chance: 69.29,
   },
