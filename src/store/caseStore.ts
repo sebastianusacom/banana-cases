@@ -63,6 +63,48 @@ const STARTER_CASE_ITEMS: Prize[] = [
   },
 ];
 
+const BALANCED_STARTER_ITEMS: Prize[] = [
+  {
+    id: 'starter-banana-1',
+    name: 'Nail Bracelet',
+    image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
+    lottie: 'https://lottie.host/embed/c0b0ec3b-8074-40c1-ad2d-8889614ebc75/vqhMisqWnu.lottie',
+    value: 9400,
+    chance: 0.2,
+  },
+  {
+    id: 'starter-banana-2',
+    name: 'Snoop Dogg',
+    image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
+    lottie: 'https://lottie.host/embed/c0b0ec3b-8074-40c1-ad2d-8889614ebc75/vqhMisqWnu.lottie',
+    value: 350,
+    chance: 28.5,
+  },
+  {
+    id: 'starter-banana-3',
+    name: 'Diamond Ring',
+    image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
+    lottie: 'https://artboard-1.tiiny.site',
+    value: 2000,
+    chance: 2.0,
+  },
+  {
+    id: 'starter-banana-4',
+    name: 'Plush Pepe',
+    image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+    lottie: 'https://lottie.host/embed/cc5d4bc9-4c10-4975-ab2f-2c744a310038/n5VPB1f5KF.lottie',
+    value: 100000,
+    chance: 0.01,
+  },
+  {
+    id: 'starter-banana-low',
+    name: 'Rotten Banana',
+    image: 'https://placehold.co/200x200/5c4033/ffffff?text=Rotten',
+    value: 10,
+    chance: 69.29,
+  },
+];
+
 const RARE_CASE_ITEMS: Prize[] = [
   {
     id: 'rare-banana-1',
@@ -116,15 +158,15 @@ const mockCases: Case[] = [
     id: 'case-1',
     name: 'Starter Case',
     image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
-    price: 100,
-    items: STARTER_CASE_ITEMS,
+    price: 250,
+    items: BALANCED_STARTER_ITEMS,
   },
   {
     id: 'case-2',
     name: 'Rare Case',
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     price: 250,
-    items: RARE_CASE_ITEMS,
+    items: STARTER_CASE_ITEMS,
   },
   {
     id: 'case-3',
@@ -138,29 +180,7 @@ const mockCases: Case[] = [
     name: 'Free Case',
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
     price: 0,
-    items: [
-      {
-        id: 'free-banana-1',
-        name: 'Common Banana',
-        image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
-        value: 50,
-        chance: 70,
-      },
-      {
-        id: 'free-banana-2',
-        name: 'Uncommon Banana',
-        image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
-        value: 150,
-        chance: 25,
-      },
-      {
-        id: 'free-banana-3',
-        name: 'Rare Banana',
-        image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
-        value: 500,
-        chance: 5,
-      },
-    ]
+    items: STARTER_CASE_ITEMS,
   },
   {
     id: 'case-4',
