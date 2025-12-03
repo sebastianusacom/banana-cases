@@ -10,7 +10,7 @@ const CasesPage: React.FC = () => {
   const otherCases = cases.filter(c => c.price > 0);
 
   return (
-    <div className="flex-1 overflow-y-auto pt-6 px-2 min-h-full">
+    <div className="flex-1 overflow-y-auto pt-6 px-2 h-full">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

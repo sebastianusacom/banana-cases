@@ -124,7 +124,7 @@ const CaseDetailPage: React.FC = () => {
       clickTimeoutRef.current = setTimeout(() => {
         clickTimeoutRef.current = null;
         handleOpen();
-      }, 50);
+      }, 150);
     }
   };
 
