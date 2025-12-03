@@ -27,6 +27,7 @@ const CaseDetailPage: React.FC = () => {
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
+  const [isHolding, setIsHolding] = useState(false);
 
   useEffect(() => {
     if (!caseItem) {
@@ -118,13 +119,16 @@ const CaseDetailPage: React.FC = () => {
   const handleMouseDown = () => {
     if (holdTimeoutRef.current) return;
 
+    setIsHolding(true);
     holdTimeoutRef.current = setTimeout(() => {
       holdTimeoutRef.current = null;
+      setIsHolding(false);
       handleQuickSpin();
-    }, 500);
+    }, 300);
   };
 
   const handleMouseUp = () => {
+    setIsHolding(false);
     if (holdTimeoutRef.current) {
       clearTimeout(holdTimeoutRef.current);
       holdTimeoutRef.current = null;
@@ -248,7 +252,8 @@ const CaseDetailPage: React.FC = () => {
             </div>
 
             <motion.button
-                whileTap={{ scale: 0.92, y: 2 }}
+                animate={isHolding ? { scale: 0.98, opacity: 0.9 } : { scale: 1, opacity: 1 }}
+                transition={{ duration: 0.1 }}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
