@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUserStore, type Prize } from '../store/userStore';
-import { Star, PackageOpen, Download, Clock } from 'lucide-react';
+import { Star, PackageOpen, Download, Clock, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
@@ -94,7 +94,7 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
 };
 
 const ProfilePage: React.FC = () => {
-  const { stars, inventory, sellItem } = useUserStore();
+  const { stars, inventory, sellItem, resetBalance } = useUserStore();
 
   return (
     <div className="flex-1 overflow-y-auto pt-4 px-2">
@@ -104,8 +104,21 @@ const ProfilePage: React.FC = () => {
           
           <div className="flex items-center justify-between mb-2">
               <span className="text-white/80 font-medium">Balance</span>
-              <div className="p-2 bg-white/20 rounded-full">
-                  <Star size={20} fill="white" />
+              <div className="flex items-center gap-2">
+                  <button 
+                    onClick={() => {
+                        if (confirm('Are you sure you want to reset your balance to 1000 stars?')) {
+                            resetBalance();
+                        }
+                    }}
+                    className="p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors"
+                    title="Reset Balance"
+                  >
+                      <RotateCcw size={20} className="text-white" />
+                  </button>
+                  <div className="p-2 bg-white/20 rounded-full">
+                      <Star size={20} fill="white" />
+                  </div>
               </div>
           </div>
           <h2 className="text-4xl font-black tracking-tight flex items-baseline">

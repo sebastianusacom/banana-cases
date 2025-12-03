@@ -21,6 +21,7 @@ interface UserState {
   addItem: (item: Prize) => void;
   removeItem: (itemId: string) => void;
   sellItem: (itemId: string) => void;
+  resetBalance: () => void; // remove later
 }
 
 export const useUserStore = create<UserState>()(
@@ -30,6 +31,7 @@ export const useUserStore = create<UserState>()(
       inventory: [],
       isDemoMode: false,
       toggleDemoMode: () => set((state) => ({ isDemoMode: !state.isDemoMode })),
+      resetBalance: () => set({ stars: 1000 }), // remove later
       addStars: (amount) => set((state) => ({ stars: state.stars + amount })),
       subtractStars: (amount) => {
         const { stars } = get();
