@@ -105,30 +105,6 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
   },
 ];
 
-const RARE_CASE_ITEMS: Prize[] = [
-  {
-    id: 'rare-banana-1',
-    name: 'Blue Banana',
-    image: 'https://placehold.co/200x200/0000ff/ffffff?text=Blue',
-    value: 500,
-    chance: 60,
-  },
-  {
-    id: 'rare-banana-2',
-    name: 'Neon Banana',
-    image: 'https://placehold.co/200x200/ff00ff/ffffff?text=Neon',
-    value: 1200,
-    chance: 30,
-  },
-  {
-    id: 'rare-banana-3',
-    name: 'Crystal Banana',
-    image: 'https://placehold.co/200x200/00ffff/000000?text=Crystal',
-    value: 3000,
-    chance: 10,
-  },
-];
-
 const LEGENDARY_CASE_ITEMS: Prize[] = [
   {
     id: 'leg-banana-1',
