@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, ShieldCheck, X } from 'lucide-react';
+import { Star, ShieldCheck, X, Flame } from 'lucide-react';
 import { useCaseStore, pickWinner } from '../store/caseStore';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
@@ -299,7 +299,8 @@ const CaseDetailPage: React.FC = () => {
                 </div>
             </motion.button>
 
-            <p className="text-center text-[10px] text-white/40 mt-1">
+            <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
+              <Flame size={10} className="text-white" />
               Double-click for quick spin
             </p>
 
