@@ -17,7 +17,7 @@ export const BottomNav: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
-      <nav className="flex items-center gap-6 px-6 py-3 bg-[#1c1c1e]/80 backdrop-blur-xl border border-white/10 rounded-full shadow-2xl pointer-events-auto">
+      <nav className="flex items-center gap-6 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto">
         <NavLink
           to="/cases"
           className={navItemClass}
