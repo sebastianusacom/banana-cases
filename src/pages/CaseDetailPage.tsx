@@ -308,7 +308,7 @@ const CaseDetailPage: React.FC = () => {
             </motion.button>
 
             <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
-              <Flame size={10} className="text-white/40" />
+              <Flame size={8} className="text-white/40" />
               Hold for quick spin
             </p>
 
