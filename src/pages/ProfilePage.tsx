@@ -100,9 +100,9 @@ const ProfilePage: React.FC = () => {
     <div className="flex-1 overflow-y-auto pt-4 px-2">
       {/* User Stats */}
       <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden mx-auto">
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl" />
+          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl pointer-events-none" />
           
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center justify-between mb-2 relative z-10">
               <span className="text-white/80 font-medium">Balance</span>
               <div className="flex items-center gap-2">
                   <button 
