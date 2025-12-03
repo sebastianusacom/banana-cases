@@ -24,6 +24,7 @@ const CaseDetailPage: React.FC = () => {
   const [isOpening, setIsOpening] = useState(false);
   const [winningPrizes, setWinningPrizes] = useState<Prize[]>([]);
   const completedSpins = useRef(0);
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
 
@@ -55,19 +56,48 @@ const CaseDetailPage: React.FC = () => {
   const totalPrice = caseItem.price * count;
   const canAfford = stars >= totalPrice;
 
+  const handleQuickSpin = () => {
+    if (isOpening) return;
+
+    if (!isDemoMode && !canAfford) {
+      tg.showAlert("You don't have enough stars!");
+      return;
+    }
+
+    impactHeavy();
+    notificationSuccess();
+
+    if (!isDemoMode) {
+        const success = subtractStars(totalPrice);
+        if (!success) return;
+    }
+
+    const generatedPrizes: Prize[] = [];
+
+    for (let i = 0; i < count; i++) {
+      const winner = pickWinner(caseItem.items);
+      const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() };
+      generatedPrizes.push(prizeInstance);
+      addItem(prizeInstance);
+    }
+
+    setWinningPrizes(generatedPrizes);
+    setShowPrizeModal(true);
+  };
+
   const handleOpen = () => {
     if (isOpening) return;
-    
+
     if (!isDemoMode && !canAfford) {
       tg.showAlert("You don't have enough stars!");
       return;
     }
 
     impactMedium();
-    
+
     if (!isDemoMode) {
         const success = subtractStars(totalPrice);
-        if (!success) return; 
+        if (!success) return;
     }
 
     const generatedPrizes: Prize[] = [];
@@ -83,6 +113,19 @@ const CaseDetailPage: React.FC = () => {
     setIsOpening(true);
     completedSpins.current = 0;
     window.dispatchEvent(new Event('case-spin-start'));
+  };
+
+  const handleClick = () => {
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+      clickTimeoutRef.current = null;
+      handleQuickSpin();
+    } else {
+      clickTimeoutRef.current = setTimeout(() => {
+        clickTimeoutRef.current = null;
+        handleOpen();
+      }, 300);
+    }
   };
 
   const handleSpinComplete = () => {
@@ -202,7 +245,7 @@ const CaseDetailPage: React.FC = () => {
 
             <motion.button
                 whileTap={{ scale: 0.92, y: 2 }}
-                onClick={handleOpen}
+                onClick={handleClick}
                 disabled={isOpening || (!isDemoMode && !canAfford)}
                 className={clsx(
                     "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
@@ -256,7 +299,11 @@ const CaseDetailPage: React.FC = () => {
                 </div>
             </motion.button>
 
-            <button 
+            <p className="text-center text-[10px] text-white/40 mt-1">
+              Double-click for quick spin
+            </p>
+
+            <button
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
                 className={clsx(
