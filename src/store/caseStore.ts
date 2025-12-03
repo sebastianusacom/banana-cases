@@ -70,7 +70,7 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
     image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
     lottie: 'https://lottie.host/embed/c0b0ec3b-8074-40c1-ad2d-8889614ebc75/vqhMisqWnu.lottie',
     value: 9400,
-    chance: 0.2,
+    chance: 0.1,
   },
   {
     id: 'starter-banana-2',
@@ -78,7 +78,7 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
     image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
     lottie: 'https://lottie.host/embed/c0b0ec3b-8074-40c1-ad2d-8889614ebc75/vqhMisqWnu.lottie',
     value: 350,
-    chance: 28.5,
+    chance: 20,
   },
   {
     id: 'starter-banana-3',
@@ -86,7 +86,7 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     lottie: 'https://artboard-1.tiiny.site',
     value: 2000,
-    chance: 2.0,
+    chance: 3,
   },
   {
     id: 'starter-banana-4',
@@ -94,14 +94,21 @@ const BALANCED_STARTER_ITEMS: Prize[] = [
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
     lottie: 'https://lottie.host/embed/cc5d4bc9-4c10-4975-ab2f-2c744a310038/n5VPB1f5KF.lottie',
     value: 100000,
-    chance: 0.01,
+    chance: 0,
   },
   {
     id: 'starter-banana-low',
     name: 'Stars',
     image: 'https://i.postimg.cc/wTnDKrcw/IMG-1701.png',
     value: 10,
-    chance: 69.29,
+    chance: 50,
+  },
+  {
+    id: 'starter-banana-low2',
+    name: 'Stars',
+    image: 'https://i.postimg.cc/wTnDKrcw/IMG-1701.png',
+    value: 250,
+    chance: 5,
   },
 ];
 
