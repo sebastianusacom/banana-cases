@@ -141,7 +141,7 @@ const mockCases: Case[] = [
     id: 'case-1',
     name: 'Starter Case',
     image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
-    price: 250,
+    price: 249,
     items: BALANCED_STARTER_ITEMS,
   },
   {
