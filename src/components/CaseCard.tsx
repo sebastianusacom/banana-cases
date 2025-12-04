@@ -47,7 +47,8 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
                   backgroundSize: 'contain',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
-                  filter: 'blur(2px) opacity(0.7)',
+                  filter: 'blur(1px)',
+                  opacity: 0.8,
                   zIndex: 0,
                 }}
               />
