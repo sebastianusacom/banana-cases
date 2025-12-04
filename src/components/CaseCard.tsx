@@ -40,11 +40,16 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0`}>
           {caseItem.lottie ? (
             <div className="relative w-full h-full">
-              <img
-                src={caseItem.image}
-                alt=""
-                className="absolute inset-0 w-full h-full object-contain opacity-70 blur-[1px] scale-110"
-                style={{ zIndex: 0 }}
+              <div 
+                className="absolute inset-0"
+                style={{ 
+                  backgroundImage: `url(${caseItem.image})`,
+                  backgroundSize: 'contain',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat',
+                  filter: 'blur(2px) opacity(0.7)',
+                  zIndex: 0,
+                }}
               />
               <div className="relative w-full h-full" style={{ zIndex: 1 }}>
                 <UniversalMedia
