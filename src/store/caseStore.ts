@@ -204,7 +204,7 @@ const mockCases: Case[] = [
   {
     id: 'case-3',
     name: 'Pepe Case',
-    image: 'https://i.postimg.cc/2y82CZVY/Snoop-Dogg.png',
+    image: 'https://i.postimg.cc/3xsQJCrj/New-Project-30.png',
     lottie: 'https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie',
     price: 9999,
     items: LEGENDARY_CASE_ITEMS,
