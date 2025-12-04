@@ -43,7 +43,16 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
               <img
                 src={caseItem.image}
                 alt=""
-                className="absolute inset-0 w-full h-full object-contain opacity-80 blur-[0.5px] scale-125 z-0"
+                className="absolute inset-0 w-full h-full object-contain opacity-80 scale-125 z-0"
+              />
+              <img
+                src={caseItem.image}
+                alt=""
+                className="absolute inset-0 w-full h-full object-contain opacity-80 blur-[3px] scale-125 z-[1]"
+                style={{
+                  maskImage: 'radial-gradient(ellipse at center, transparent 40%, black 70%)',
+                  WebkitMaskImage: 'radial-gradient(ellipse at center, transparent 40%, black 70%)',
+                }}
               />
               <div className="relative w-full h-full z-10">
                 <UniversalMedia
