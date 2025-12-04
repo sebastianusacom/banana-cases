@@ -1,5 +1,5 @@
-import React from 'react';
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import React, { useState, useEffect } from 'react';
+import Lottie from 'lottie-react';
 
 interface UniversalMediaProps {
   src: string;
@@ -16,13 +16,40 @@ export const UniversalMedia: React.FC<UniversalMediaProps> = ({
   loop = true,
   autoplay = true,
 }) => {
-  const isLottie = src?.toLowerCase().endsWith('.lottie');
+  const [animationData, setAnimationData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const isLottie = src?.toLowerCase().endsWith('.json');
+
+  useEffect(() => {
+    if (isLottie && src) {
+      setIsLoading(true);
+      fetch(src)
+        .then(response => response.json())
+        .then(data => {
+          setAnimationData(data);
+          setIsLoading(false);
+        })
+        .catch(error => {
+          console.error('Failed to load Lottie animation:', error);
+          setIsLoading(false);
+        });
+    }
+  }, [src, isLottie]);
 
   if (isLottie) {
+    if (isLoading) {
+      return <div className={className}>Loading...</div>;
+    }
+
+    if (!animationData) {
+      return <div className={className}>Failed to load animation</div>;
+    }
+
     return (
       <div className={className}>
-        <DotLottieReact
-          src={src}
+        <Lottie
+          animationData={animationData}
           loop={loop}
           autoplay={autoplay}
           className="w-full h-full"
