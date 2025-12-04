@@ -211,8 +211,8 @@ const mockCases: Case[] = [
   },
   {
     id: 'free-case',
-    name: 'Free Case',
-    image: 'https://i.postimg.cc/cJkMv57M/IMG-1716.png',
+    name: 'Free Daily Case',
+    image: 'https://i.postimg.cc/tgpm3fVK/IMG-1716-2.png',
     price: 0,
     items: STARTER_CASE_ITEMS,
   },
