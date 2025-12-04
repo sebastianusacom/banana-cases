@@ -376,7 +376,7 @@ const CaseDetailPage: React.FC = () => {
                 )}
             >
                 <ShieldCheck size={14} />
-                <span>Case Content</span>
+                <span>Case Contents</span>
             </button>
         </motion.div>
       </div>
