@@ -203,10 +203,14 @@ const CaseDetailPage: React.FC = () => {
       </div>
 
       <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
-        <div className="w-full max-w-md mx-auto px-4 space-y-2">
+        <motion.div
+          layout
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="w-full max-w-md mx-auto px-4 space-y-2"
+        >
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
-                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-500", isDemoMode ? "flex-[2]" : "flex-1")}>
+                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-400 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
                         disabled={isOpening}
@@ -251,15 +255,27 @@ const CaseDetailPage: React.FC = () => {
 
                 {!isDemoMode && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ duration: 0.4, ease: "easeOut" }}
+                        initial={{ opacity: 0, scale: 0.85, x: 10 }}
+                        animate={{ opacity: 1, scale: 1, x: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, x: 5 }}
+                        transition={{
+                          duration: 0.5,
+                          ease: "easeOut",
+                          scale: { duration: 0.4 },
+                          x: { duration: 0.4 }
+                        }}
                         className="flex gap-1 bg-white/5 p-1 rounded-xl"
                     >
-                        {[1, 2, 3].map((c) => (
-                            <button
+                        {[1, 2, 3].map((c, index) => (
+                            <motion.button
                                 key={c}
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{
+                                  duration: 0.3,
+                                  delay: index * 0.05,
+                                  ease: "easeOut"
+                                }}
                                 onClick={() => handleCountChange(c as 1 | 2 | 3)}
                                 disabled={isOpening}
                                 className={clsx(
@@ -270,7 +286,7 @@ const CaseDetailPage: React.FC = () => {
                                 )}
                             >
                                 {c}x
-                            </button>
+                            </motion.button>
                         ))}
                     </motion.div>
                 )}
@@ -339,10 +355,15 @@ const CaseDetailPage: React.FC = () => {
 
             {!isDemoMode && (
               <motion.p
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                initial={{ opacity: 0, scale: 0.9, y: -5 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: -3 }}
+                transition={{
+                  duration: 0.5,
+                  ease: "easeOut",
+                  scale: { duration: 0.4 },
+                  y: { duration: 0.4 }
+                }}
                 className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}
               >
                 <Flame size={8} className="text-white/40" />
@@ -361,7 +382,7 @@ const CaseDetailPage: React.FC = () => {
                 <ShieldCheck size={14} />
                 <span>Possible Drops</span>
             </button>
-        </div>
+        </motion.div>
       </div>
 
       {showPrizeModal && (
