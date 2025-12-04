@@ -200,9 +200,16 @@ const CaseDetailPage: React.FC = () => {
             
             <div className={clsx("flex items-center gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
                 <motion.div 
-                    className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate", isDemoMode ? "flex-1" : "")}
                     layout
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    initial={false}
+                    animate={{
+                        width: isDemoMode ? "100%" : "auto",
+                    }}
+                    transition={{ type: "spring", bounce: 0.3, duration: 0.5 }}
+                    className={clsx(
+                        "h-11 bg-white/5 p-1 rounded-xl flex relative isolate overflow-hidden",
+                        isDemoMode ? "flex-1" : "flex-1"
+                    )}
                 >
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
@@ -233,22 +240,40 @@ const CaseDetailPage: React.FC = () => {
                         {isDemoMode && (
                             <motion.div
                                 layoutId="mode-active"
+                                initial={{ scale: 0.8, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
                                 className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                transition={{ type: "spring", bounce: 0.4, duration: 0.6 }}
                             />
                         )}
                         <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-colors", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
                         <span className="relative z-10">Demo</span>
                     </button>
+                    {isDemoMode && (
+                        <motion.div
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ delay: 0.2, duration: 0.3 }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 bg-yellow-500/20 rounded-lg border border-yellow-500/30"
+                        >
+                            <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ repeat: Infinity, duration: 2 }}
+                                className="w-1.5 h-1.5 rounded-full bg-yellow-500"
+                            />
+                            <span className="text-[10px] font-bold text-yellow-400 uppercase tracking-wider">Free</span>
+                        </motion.div>
+                    )}
                 </motion.div>
 
                 <AnimatePresence>
                     {!isDemoMode && (
                         <motion.div
-                            initial={{ opacity: 0, width: 0, marginRight: 0 }}
-                            animate={{ opacity: 1, width: "auto", marginRight: 0 }}
-                            exit={{ opacity: 0, width: 0, marginRight: 0 }}
-                            transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                            initial={{ opacity: 0, scale: 0.8, width: 0 }}
+                            animate={{ opacity: 1, scale: 1, width: "auto" }}
+                            exit={{ opacity: 0, scale: 0.8, width: 0 }}
+                            transition={{ type: "spring", bounce: 0.3, duration: 0.4 }}
                             className="flex gap-1 bg-white/5 p-1 rounded-xl overflow-hidden"
                         >
                             {[1, 2, 3].map((c) => (
@@ -332,20 +357,12 @@ const CaseDetailPage: React.FC = () => {
                 </div>
             </motion.button>
 
-            <AnimatePresence>
-                {!isDemoMode && (
-                    <motion.p
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.3 }}
-                        className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}
-                    >
-                        <Flame size={8} className="text-white/40" />
-                        Hold for quick spin
-                    </motion.p>
-                )}
-            </AnimatePresence>
+            {!isDemoMode && (
+                <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
+                  <Flame size={8} className="text-white/40" />
+                  Hold for quick spin
+                </p>
+            )}
 
             <button
                 onClick={() => setShowDropsDrawer(true)}
