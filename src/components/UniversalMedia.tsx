@@ -55,7 +55,7 @@ export const UniversalMedia: React.FC<UniversalMediaProps> = ({
 
   if (isDotLottie) {
     return (
-      <div className={className} style={{ background: 'transparent' }}>
+      <div className={className}>
         <DotLottieReact
           src={src}
           loop={loop}
@@ -68,7 +68,7 @@ export const UniversalMedia: React.FC<UniversalMediaProps> = ({
 
   if (animationData) {
     return (
-      <div className={className} style={{ background: 'transparent' }}>
+      <div className={className}>
         <Lottie
           animationData={animationData}
           loop={loop}
