@@ -11,7 +11,7 @@ export const Layout: React.FC = () => {
 
   return (
     <div
-      className="h-[100dvh] bg-[var(--tg-theme-bg-color)] text-[var(--tg-theme-text-color)] flex flex-col overflow-hidden"
+      className="h-[100dvh] bg-[#0f0f10] text-white flex flex-col overflow-hidden"
       style={{ paddingTop: 'calc(var(--tg-safe-area-inset-top) + 4rem)' }}
     >
       <TopLiveBar />
