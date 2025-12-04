@@ -198,7 +198,7 @@ const mockCases: Case[] = [
     id: 'case-2',
     name: 'Rare Case',
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
-    price: 253,
+    price: 233,
     items: STARTER_CASE_ITEMS,
   },
   {
