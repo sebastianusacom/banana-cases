@@ -266,16 +266,9 @@ const CaseDetailPage: React.FC = () => {
                         }}
                         className="flex gap-1 bg-white/5 p-1 rounded-xl"
                     >
-                        {[1, 2, 3].map((c, index) => (
-                            <motion.button
+                        {[1, 2, 3].map((c) => (
+                            <button
                                 key={c}
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{
-                                  duration: 0.3,
-                                  delay: index * 0.05,
-                                  ease: "easeOut"
-                                }}
                                 onClick={() => handleCountChange(c as 1 | 2 | 3)}
                                 disabled={isOpening}
                                 className={clsx(
@@ -286,7 +279,7 @@ const CaseDetailPage: React.FC = () => {
                                 )}
                             >
                                 {c}x
-                            </motion.button>
+                            </button>
                         ))}
                     </motion.div>
                 )}
@@ -355,15 +348,10 @@ const CaseDetailPage: React.FC = () => {
 
             {!isDemoMode && (
               <motion.p
-                initial={{ opacity: 0, scale: 0.9, y: -5 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95, y: -3 }}
-                transition={{
-                  duration: 0.5,
-                  ease: "easeOut",
-                  scale: { duration: 0.4 },
-                  y: { duration: 0.4 }
-                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
                 className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}
               >
                 <Flame size={8} className="text-white/40" />
