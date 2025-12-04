@@ -36,10 +36,12 @@ const CaseDetailPage: React.FC = () => {
   }, [caseItem, navigate]);
 
   useEffect(() => {
-    if (isDemoMode && count !== 1) {
+    if (caseItem?.id === 'free-case' && count !== 1) {
+      setCount(1);
+    } else if (isDemoMode && count !== 1) {
       setCount(1);
     }
-  }, [isDemoMode, count]);
+  }, [isDemoMode, count, caseItem]);
 
   useEffect(() => {
     if (!isOpening) {
@@ -123,6 +125,11 @@ const CaseDetailPage: React.FC = () => {
   };
 
   const handleMouseDown = () => {
+    if (caseItem.id === 'free-case') {
+      handleOpen();
+      return;
+    }
+
     if (isDemoMode) {
       handleOpen();
       return;
@@ -139,6 +146,7 @@ const CaseDetailPage: React.FC = () => {
   };
 
   const handleMouseUp = () => {
+    if (caseItem.id === 'free-case') return;
     if (isDemoMode) return;
 
     setIsHolding(false);
@@ -210,50 +218,52 @@ const CaseDetailPage: React.FC = () => {
         >
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
-                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
-                    <button
-                        onClick={() => isDemoMode && toggleDemoMode()}
-                        disabled={isOpening}
-                        className={clsx(
-                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
-                            !isDemoMode ? "text-green-500" : "text-white/40 hover:text-white/60"
-                        )}
-                    >
-                        {!isDemoMode && (
-                            <motion.div
-                                layoutId="mode-active"
-                                className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-                                initial={{ scale: 0.8 }}
-                                animate={{ scale: 1 }}
-                            />
-                        )}
-                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
-                        <span className="relative z-10">Real</span>
-                    </button>
-                    <button
-                        onClick={() => !isDemoMode && toggleDemoMode()}
-                        disabled={isOpening}
-                        className={clsx(
-                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
-                            isDemoMode ? "text-yellow-500" : "text-white/40 hover:text-white/60"
-                        )}
-                    >
-                        {isDemoMode && (
-                            <motion.div
-                                layoutId="mode-active"
-                                className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
-                                initial={{ scale: 0.8 }}
-                                animate={{ scale: 1 }}
-                            />
-                        )}
-                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
-                        <span className="relative z-10">Demo</span>
-                    </button>
-                </div>
+                {caseItem.id !== 'free-case' && (
+                    <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                        <button
+                            onClick={() => isDemoMode && toggleDemoMode()}
+                            disabled={isOpening}
+                            className={clsx(
+                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
+                                !isDemoMode ? "text-green-500" : "text-white/40 hover:text-white/60"
+                            )}
+                        >
+                            {!isDemoMode && (
+                                <motion.div
+                                    layoutId="mode-active"
+                                    className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-sm"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                />
+                            )}
+                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
+                            <span className="relative z-10">Real</span>
+                        </button>
+                        <button
+                            onClick={() => !isDemoMode && toggleDemoMode()}
+                            disabled={isOpening}
+                            className={clsx(
+                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
+                                isDemoMode ? "text-yellow-500" : "text-white/40 hover:text-white/60"
+                            )}
+                        >
+                            {isDemoMode && (
+                                <motion.div
+                                    layoutId="mode-active"
+                                    className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
+                                    transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                />
+                            )}
+                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
+                            <span className="relative z-10">Demo</span>
+                        </button>
+                    </div>
+                )}
 
-                {!isDemoMode && (
+                {caseItem.id !== 'free-case' && !isDemoMode && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.85, x: 10 }}
                         animate={{ opacity: 1, scale: 1, x: 0 }}
@@ -331,9 +341,9 @@ const CaseDetailPage: React.FC = () => {
                     ) : (
                         <>
                             <span className="uppercase tracking-wide font-black text-lg opacity-90">
-                                {isDemoMode ? "OPEN FREE" : "OPEN FOR"}
+                                {caseItem.id === 'free-case' ? "OPEN FOR FREE" : (isDemoMode ? "OPEN FREE" : "OPEN FOR")}
                             </span>
-                            {!isDemoMode && (
+                            {caseItem.id !== 'free-case' && !isDemoMode && (
                                 <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
                                     <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
                                     <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
@@ -344,7 +354,7 @@ const CaseDetailPage: React.FC = () => {
                 </div>
             </motion.button>
 
-            {!isDemoMode && (
+            {!isDemoMode && caseItem.id !== 'free-case' && (
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
