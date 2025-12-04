@@ -37,11 +37,11 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         <div className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full group-hover:opacity-30 transition-opacity ${glowClass}`} />
 
         {/* Image/Lottie Container */}
-        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0`}>
+        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 overflow-visible`}>
           {caseItem.lottie ? (
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full overflow-visible">
               <div 
-                className="absolute inset-0"
+                className="absolute"
                 style={{ 
                   backgroundImage: `url(${caseItem.image})`,
                   backgroundSize: '180%',
@@ -50,6 +50,10 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
                   filter: 'blur(0.5px)',
                   opacity: 1,
                   zIndex: 0,
+                  top: '-20%',
+                  left: '-20%',
+                  width: '140%',
+                  height: '140%',
                 }}
               />
               <div className="relative w-full h-full" style={{ zIndex: 1 }}>
