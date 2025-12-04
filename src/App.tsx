@@ -15,10 +15,6 @@ function App() {
     tg.expand();
     tg.requestFullscreen?.();
     
-    if (tg.themeParams.bg_color) {
-      document.documentElement.style.setProperty('--tg-theme-bg-color', tg.themeParams.bg_color);
-    }
-
     const updateSafeArea = () => {
       const safeTop = tg.safeAreaInset?.top ?? 0;
       const contentTop = tg.contentSafeAreaInset?.top ?? 0;
