@@ -51,6 +51,12 @@ const CaseDetailPage: React.FC = () => {
     }
   }, [isOpening, navigate, tg]);
 
+  useEffect(() => {
+    if (isDemoMode && count !== 1) {
+      setCount(1);
+    }
+  }, [isDemoMode, count]);
+
 
   if (!caseItem) return null;
 
@@ -117,7 +123,7 @@ const CaseDetailPage: React.FC = () => {
   };
 
   const handleMouseDown = () => {
-    if (holdTimeoutRef.current) return;
+    if (holdTimeoutRef.current || isDemoMode) return;
 
     setIsHolding(true);
     holdTimeoutRef.current = setTimeout(() => {
@@ -192,8 +198,12 @@ const CaseDetailPage: React.FC = () => {
       <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
         <div className="w-full max-w-md mx-auto px-4 space-y-2">
             
-            <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
-                <div className="flex-1 h-11 bg-white/5 p-1 rounded-xl flex relative isolate">
+            <div className={clsx("flex items-center gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
+                <motion.div 
+                    className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate", isDemoMode ? "flex-1" : "")}
+                    layout
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                >
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
                         disabled={isOpening}
@@ -230,25 +240,35 @@ const CaseDetailPage: React.FC = () => {
                         <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-colors", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
                         <span className="relative z-10">Demo</span>
                     </button>
-                </div>
+                </motion.div>
 
-                <div className="flex gap-1 bg-white/5 p-1 rounded-xl">
-                    {[1, 2, 3].map((c) => (
-                        <button
-                            key={c}
-                            onClick={() => handleCountChange(c as 1 | 2 | 3)}
-                            disabled={isOpening}
-                            className={clsx(
-                                "h-9 w-11 rounded-lg font-bold transition-all text-sm",
-                                count === c 
-                                    ? "bg-[#0f0f10] text-white shadow-sm" 
-                                    : "text-white/40 hover:text-white/80"
-                            )}
+                <AnimatePresence>
+                    {!isDemoMode && (
+                        <motion.div
+                            initial={{ opacity: 0, width: 0, marginRight: 0 }}
+                            animate={{ opacity: 1, width: "auto", marginRight: 0 }}
+                            exit={{ opacity: 0, width: 0, marginRight: 0 }}
+                            transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
+                            className="flex gap-1 bg-white/5 p-1 rounded-xl overflow-hidden"
                         >
-                            {c}x
-                        </button>
-                    ))}
-                </div>
+                            {[1, 2, 3].map((c) => (
+                                <button
+                                    key={c}
+                                    onClick={() => handleCountChange(c as 1 | 2 | 3)}
+                                    disabled={isOpening}
+                                    className={clsx(
+                                        "h-9 w-11 rounded-lg font-bold transition-all text-sm",
+                                        count === c 
+                                            ? "bg-[#0f0f10] text-white shadow-sm" 
+                                            : "text-white/40 hover:text-white/80"
+                                    )}
+                                >
+                                    {c}x
+                                </button>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
             <motion.button
@@ -312,10 +332,20 @@ const CaseDetailPage: React.FC = () => {
                 </div>
             </motion.button>
 
-            <p className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}>
-              <Flame size={8} className="text-white/40" />
-              Hold for quick spin
-            </p>
+            <AnimatePresence>
+                {!isDemoMode && (
+                    <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}
+                    >
+                        <Flame size={8} className="text-white/40" />
+                        Hold for quick spin
+                    </motion.p>
+                )}
+            </AnimatePresence>
 
             <button
                 onClick={() => setShowDropsDrawer(true)}
