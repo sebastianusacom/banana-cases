@@ -44,11 +44,11 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
                 className="absolute inset-0"
                 style={{ 
                   backgroundImage: `url(${caseItem.image})`,
-                  backgroundSize: 'contain',
+                  backgroundSize: '180%',
                   backgroundPosition: 'center',
                   backgroundRepeat: 'no-repeat',
-                  filter: 'blur(1px)',
-                  opacity: 0.8,
+                  filter: 'blur(0.5px)',
+                  opacity: 1,
                   zIndex: 0,
                 }}
               />
