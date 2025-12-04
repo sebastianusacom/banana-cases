@@ -210,12 +210,12 @@ const CaseDetailPage: React.FC = () => {
         >
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
-                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-200 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
                         disabled={isOpening}
                         className={clsx(
-                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-300",
+                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
                             !isDemoMode ? "text-green-500" : "text-white/40 hover:text-white/60"
                         )}
                     >
@@ -223,19 +223,19 @@ const CaseDetailPage: React.FC = () => {
                             <motion.div
                                 layoutId="mode-active"
                                 className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                 initial={{ scale: 0.8 }}
                                 animate={{ scale: 1 }}
                             />
                         )}
-                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-500", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
+                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
                         <span className="relative z-10">Real</span>
                     </button>
                     <button
                         onClick={() => !isDemoMode && toggleDemoMode()}
                         disabled={isOpening}
                         className={clsx(
-                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-300",
+                            "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
                             isDemoMode ? "text-yellow-500" : "text-white/40 hover:text-white/60"
                         )}
                     >
@@ -243,12 +243,12 @@ const CaseDetailPage: React.FC = () => {
                             <motion.div
                                 layoutId="mode-active"
                                 className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
-                                transition={{ type: "spring", bounce: 0.2, duration: 0.8 }}
+                                transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                 initial={{ scale: 0.8 }}
                                 animate={{ scale: 1 }}
                             />
                         )}
-                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-500", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
+                        <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
                         <span className="relative z-10">Demo</span>
                     </button>
                 </div>
