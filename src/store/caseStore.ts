@@ -5,6 +5,7 @@ export interface Case {
   id: string;
   name: string;
   image: string;
+  lottie?: string;
   price: number;
   items: Prize[];
 }
@@ -204,6 +205,7 @@ const mockCases: Case[] = [
     id: 'case-3',
     name: 'Pepe Case',
     image: 'https://i.postimg.cc/90FJc7rV/Plush-Pepe.png',
+    lottie: 'https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie',
     price: 9999,
     items: LEGENDARY_CASE_ITEMS,
   },

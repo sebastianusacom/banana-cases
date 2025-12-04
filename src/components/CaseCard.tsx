@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import type { Case } from '../store/caseStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { Star, Timer } from 'lucide-react';
+import { UniversalMedia } from './UniversalMedia';
 
 interface CaseCardProps {
   caseItem: Case;
@@ -35,13 +36,30 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         {/* Glow Effect behind image */}
         <div className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full group-hover:opacity-30 transition-opacity ${glowClass}`} />
 
-        {/* Image */}
+        {/* Image/Lottie Container */}
         <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0`}>
-          <img
-            src={caseItem.image}
-            alt={caseItem.name}
-            className="w-full h-full object-contain"
-          />
+          {caseItem.lottie ? (
+            <>
+              <img
+                src={caseItem.image}
+                alt={caseItem.name}
+                className="absolute inset-0 w-full h-full object-contain opacity-50 blur-sm"
+              />
+              <div className="relative w-full h-full z-10">
+                <UniversalMedia
+                  src={caseItem.lottie}
+                  alt={caseItem.name}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            </>
+          ) : (
+            <img
+              src={caseItem.image}
+              alt={caseItem.name}
+              className="w-full h-full object-contain"
+            />
+          )}
         </div>
 
         {/* Text Content */}
