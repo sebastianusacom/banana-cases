@@ -37,26 +37,15 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         <div className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full group-hover:opacity-30 transition-opacity ${glowClass}`} />
 
         {/* Image/Lottie Container */}
-        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 overflow-visible`}>
+        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0`}>
           {caseItem.lottie ? (
-            <div className="relative w-full h-full overflow-visible">
-              <div 
-                className="absolute"
-                style={{ 
-                  backgroundImage: `url(${caseItem.image})`,
-                  backgroundSize: '180%',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat',
-                  filter: 'blur(0.5px)',
-                  opacity: 1,
-                  zIndex: 0,
-                  top: '-20%',
-                  left: '-20%',
-                  width: '140%',
-                  height: '140%',
-                }}
+            <div className="relative w-full h-full">
+              <img
+                src={caseItem.image}
+                alt=""
+                className="absolute inset-0 w-full h-full object-contain opacity-80 blur-[0.5px] scale-125 z-0"
               />
-              <div className="relative w-full h-full" style={{ zIndex: 1 }}>
+              <div className="relative w-full h-full z-10">
                 <UniversalMedia
                   src={caseItem.lottie}
                   alt={caseItem.name}
