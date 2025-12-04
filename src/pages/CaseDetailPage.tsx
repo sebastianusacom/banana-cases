@@ -205,12 +205,12 @@ const CaseDetailPage: React.FC = () => {
       <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
         <motion.div
           layout
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           className="w-full max-w-md mx-auto px-4 space-y-2"
         >
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
-                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-400 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-200 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
                     <button
                         onClick={() => isDemoMode && toggleDemoMode()}
                         disabled={isOpening}
@@ -259,10 +259,8 @@ const CaseDetailPage: React.FC = () => {
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9, x: 5 }}
                         transition={{
-                          duration: 0.5,
-                          ease: "easeOut",
-                          scale: { duration: 0.4 },
-                          x: { duration: 0.4 }
+                          duration: 0.25,
+                          ease: "easeOut"
                         }}
                         className="flex gap-1 bg-white/5 p-1 rounded-xl"
                     >
@@ -355,7 +353,7 @@ const CaseDetailPage: React.FC = () => {
                 className={clsx("text-center text-[10px] text-white/40 mt-1 flex items-center justify-center gap-1", isOpening && "opacity-20 pointer-events-none")}
               >
                 <Flame size={8} className="text-white/40" />
-                Hold for quick spin
+                Hold button for quick spin
               </motion.p>
             )}
 
