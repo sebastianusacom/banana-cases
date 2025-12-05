@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useUserStore } from '../store/userStore';
+import { useCrashGameStore } from '../store/crashGameStore';
 import { Star, Plus } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 
@@ -25,6 +26,9 @@ export const TopLiveBar: React.FC = () => {
   const { stars, addStars } = useUserStore();
   const { impactLight } = useHaptics();
   const [isSpinning, setIsSpinning] = useState(false);
+  const { phase, hasBet } = useCrashGameStore();
+  const isFlying = phase === 'flying';
+  const isDimmed = isSpinning || (isFlying && hasBet);
 
   // Listen for spinning state from a custom event
   useEffect(() => {
@@ -65,7 +69,7 @@ export const TopLiveBar: React.FC = () => {
 
   return (
     <div 
-      className={`fixed top-0 left-0 right-0 z-50 pointer-events-none transition-opacity duration-300 ${isSpinning ? 'opacity-20' : 'opacity-100'}`} 
+      className={`fixed top-0 left-0 right-0 z-50 pointer-events-none transition-opacity duration-300 ${isDimmed ? 'opacity-20' : 'opacity-100'}`} 
       style={{ paddingTop: 'var(--tg-safe-area-inset-top)' }}
     >
       <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-[#0f0f10] to-transparent backdrop-blur-[2px] -z-10" style={{ height: 'calc(var(--tg-safe-area-inset-top) + 4rem)' }} />
