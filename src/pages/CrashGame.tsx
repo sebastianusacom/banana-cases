@@ -786,7 +786,7 @@ const CrashGame: React.FC = () => {
                       setShowBetDrawer(false);
                     }}
                     disabled={gameState.hasBet || gameState.betAmount > stars || gameState.betAmount <= 0}
-                    className="w-full py-3 bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-base flex items-center justify-center mt-2"
+                    className="w-full py-3 bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium rounded-full transition-colors text-base flex items-center justify-center mt-2"
                   >
                     {gameState.phase === 'flying' ? `Bet for Next Round (${gameState.betAmount} ⭐)` : `Place Bet (${gameState.betAmount} ⭐)`}
                   </button>
