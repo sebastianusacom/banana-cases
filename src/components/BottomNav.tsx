@@ -25,7 +25,7 @@ export const BottomNav: React.FC = () => {
         >
           <Gift size={22} strokeWidth={2.5} />
         </NavLink>
-        
+
         <div className="w-px h-8 bg-white/10" />
 
         <NavLink
@@ -35,7 +35,7 @@ export const BottomNav: React.FC = () => {
         >
           <Rocket size={22} strokeWidth={2.5} />
         </NavLink>
-        
+
         <div className="w-px h-8 bg-white/10" />
 
         <NavLink
