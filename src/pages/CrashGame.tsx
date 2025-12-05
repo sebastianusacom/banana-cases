@@ -409,7 +409,7 @@ const CrashGame: React.FC = () => {
                   }}
                 >
                   <UniversalMedia
-                    src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@main/Stellar%20Rocket%20%2323888.lottie"
+                    src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@main/Stellar%20Rocket%20%2323888-2.lottie"
                     className="w-full h-full"
                     loop={gameState.phase === 'flying'}
                     autoplay={gameState.phase === 'flying'}
