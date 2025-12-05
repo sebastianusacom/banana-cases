@@ -20,6 +20,7 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number | null>(null);
   const flyingStartTimeRef = useRef<number | null>(null);
+  const FLIGHT_DURATION_MS = 16000; // Sync with even faster bet ramp
 
   // Handle flying state changes
   useEffect(() => {
@@ -37,9 +38,8 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     if (!isFlying || !flyingStartTimeRef.current) return 135;
 
     const elapsed = Date.now() - flyingStartTimeRef.current;
-    // Match the time it takes to reach 5x multiplier (approximately 42.5 seconds)
-    const duration = 42500; // 42.5 seconds in milliseconds
-    const progress = Math.min(elapsed / duration, 1);
+    // Match the faster time it takes to reach 5x multiplier (~21 seconds)
+    const progress = Math.min(elapsed / FLIGHT_DURATION_MS, 1);
 
     // Go from 135° (top-right to bottom-left) to 90° (straight down) over the duration
     // This matches the rocket rotation from 45° to 0°
@@ -159,8 +159,7 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
           
           // Calculate speed multiplier that increases over time
           const elapsed = flyingStartTimeRef.current ? Date.now() - flyingStartTimeRef.current : 0;
-          const duration = 42500; // Match the rotation duration
-          const progress = Math.min(elapsed / duration, 1);
+          const progress = Math.min(elapsed / FLIGHT_DURATION_MS, 1);
           // Speed increases from 1x to 3x over the duration
           const speedMultiplier = 1 + (progress * 2);
           

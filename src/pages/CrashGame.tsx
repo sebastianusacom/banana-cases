@@ -30,6 +30,7 @@ interface PlayerBet {
 }
 
 const MAX_BET = 10000; // Maximum bet limit in stars
+const COUNTDOWN_TICK_MS = 900; // 10→1 over ~8s
 
 const CrashGame: React.FC = () => {
   const { stars, subtractStars, addStars } = useUserStore();
@@ -266,8 +267,8 @@ const CrashGame: React.FC = () => {
         return;
       }
 
-      // Increase multiplier exponentially (typical crash game mechanics)
-      const growthRate = 1.002; // Slightly slower growth for better gameplay
+      // Increase multiplier exponentially (even faster rounds)
+      const growthRate = 1.006; // Quicker ramp to higher multipliers
       currentMultiplier *= growthRate;
 
       const roundedMultiplier = Math.round(currentMultiplier * 100) / 100;
@@ -363,7 +364,7 @@ const CrashGame: React.FC = () => {
 
           return { ...prev, nextRoundIn: prev.nextRoundIn - 1 };
         });
-      }, 1000);
+      }, COUNTDOWN_TICK_MS);
     }
 
     return () => {
