@@ -15,6 +15,7 @@ interface UserState {
   stars: number;
   inventory: Prize[];
   isDemoMode: boolean;
+  setDemoMode: (mode: boolean) => void;
   toggleDemoMode: () => void;
   addStars: (amount: number) => void;
   subtractStars: (amount: number) => boolean;
@@ -30,6 +31,7 @@ export const useUserStore = create<UserState>()(
       stars: 1000,
       inventory: [],
       isDemoMode: false,
+      setDemoMode: (mode) => set(() => ({ isDemoMode: mode })),
       toggleDemoMode: () => set((state) => ({ isDemoMode: !state.isDemoMode })),
       resetBalance: () => set({ stars: 1000 }), // remove later
       addStars: (amount) => set((state) => ({ stars: state.stars + amount })),

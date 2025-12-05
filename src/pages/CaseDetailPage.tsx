@@ -14,7 +14,7 @@ const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getCaseById } = useCaseStore();
-  const { stars, isDemoMode, toggleDemoMode, addItem, subtractStars } = useUserStore();
+  const { stars, isDemoMode, toggleDemoMode, setDemoMode, addItem, subtractStars } = useUserStore();
   const { selectionChanged, impactMedium, impactHeavy, notificationSuccess } = useHaptics();
   const { tg, isTelegramWebApp } = useTelegram();
 
@@ -28,6 +28,10 @@ const CaseDetailPage: React.FC = () => {
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
+
+  useEffect(() => {
+    setDemoMode(false);
+  }, [setDemoMode]);
 
   useEffect(() => {
     if (!caseItem) {
