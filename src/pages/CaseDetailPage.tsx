@@ -227,7 +227,11 @@ const CaseDetailPage: React.FC = () => {
                 {caseItem.id !== 'free-case' && (
                     <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
                         <button
-                            onClick={() => isDemoMode && toggleDemoMode()}
+                            onClick={() => {
+                              if (!isDemoMode) return;
+                              selectionChanged();
+                              toggleDemoMode();
+                            }}
                             disabled={isOpening}
                             className={clsx(
                                 "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
@@ -247,7 +251,11 @@ const CaseDetailPage: React.FC = () => {
                             <span className="relative z-10">Real</span>
                         </button>
                         <button
-                            onClick={() => !isDemoMode && toggleDemoMode()}
+                            onClick={() => {
+                              if (isDemoMode) return;
+                              selectionChanged();
+                              toggleDemoMode();
+                            }}
                             disabled={isOpening}
                             className={clsx(
                                 "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
