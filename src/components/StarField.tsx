@@ -63,7 +63,7 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     // Initialize particles
     const initParticles = () => {
       particlesRef.current = [];
-      const particleCount = 100;
+      const particleCount = 50;
 
       for (let i = 0; i < particleCount; i++) {
         // Create more small stars (75%) and fewer big stars (25%)
