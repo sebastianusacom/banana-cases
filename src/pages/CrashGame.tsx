@@ -454,7 +454,7 @@ const CrashGame: React.FC = () => {
 
           {/* Current Bets List - Always Visible */}
           <div className="w-full max-w-sm mb-4">
-            <div className="bg-white/5 rounded-xl p-4 min-h-[120px] max-h-40 overflow-y-auto">
+            <div className="bg-white/5 rounded-2xl p-4 min-h-[120px] max-h-40 overflow-y-auto">
               {currentBets.length === 0 ? (
                 <div className="text-white/40 text-center py-8 text-sm">
                   No bets placed yet
