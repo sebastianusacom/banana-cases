@@ -29,6 +29,8 @@ interface PlayerBet {
   cashoutMultiplier?: number;
 }
 
+const MAX_BET = 10000; // Maximum bet limit in stars
+
 const CrashGame: React.FC = () => {
   const { stars, subtractStars, addStars } = useUserStore();
   const {
@@ -45,7 +47,7 @@ const CrashGame: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>({
     phase: 'waiting',
     multiplier: 1.00,
-    betAmount: 10,
+    betAmount: 50,
     autoCashout: null,
     hasBet: false,
     winnings: 0,
@@ -127,7 +129,7 @@ const CrashGame: React.FC = () => {
     setGameState(prev => ({
       ...prev,
       hasBet: false,
-      betAmount: 10, // Reset to default
+      betAmount: 50, // Reset to default
       autoCashout: null,
     }));
   };
@@ -679,7 +681,7 @@ const CrashGame: React.FC = () => {
 
                 <div className="space-y-4 flex-1">
                   {/* Bet Amount Display */}
-                  <div className="py-3 flex justify-center">
+                  <div className="py-3 flex flex-col items-center gap-2">
                     <div className="flex items-center gap-2 bg-white/5 rounded-2xl border border-white/10 px-4 py-3 shadow-inner">
                       <input
                         type="number"
@@ -689,44 +691,58 @@ const CrashGame: React.FC = () => {
                         onChange={(e) => {
                           const value = e.target.value;
                           const numValue = value === '' ? 0 : parseInt(value, 10);
-                          setGameState(prev => ({ ...prev, betAmount: Math.max(0, numValue) }));
+                          const maxBet = Math.min(MAX_BET, stars);
+                          setGameState(prev => ({ ...prev, betAmount: Math.max(50, Math.min(numValue, maxBet)) }));
                         }}
                         disabled={gameState.hasBet}
                         className="text-center text-white text-3xl font-black bg-transparent border-none outline-none placeholder-white/30 disabled:opacity-50"
                         style={{ width: `${Math.max(3, (gameState.betAmount ? String(gameState.betAmount).length + 1 : 3))}ch` }}
-                        min="1"
-                        max={stars}
+                        min="50"
+                        max={Math.min(MAX_BET, stars)}
                       />
                       <Star size={20} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                     </div>
+                    <p className="text-white/50 text-xs font-medium">50 to 10,000 stars</p>
                   </div>
 
                   {/* Quick Add Buttons */}
                   <div className="flex justify-center">
                     <div className="bg-white/5 rounded-full p-1 flex gap-1">
                       <button
-                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 100, stars) }))}
+                        onClick={() => {
+                          const maxBet = Math.min(MAX_BET, stars);
+                          setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 100, maxBet) }));
+                        }}
                         disabled={gameState.hasBet}
                         className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
                       >
                         +100
                       </button>
                       <button
-                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 500, stars) }))}
+                        onClick={() => {
+                          const maxBet = Math.min(MAX_BET, stars);
+                          setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 500, maxBet) }));
+                        }}
                         disabled={gameState.hasBet}
                         className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
                       >
                         +500
                       </button>
                       <button
-                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 2500, stars) }))}
+                        onClick={() => {
+                          const maxBet = Math.min(MAX_BET, stars);
+                          setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 2500, maxBet) }));
+                        }}
                         disabled={gameState.hasBet}
                         className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
                       >
                         +2500
                       </button>
                       <button
-                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount * 2, stars) }))}
+                        onClick={() => {
+                          const maxBet = Math.min(MAX_BET, stars);
+                          setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount * 2, maxBet) }));
+                        }}
                         disabled={gameState.hasBet}
                         className="px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 disabled:opacity-30 text-yellow-400 disabled:text-white/20 rounded-full font-medium transition-colors text-sm"
                       >
@@ -777,7 +793,7 @@ const CrashGame: React.FC = () => {
                       <span className={`text-xs font-semibold uppercase tracking-wider ${
                         gameState.autoCashout ? 'text-green-300' : 'text-white/70'
                       }`}>
-                        Auto
+                        AUTO CASHOUT
                       </span>
                     </label>
 
@@ -789,24 +805,6 @@ const CrashGame: React.FC = () => {
                         transition={{ duration: 0.18, ease: 'easeOut' }}
                         className="flex items-center gap-2"
                       >
-                        {/* Preset Multipliers */}
-                        <div className="bg-white/5 rounded-full p-1 flex gap-1 flex-shrink-0">
-                          {[1.5, 2.0, 5.0].map((multiplier) => (
-                            <button
-                              key={multiplier}
-                              onClick={() => setGameState(prev => ({ ...prev, autoCashout: multiplier }))}
-                              disabled={gameState.hasBet}
-                              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                                gameState.autoCashout === multiplier
-                                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                                  : 'text-white/70 hover:text-white hover:bg-white/10'
-                              } disabled:opacity-50`}
-                            >
-                              {multiplier}x
-                            </button>
-                          ))}
-                        </div>
-
                         {/* Custom Multiplier Input */}
                         <div className="flex items-center bg-white/5 rounded-full px-1 py-1 gap-1">
                           <button
@@ -843,7 +841,7 @@ const CrashGame: React.FC = () => {
                       placeBet();
                       setShowBetDrawer(false);
                     }}
-                    disabled={gameState.hasBet || gameState.betAmount > stars || gameState.betAmount <= 0}
+                    disabled={gameState.hasBet || gameState.betAmount > Math.min(MAX_BET, stars) || gameState.betAmount < 50}
                     className="w-full py-3 bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium rounded-full transition-colors text-base flex items-center justify-center mt-2"
                   >
                     <div className="flex items-center gap-2">
