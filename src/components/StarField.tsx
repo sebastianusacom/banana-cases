@@ -11,6 +11,8 @@ interface Particle {
   opacity: number;
   baseSpeed: number;
   angle: number;
+  color: string;
+  isGolden: boolean;
 }
 
 const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
@@ -68,7 +70,10 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
       for (let i = 0; i < particleCount; i++) {
         // Create more small stars (75%) and fewer big stars (25%)
         const isBigStar = Math.random() < 0.25;
-        const size = isBigStar ? Math.random() * 1.2 + 1.8 : Math.random() * 0.8 + 0.4;
+        const isGolden = Math.random() < 0.08;
+        const size = isBigStar
+          ? Math.random() * 1.2 + 1.8
+          : Math.random() * 0.8 + 0.4 + (isGolden ? 0.4 : 0);
         // Small stars move much faster than big ones
         const baseSpeed = isBigStar ? Math.random() * 2.0 + 1.0 : Math.random() * 4.0 + 3.0;
 
@@ -79,6 +84,8 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
           opacity: Math.random() * 0.8 + 0.2,
           baseSpeed: baseSpeed,
           angle: Math.random() * Math.PI * 2,
+          color: isGolden ? '#ffde8a' : 'white',
+          isGolden,
         });
       }
     };
@@ -89,18 +96,60 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      const drawTrail = (particle: Particle, vx: number, vy: number, alpha: number) => {
+        const mag = Math.sqrt(vx * vx + vy * vy) || 1;
+        const nx = vx / mag;
+        const ny = vy / mag;
+        const length = particle.isGolden ? 38 : 16;
+        const tailX = particle.x - nx * length;
+        const tailY = particle.y - ny * length;
+        const startOpacity = particle.isGolden ? 0.95 : 0.55;
+        const endOpacity = 0;
+        const grad = ctx.createLinearGradient(particle.x, particle.y, tailX, tailY);
+        grad.addColorStop(
+          0,
+          particle.isGolden
+            ? `rgba(255, 222, 138, ${Math.min(1, startOpacity * alpha)})`
+            : `rgba(255, 255, 255, ${Math.min(1, startOpacity * alpha)})`
+        );
+        grad.addColorStop(
+          1,
+          particle.isGolden
+            ? `rgba(255, 222, 138, ${endOpacity})`
+            : `rgba(255, 255, 255, ${endOpacity})`
+        );
+
+        ctx.save();
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = particle.size * (particle.isGolden ? 1.4 : 1);
+        ctx.beginPath();
+        ctx.moveTo(particle.x, particle.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+        ctx.restore();
+      };
+
       particlesRef.current.forEach((particle, index) => {
+        const twinkle = particle.isGolden
+          ? (Math.sin(Date.now() * 0.0075 + index) + 1) * 0.25 + 0.85
+          : 1;
+        const hdrBoost = particle.isGolden ? 1.4 : 1;
+        const alpha = Math.min(1, particle.opacity * twinkle * hdrBoost);
+        let vx = 0;
+        let vy = 0;
+
         // Draw particle
         ctx.save();
-        ctx.globalAlpha = particle.opacity;
-        ctx.fillStyle = 'white';
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = particle.color;
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fill();
 
         // Add glow effect
-        ctx.shadowColor = 'white';
-        ctx.shadowBlur = particle.size * 2;
+        ctx.shadowColor = particle.color;
+        ctx.shadowBlur = particle.isGolden ? particle.size * 8 : particle.size * 2.5;
         ctx.fill();
         ctx.restore();
 
@@ -124,8 +173,14 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
           // Angle goes from 135° (top-right to bottom-left) to 90° (straight down)
           const angleRad = currentAngle * Math.PI / 180;
 
-          particle.x += Math.cos(angleRad) * moveSpeed;
-          particle.y += Math.sin(angleRad) * moveSpeed;
+          vx = Math.cos(angleRad) * moveSpeed;
+          vy = Math.sin(angleRad) * moveSpeed;
+          const speedMag = Math.hypot(vx, vy);
+          if (speedMag > 0.5) {
+            drawTrail(particle, vx, vy, alpha);
+          }
+          particle.x += vx;
+          particle.y += vy;
           
           // Wrap around screen edges - create continuous treadmill effect
           // When stars exit one side, they reappear on the opposite side
@@ -151,8 +206,10 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
           }
         } else {
           // Static movement when not flying - gentle floating
-          particle.x += Math.cos(particle.angle) * particle.baseSpeed * 0.1;
-          particle.y += Math.sin(particle.angle) * particle.baseSpeed * 0.1;
+          vx = Math.cos(particle.angle) * particle.baseSpeed * 0.1;
+          vy = Math.sin(particle.angle) * particle.baseSpeed * 0.1;
+          particle.x += vx;
+          particle.y += vy;
 
           // Wrap around screen edges
           if (particle.x < 0) particle.x = canvas.width;
