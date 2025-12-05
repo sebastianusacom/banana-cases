@@ -7,7 +7,7 @@ import clsx from 'clsx';
 
 export const BottomNav: React.FC = () => {
   const { selectionChanged } = useHaptics();
-  const { hasBet, phase } = useCrashGameStore();
+  const { hasBet } = useCrashGameStore();
   
   // Disable navigation when player has a bet placed (or queued)
   const isDisabled = hasBet;
