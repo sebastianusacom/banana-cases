@@ -6,6 +6,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
 import StarField from '../components/StarField';
 import { useCrashGameStore } from '../store/crashGameStore';
+import { useTelegram } from '../hooks/useTelegram';
 
 interface GameState {
   phase: 'waiting' | 'flying' | 'crashed';
@@ -20,7 +21,8 @@ interface GameState {
 interface PlayerBet {
   id: string;
   username: string;
-  avatar: string;
+  avatar?: string;
+  avatarUrl?: string;
   betAmount: number;
   autoCashout: number | null;
   status?: 'active' | 'cashed_out' | 'lost' | 'queued';
@@ -37,6 +39,7 @@ const CrashGame: React.FC = () => {
     notificationError,
     crashImpact,
   } = useHaptics();
+  const { user } = useTelegram();
   const { setGameState: setCrashGameStore } = useCrashGameStore();
 
   const [gameState, setGameState] = useState<GameState>({
@@ -87,10 +90,12 @@ const CrashGame: React.FC = () => {
 
     // Add player to current bets list
     const betStatus: PlayerBet['status'] = gameState.phase === 'flying' ? 'queued' : 'active';
+    const userAvatarUrl = user?.photo_url;
     const newBet = {
       id: 'player',
-      username: 'You',
+      username: user?.first_name || 'You',
       avatar: '⭐',
+      avatarUrl: userAvatarUrl || undefined,
       betAmount: gameState.betAmount,
       autoCashout: gameState.autoCashout,
       status: betStatus,
@@ -514,6 +519,7 @@ const CrashGame: React.FC = () => {
                 <div className="space-y-3">
                   {currentBets.map((bet, index) => {
                     const isQueuedAndWaiting = bet.status === 'queued' && gameState.phase === 'waiting';
+                    const avatarInitial = (bet.username?.[0] || '⭐').toUpperCase();
                     return (
                       <motion.div
                         key={bet.id}
@@ -531,15 +537,28 @@ const CrashGame: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          <span className="text-xl">{bet.avatar}</span>
+                          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 border border-white/10 flex items-center justify-center text-white text-sm font-semibold">
+                            {bet.avatarUrl ? (
+                              <img
+                                src={bet.avatarUrl}
+                                alt={`${bet.username}'s avatar`}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-lg">{bet.avatar || avatarInitial}</span>
+                            )}
+                          </div>
                           <span className="text-white text-sm font-medium">{bet.username}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-white font-bold text-sm">
-                            {bet.status === 'active' && gameState.phase === 'flying'
-                              ? `${Math.floor(bet.betAmount * gameState.multiplier)}⭐`
-                              : `${bet.betAmount}⭐`}
-                          </span>
+                          <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                            <span className="text-white font-black text-sm leading-none">
+                              {bet.status === 'active' && gameState.phase === 'flying'
+                                ? Math.floor(bet.betAmount * gameState.multiplier)
+                                : bet.betAmount}
+                            </span>
+                            <Star size={16} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                          </div>
                           {bet.autoCashout && (bet.status === 'active' || bet.status === 'queued') && (
                             <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
                               @{bet.autoCashout}x
@@ -660,23 +679,26 @@ const CrashGame: React.FC = () => {
 
                 <div className="space-y-4 flex-1">
                   {/* Bet Amount Display */}
-                  <div className="text-center py-3">
-                    <input
-                      type="number"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      value={gameState.betAmount || ''}
+                  <div className="py-3 flex justify-center">
+                    <div className="flex items-center gap-2 bg-white/5 rounded-2xl border border-white/10 px-4 py-3 shadow-inner">
+                      <input
+                        type="number"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={gameState.betAmount || ''}
                         onChange={(e) => {
-                        const value = e.target.value;
-                        const numValue = value === '' ? 0 : parseInt(value, 10);
-                        setGameState(prev => ({ ...prev, betAmount: Math.max(0, numValue) }));
-                      }}
-                      disabled={gameState.hasBet}
-                      className="text-center text-white text-3xl font-bold bg-transparent border-none outline-none w-full placeholder-white/30 disabled:opacity-50"
-                      min="1"
-                      max={stars}
-                    />
-                    <div className="text-yellow-400 text-lg mt-1">⭐</div>
+                          const value = e.target.value;
+                          const numValue = value === '' ? 0 : parseInt(value, 10);
+                          setGameState(prev => ({ ...prev, betAmount: Math.max(0, numValue) }));
+                        }}
+                        disabled={gameState.hasBet}
+                        className="text-center text-white text-3xl font-black bg-transparent border-none outline-none placeholder-white/30 disabled:opacity-50"
+                        style={{ width: `${Math.max(3, (gameState.betAmount ? String(gameState.betAmount).length + 1 : 3))}ch` }}
+                        min="1"
+                        max={stars}
+                      />
+                      <Star size={20} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                    </div>
                   </div>
 
                   {/* Quick Add Buttons */}
@@ -715,7 +737,7 @@ const CrashGame: React.FC = () => {
 
                   {/* Auto Cashout */}
                   <div className="flex items-center justify-center gap-3">
-                    <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+                    <label className="flex items-center gap-3 cursor-pointer flex-shrink-0 select-none">
                       <input
                         type="checkbox"
                         checked={!!gameState.autoCashout}
@@ -724,13 +746,49 @@ const CrashGame: React.FC = () => {
                           autoCashout: e.target.checked ? (prev.autoCashout || 2.00) : null
                         }))}
                         disabled={gameState.hasBet}
-                        className="w-4 h-4 rounded border-white/20 bg-white/5 checked:bg-green-500 checked:border-green-500 focus:ring-0 focus:ring-offset-0"
+                        className="sr-only"
                       />
-                      <span className="text-white/70 text-xs uppercase tracking-wider">Auto</span>
+                      <motion.div
+                        initial={false}
+                        animate={{
+                          backgroundColor: gameState.autoCashout ? 'rgba(74, 222, 128, 0.25)' : 'rgba(255, 255, 255, 0.08)',
+                          borderColor: gameState.autoCashout ? 'rgba(74, 222, 128, 0.55)' : 'rgba(255, 255, 255, 0.18)'
+                        }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                        className="w-12 h-7 rounded-full border relative shadow-inner"
+                      >
+                        <motion.div
+                          layout
+                          transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                          className={`absolute top-1/2 -translate-y-1/2 h-5 w-5 rounded-full shadow-lg ${
+                            gameState.autoCashout ? 'bg-green-400 shadow-green-400/40' : 'bg-white shadow-white/20'
+                          }`}
+                          animate={{ x: gameState.autoCashout ? 22 : 2, scale: gameState.autoCashout ? 1.05 : 1 }}
+                        />
+                        {gameState.autoCashout && (
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 rounded-full bg-green-400/10"
+                          />
+                        )}
+                      </motion.div>
+                      <span className={`text-xs font-semibold uppercase tracking-wider ${
+                        gameState.autoCashout ? 'text-green-300' : 'text-white/70'
+                      }`}>
+                        Auto
+                      </span>
                     </label>
 
                     {gameState.autoCashout && (
-                      <>
+                      <motion.div
+                        key="auto-cashout-controls"
+                        initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        transition={{ duration: 0.18, ease: 'easeOut' }}
+                        className="flex items-center gap-2"
+                      >
                         {/* Preset Multipliers */}
                         <div className="bg-white/5 rounded-full p-1 flex gap-1 flex-shrink-0">
                           {[1.5, 2.0, 5.0].map((multiplier) => (
@@ -775,7 +833,7 @@ const CrashGame: React.FC = () => {
                             +
                           </button>
                         </div>
-                      </>
+                      </motion.div>
                     )}
                   </div>
 
@@ -788,7 +846,15 @@ const CrashGame: React.FC = () => {
                     disabled={gameState.hasBet || gameState.betAmount > stars || gameState.betAmount <= 0}
                     className="w-full py-3 bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium rounded-full transition-colors text-base flex items-center justify-center mt-2"
                   >
-                    {gameState.phase === 'flying' ? `Bet for Next Round (${gameState.betAmount} ⭐)` : `Place Bet (${gameState.betAmount} ⭐)`}
+                    <div className="flex items-center gap-2">
+                      <span className="uppercase tracking-wide font-semibold">
+                        {gameState.phase === 'flying' ? 'Bet for Next Round' : 'Place Bet'}
+                      </span>
+                      <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                        <span className="text-white font-black text-lg leading-none">{gameState.betAmount || 0}</span>
+                        <Star size={18} className="fill-yellow-300 text-yellow-300 drop-shadow-sm" />
+                      </div>
+                    </div>
                   </button>
                 </div>
               </div>
