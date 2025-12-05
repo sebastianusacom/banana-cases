@@ -29,7 +29,14 @@ interface PlayerBet {
 
 const CrashGame: React.FC = () => {
   const { stars, subtractStars, addStars } = useUserStore();
-  const { impactLight, impactMedium, impactHeavy, notificationSuccess, notificationError } = useHaptics();
+  const {
+    impactLight,
+    impactMedium,
+    impactHeavy,
+    notificationSuccess,
+    notificationError,
+    crashImpact,
+  } = useHaptics();
   const { setGameState: setCrashGameStore } = useCrashGameStore();
 
   const [gameState, setGameState] = useState<GameState>({
@@ -235,10 +242,8 @@ const CrashGame: React.FC = () => {
             : bet
         ));
 
-        // Dramatic crash haptics
-        impactHeavy();
-        setTimeout(() => impactHeavy(), 100);
-        setTimeout(() => impactHeavy(), 200);
+        // Dramatic crash haptics with multiplier-aware rumble
+        crashImpact(crashedMultiplier);
         
         // Delay before starting countdown (4 seconds)
         setTimeout(() => {
@@ -503,7 +508,7 @@ const CrashGame: React.FC = () => {
             <div className="bg-white/5 rounded-2xl p-4 min-h-[120px] max-h-40 overflow-y-auto">
               {currentBets.length === 0 ? (
                 <div className="text-white/40 text-center py-8 text-sm">
-                  No bets placed yet
+                  No bets placed yet...
                 </div>
               ) : (
                 <div className="space-y-3">
