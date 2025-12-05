@@ -16,7 +16,7 @@ const CaseDetailPage: React.FC = () => {
   const { getCaseById } = useCaseStore();
   const { stars, isDemoMode, toggleDemoMode, addItem, subtractStars } = useUserStore();
   const { selectionChanged, impactMedium, impactHeavy, notificationSuccess } = useHaptics();
-  const { tg } = useTelegram();
+  const { tg, isTelegramWebApp } = useTelegram();
 
   const caseItem = getCaseById(id || '');
   const [count, setCount] = useState<1 | 2 | 3>(1);
@@ -44,20 +44,22 @@ const CaseDetailPage: React.FC = () => {
   }, [isDemoMode, count, caseItem]);
 
   useEffect(() => {
-    if (!isOpening) {
-        tg.BackButton.show();
-        const handleBack = () => {
-            navigate(-1);
-        };
-        tg.BackButton.onClick(handleBack);
-        return () => {
-            tg.BackButton.offClick(handleBack);
-            tg.BackButton.hide();
-        };
-    } else {
-        tg.BackButton.hide();
+    if (isTelegramWebApp) {
+      if (!isOpening) {
+          tg.BackButton.show();
+          const handleBack = () => {
+              navigate(-1);
+          };
+          tg.BackButton.onClick(handleBack);
+          return () => {
+              tg.BackButton.offClick(handleBack);
+              tg.BackButton.hide();
+          };
+      } else {
+          tg.BackButton.hide();
+      }
     }
-  }, [isOpening, navigate, tg]);
+  }, [isOpening, navigate, tg, isTelegramWebApp]);
 
 
   if (!caseItem) return null;

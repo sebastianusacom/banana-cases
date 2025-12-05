@@ -71,7 +71,51 @@ declare global {
   }
 }
 
-const tg = window.Telegram.WebApp;
+// Check if we're running in Telegram WebApp
+const isTelegramWebApp = typeof window !== 'undefined' &&
+  window.Telegram?.WebApp &&
+  window.Telegram.WebApp.initDataUnsafe &&
+  (window.Telegram.WebApp.initDataUnsafe.user || window.Telegram.WebApp.initDataUnsafe.query_id);
+const tg = isTelegramWebApp ? window.Telegram.WebApp : {
+  ready: () => {},
+  expand: () => {},
+  requestFullscreen: () => {},
+  safeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
+  contentSafeAreaInset: { top: 0, bottom: 0, left: 0, right: 0 },
+  close: () => {},
+  showAlert: (message: string) => alert(message),
+  HapticFeedback: {
+    impactOccurred: () => {},
+    notificationOccurred: () => {},
+    selectionChanged: () => {},
+  },
+  MainButton: {
+    text: '',
+    color: '',
+    textColor: '',
+    isVisible: false,
+    isActive: true,
+    show: () => {},
+    hide: () => {},
+    enable: () => {},
+    disable: () => {},
+    onClick: () => {},
+    offClick: () => {},
+    showProgress: () => {},
+    hideProgress: () => {},
+  },
+  BackButton: {
+    isVisible: false,
+    show: () => {},
+    hide: () => {},
+    onClick: () => {},
+    offClick: () => {},
+  },
+  onEvent: () => {},
+  offEvent: () => {},
+  themeParams: {},
+  initDataUnsafe: {},
+};
 
 export function useTelegram() {
   const onClose = () => {
@@ -91,6 +135,7 @@ export function useTelegram() {
     onToggleButton,
     tg,
     user: tg.initDataUnsafe?.user,
+    isTelegramWebApp,
   };
 }
 

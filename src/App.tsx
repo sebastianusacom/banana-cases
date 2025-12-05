@@ -9,32 +9,41 @@ import ProfilePage from './pages/ProfilePage';
 import CrashGame from './pages/CrashGame';
 
 function App() {
-  const { tg } = useTelegram();
+  const { tg, isTelegramWebApp } = useTelegram();
 
   useEffect(() => {
-    tg.ready();
-    tg.expand();
-    tg.requestFullscreen?.();
-    
+    if (isTelegramWebApp) {
+      tg.ready();
+      tg.expand();
+      tg.requestFullscreen?.();
+    }
+
     const updateSafeArea = () => {
-      const safeTop = tg.safeAreaInset?.top ?? 0;
-      const contentTop = tg.contentSafeAreaInset?.top ?? 0;
-      document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop + contentTop}px`);
+      if (isTelegramWebApp) {
+        const safeTop = tg.safeAreaInset?.top ?? 0;
+        const contentTop = tg.contentSafeAreaInset?.top ?? 0;
+        document.documentElement.style.setProperty('--tg-safe-area-inset-top', `${safeTop + contentTop}px`);
+      } else {
+        document.documentElement.style.setProperty('--tg-safe-area-inset-top', '0px');
+      }
     };
 
     updateSafeArea();
-    tg.onEvent('safeAreaChanged', updateSafeArea);
-    tg.onEvent('contentSafeAreaChanged', updateSafeArea);
-    tg.onEvent('fullscreenChanged', updateSafeArea);
-    tg.onEvent('viewportChanged', updateSafeArea);
 
-    return () => {
-      tg.offEvent('safeAreaChanged', updateSafeArea);
-      tg.offEvent('contentSafeAreaChanged', updateSafeArea);
-      tg.offEvent('fullscreenChanged', updateSafeArea);
-      tg.offEvent('viewportChanged', updateSafeArea);
-    };
-  }, [tg]);
+    if (isTelegramWebApp) {
+      tg.onEvent('safeAreaChanged', updateSafeArea);
+      tg.onEvent('contentSafeAreaChanged', updateSafeArea);
+      tg.onEvent('fullscreenChanged', updateSafeArea);
+      tg.onEvent('viewportChanged', updateSafeArea);
+
+      return () => {
+        tg.offEvent('safeAreaChanged', updateSafeArea);
+        tg.offEvent('contentSafeAreaChanged', updateSafeArea);
+        tg.offEvent('fullscreenChanged', updateSafeArea);
+        tg.offEvent('viewportChanged', updateSafeArea);
+      };
+    }
+  }, [tg, isTelegramWebApp]);
 
   return (
     <Router basename="/banana-cases">

@@ -76,6 +76,7 @@ const CrashGame: React.FC = () => {
       phase: 'flying',
       multiplier: 1.00,
       winnings: 0,
+      hasBet: false, // Reset bet state for new round
     }));
 
     // Start the crash game simulation
@@ -135,7 +136,7 @@ const CrashGame: React.FC = () => {
 
   // Handle countdown between rounds
   useEffect(() => {
-    if (gameState.phase === 'crashed' || (gameState.phase === 'waiting' && !gameState.hasBet)) {
+    if (gameState.phase === 'crashed' || gameState.phase === 'waiting') {
       countdownIntervalRef.current = setInterval(() => {
         setGameState(prev => {
           if (prev.nextRoundIn <= 1) {
@@ -172,84 +173,81 @@ const CrashGame: React.FC = () => {
 
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
-      {/* Animated Star Field Background */}
-      <StarField isFlying={gameState.phase === 'flying'} />
-
-      {/* Main Game Container */}
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
-        <div className="w-full flex flex-col items-center justify-center gap-2 h-full">
-          {/* Game Display */}
-          <div className="text-center mb-8">
-            <div className="relative mb-6">
-              {/* Lottie Rocket Animation */}
-              <div
-                className="w-48 h-48 mx-auto transition-transform duration-100"
-                style={{
-                  transform: `rotate(${getRotation()}deg)`,
-                }}
-              >
-                <UniversalMedia
-                  src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie"
-                  className="w-full h-full"
-                  loop={gameState.phase === 'waiting'}
-                  autoplay={true}
-                />
-              </div>
-
-              {/* Multiplier Display */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className={`text-6xl font-bold text-white drop-shadow-2xl transition-all duration-200 ${
-                  gameState.phase === 'flying' ? 'scale-110' : ''
-                }`}>
-                  {gameState.phase === 'crashed' ? 'CRASHED!' : `${gameState.multiplier.toFixed(2)}x`}
-                </div>
-              </div>
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-4">
+        {/* Animated Star Field Background */}
+        <StarField isFlying={gameState.phase === 'flying'} />
+        {/* Game Display */}
+        <div className="text-center mb-6 w-full flex flex-col items-center">
+          <div className="relative mb-6">
+            {/* Lottie Rocket Animation */}
+            <div
+              className="w-48 h-48 mx-auto transition-transform duration-100"
+              style={{
+                transform: `rotate(${getRotation()}deg)`,
+              }}
+            >
+              <UniversalMedia
+                src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie"
+                className="w-full h-full"
+                loop={gameState.phase === 'waiting'}
+                autoplay={true}
+              />
             </div>
 
-            {/* Game Status */}
-            <div className="text-white/80 text-lg mb-6">
-              {gameState.phase === 'waiting' && gameState.nextRoundIn > 0 && (
-                <div>Next round in {gameState.nextRoundIn}s</div>
-              )}
-              {gameState.phase === 'flying' && (
-                <div className="text-green-400 font-semibold">FLYING!</div>
-              )}
-              {gameState.phase === 'crashed' && (
-                <div className="text-red-400 font-semibold">BOOM!</div>
-              )}
+            {/* Multiplier Display */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className={`text-6xl font-bold text-white drop-shadow-2xl transition-all duration-200 ${
+                gameState.phase === 'flying' ? 'scale-110' : ''
+              }`}>
+                {gameState.phase === 'crashed' ? 'CRASHED!' : `${gameState.multiplier.toFixed(2)}x`}
+              </div>
             </div>
+          </div>
+
+          {/* Game Status */}
+          <div className="text-white/80 text-lg mb-6">
+            {gameState.phase === 'waiting' && gameState.nextRoundIn > 0 && (
+              <div>Next round in {gameState.nextRoundIn}s</div>
+            )}
+            {gameState.phase === 'flying' && (
+              <div className="text-green-400 font-semibold">FLYING!</div>
+            )}
+            {gameState.phase === 'crashed' && (
+              <div className="text-red-400 font-semibold">BOOM!</div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Betting Interface */}
       <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
         <div className="w-full max-w-md mx-auto px-4 space-y-2">
+          {/* Betting Interface */}
+          <div className="bg-white/5 rounded-2xl p-6 border border-white/5">
           {/* Balance Display */}
-          <div className="text-center mb-4 bg-white/5 rounded-2xl p-4">
-            <div className="text-white/60 text-sm uppercase tracking-wide font-medium">Balance</div>
-            <div className="text-white font-bold text-2xl flex items-center justify-center gap-2 mt-1">
+          <div className="text-center mb-4">
+            <div className="text-white/40 text-sm uppercase tracking-wide">Balance</div>
+            <div className="text-white font-bold text-xl flex items-center justify-center gap-1">
               {stars} <span className="text-yellow-400">⭐</span>
             </div>
           </div>
 
           {/* Bet Amount */}
-          <div className="bg-white/5 rounded-2xl p-4 space-y-3">
-            <label className="block text-white/80 text-sm font-medium uppercase tracking-wide">Bet Amount</label>
+          <div className="mb-4">
+            <label className="block text-white/80 text-sm mb-2 uppercase tracking-wide">Bet Amount</label>
             <div className="flex gap-2">
               <input
                 type="number"
                 value={gameState.betAmount}
                 onChange={(e) => setGameState(prev => ({ ...prev, betAmount: parseInt(e.target.value) || 0 }))}
                 disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-                className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 disabled:opacity-50 transition-colors focus:border-white/20 focus:outline-none"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/40 disabled:opacity-50 transition-colors"
                 min="1"
                 max={stars}
               />
               <button
                 onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount * 2, stars) }))}
                 disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-                className="bg-gradient-to-b from-[#eab308] to-[#ca8a04] hover:from-[#facc15] hover:to-[#eab308] disabled:opacity-50 text-black font-bold px-4 py-3 rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border border-white/20"
+                className="bg-yellow-500/10 hover:bg-yellow-500/20 disabled:opacity-50 text-yellow-400 disabled:text-white/20 font-bold px-3 py-2 rounded-lg border border-yellow-500/20 disabled:border-white/5 transition-colors"
               >
                 2x
               </button>
@@ -257,8 +255,8 @@ const CrashGame: React.FC = () => {
           </div>
 
           {/* Auto Cashout */}
-          <div className="bg-white/5 rounded-2xl p-4 space-y-3">
-            <label className="block text-white/80 text-sm font-medium uppercase tracking-wide">Auto Cashout <span className="text-white/40">(optional)</span></label>
+          <div className="mb-4">
+            <label className="block text-white/80 text-sm mb-2 uppercase tracking-wide">Auto Cashout (optional)</label>
             <input
               type="number"
               value={gameState.autoCashout || ''}
@@ -267,7 +265,7 @@ const CrashGame: React.FC = () => {
                 autoCashout: e.target.value ? parseFloat(e.target.value) : null
               }))}
               disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-              className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 disabled:opacity-50 transition-colors focus:border-white/20 focus:outline-none"
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-white/40 disabled:opacity-50 transition-colors"
               placeholder="Leave empty for manual"
               min="1.01"
               step="0.01"
@@ -280,7 +278,7 @@ const CrashGame: React.FC = () => {
               <button
                 onClick={placeBet}
                 disabled={gameState.phase !== 'waiting' || gameState.betAmount > stars || gameState.betAmount <= 0}
-                className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/30 border border-white/20"
+                className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all"
               >
                 Place Bet ({gameState.betAmount} ⭐)
               </button>
@@ -288,7 +286,7 @@ const CrashGame: React.FC = () => {
               <button
                 onClick={cashout}
                 disabled={gameState.phase !== 'flying'}
-                className="flex-1 bg-gradient-to-b from-[#eab308] to-[#ca8a04] hover:from-[#facc15] hover:to-[#eab308] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border border-white/20"
+                className="flex-1 bg-gradient-to-b from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-xl shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 transition-all"
               >
                 Cash Out ({Math.floor(gameState.betAmount * gameState.multiplier)} ⭐)
               </button>
@@ -297,12 +295,13 @@ const CrashGame: React.FC = () => {
 
           {/* Winnings Display */}
           {gameState.winnings > 0 && (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 text-center">
-              <div className="text-green-400 font-bold text-lg">
-                +{gameState.winnings} ⭐ won!
+            <div className="mt-4 text-center">
+              <div className="text-green-400 font-bold text-lg flex items-center justify-center gap-1">
+                +{gameState.winnings} <span className="text-yellow-400">⭐</span> won!
               </div>
             </div>
           )}
+        </div>
         </div>
       </div>
     </div>
