@@ -12,3 +12,4 @@ export const useCrashGameStore = create<CrashGameState>((set) => ({
   setGameState: (hasBet, phase) => set({ hasBet, phase }),
 }));
 
+

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Gift, User, Rocket } from 'lucide-react';
+import { Gift, User, Rocket, Dices } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 import { useCrashGameStore } from '../store/crashGameStore';
 import clsx from 'clsx';
@@ -45,6 +45,12 @@ export const BottomNav: React.FC = () => {
         >
           <Rocket size={22} strokeWidth={2.5} />
         </NavLink>
+
+        <div className="w-px h-8 bg-white/10" />
+
+        <div className={navItemClass({ isActive: false })}>
+          <Dices size={22} strokeWidth={2.5} />
+        </div>
 
         <div className="w-px h-8 bg-white/10" />
 
