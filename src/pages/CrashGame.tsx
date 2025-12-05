@@ -537,7 +537,7 @@ const CrashGame: React.FC = () => {
             <button
               onClick={() => setShowBetDrawer(true)}
               disabled={gameState.phase === 'flying'}
-              className="w-full h-14 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
+              className="w-full h-14 bg-white hover:bg-white/90 disabled:opacity-50 text-black font-bold rounded-2xl shadow-lg shadow-white/20 hover:shadow-white/30 transition-all flex items-center justify-center gap-2"
             >
               <Flame size={20} />
               <span>Place Bet</span>

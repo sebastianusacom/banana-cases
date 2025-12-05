@@ -11,3 +11,4 @@ export const useCrashGameStore = create<CrashGameState>((set) => ({
   phase: 'waiting',
   setGameState: (hasBet, phase) => set({ hasBet, phase }),
 }));
+
