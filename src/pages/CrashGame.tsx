@@ -171,79 +171,85 @@ const CrashGame: React.FC = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+    <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       {/* Animated Star Field Background */}
       <StarField isFlying={gameState.phase === 'flying'} />
 
       {/* Main Game Container */}
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
-        {/* Game Display */}
-        <div className="text-center mb-8">
-          <div className="relative mb-6">
-            {/* Lottie Rocket Animation */}
-            <div
-              className="w-48 h-48 mx-auto transition-transform duration-100"
-              style={{
-                transform: `rotate(${getRotation()}deg)`,
-              }}
-            >
-              <UniversalMedia
-                src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie"
-                className="w-full h-full"
-                loop={gameState.phase === 'waiting'}
-                autoplay={true}
-              />
-            </div>
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
+        <div className="w-full flex flex-col items-center justify-center gap-2 h-full">
+          {/* Game Display */}
+          <div className="text-center mb-8">
+            <div className="relative mb-6">
+              {/* Lottie Rocket Animation */}
+              <div
+                className="w-48 h-48 mx-auto transition-transform duration-100"
+                style={{
+                  transform: `rotate(${getRotation()}deg)`,
+                }}
+              >
+                <UniversalMedia
+                  src="https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie"
+                  className="w-full h-full"
+                  loop={gameState.phase === 'waiting'}
+                  autoplay={true}
+                />
+              </div>
 
-            {/* Multiplier Display */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className={`text-6xl font-bold text-white drop-shadow-2xl transition-all duration-200 ${
-                gameState.phase === 'flying' ? 'scale-110' : ''
-              }`}>
-                {gameState.phase === 'crashed' ? 'CRASHED!' : `${gameState.multiplier.toFixed(2)}x`}
+              {/* Multiplier Display */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className={`text-6xl font-bold text-white drop-shadow-2xl transition-all duration-200 ${
+                  gameState.phase === 'flying' ? 'scale-110' : ''
+                }`}>
+                  {gameState.phase === 'crashed' ? 'CRASHED!' : `${gameState.multiplier.toFixed(2)}x`}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Game Status */}
-          <div className="text-white/80 text-lg mb-6">
-            {gameState.phase === 'waiting' && gameState.nextRoundIn > 0 && (
-              <div>Next round in {gameState.nextRoundIn}s</div>
-            )}
-            {gameState.phase === 'flying' && (
-              <div className="text-green-400 font-semibold">FLYING!</div>
-            )}
-            {gameState.phase === 'crashed' && (
-              <div className="text-red-400 font-semibold">BOOM!</div>
-            )}
+            {/* Game Status */}
+            <div className="text-white/80 text-lg mb-6">
+              {gameState.phase === 'waiting' && gameState.nextRoundIn > 0 && (
+                <div>Next round in {gameState.nextRoundIn}s</div>
+              )}
+              {gameState.phase === 'flying' && (
+                <div className="text-green-400 font-semibold">FLYING!</div>
+              )}
+              {gameState.phase === 'crashed' && (
+                <div className="text-red-400 font-semibold">BOOM!</div>
+              )}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Betting Interface */}
-        <div className="bg-white/10 backdrop-blur-xl rounded-2xl p-6 w-full max-w-md">
+      {/* Betting Interface */}
+      <div className="flex-shrink-0 w-full z-30 pb-4 bg-[#0f0f10]">
+        <div className="w-full max-w-md mx-auto px-4 space-y-2">
           {/* Balance Display */}
-          <div className="text-center mb-4">
-            <div className="text-white/60 text-sm">Balance</div>
-            <div className="text-white font-bold text-xl">{stars} ⭐</div>
+          <div className="text-center mb-4 bg-white/5 rounded-2xl p-4">
+            <div className="text-white/60 text-sm uppercase tracking-wide font-medium">Balance</div>
+            <div className="text-white font-bold text-2xl flex items-center justify-center gap-2 mt-1">
+              {stars} <span className="text-yellow-400">⭐</span>
+            </div>
           </div>
 
           {/* Bet Amount */}
-          <div className="mb-4">
-            <label className="block text-white/80 text-sm mb-2">Bet Amount</label>
+          <div className="bg-white/5 rounded-2xl p-4 space-y-3">
+            <label className="block text-white/80 text-sm font-medium uppercase tracking-wide">Bet Amount</label>
             <div className="flex gap-2">
               <input
                 type="number"
                 value={gameState.betAmount}
                 onChange={(e) => setGameState(prev => ({ ...prev, betAmount: parseInt(e.target.value) || 0 }))}
                 disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-                className="flex-1 bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-white/50 disabled:opacity-50"
+                className="flex-1 bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 disabled:opacity-50 transition-colors focus:border-white/20 focus:outline-none"
                 min="1"
                 max={stars}
               />
               <button
                 onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount * 2, stars) }))}
                 disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-                className="bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 text-black font-bold px-3 py-2 rounded-lg transition-colors"
+                className="bg-gradient-to-b from-[#eab308] to-[#ca8a04] hover:from-[#facc15] hover:to-[#eab308] disabled:opacity-50 text-black font-bold px-4 py-3 rounded-xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border border-white/20"
               >
                 2x
               </button>
@@ -251,8 +257,8 @@ const CrashGame: React.FC = () => {
           </div>
 
           {/* Auto Cashout */}
-          <div className="mb-4">
-            <label className="block text-white/80 text-sm mb-2">Auto Cashout (optional)</label>
+          <div className="bg-white/5 rounded-2xl p-4 space-y-3">
+            <label className="block text-white/80 text-sm font-medium uppercase tracking-wide">Auto Cashout <span className="text-white/40">(optional)</span></label>
             <input
               type="number"
               value={gameState.autoCashout || ''}
@@ -261,7 +267,7 @@ const CrashGame: React.FC = () => {
                 autoCashout: e.target.value ? parseFloat(e.target.value) : null
               }))}
               disabled={gameState.phase !== 'waiting' || gameState.hasBet}
-              className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-white/50 disabled:opacity-50"
+              className="w-full bg-[#1c1c1e] border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/50 disabled:opacity-50 transition-colors focus:border-white/20 focus:outline-none"
               placeholder="Leave empty for manual"
               min="1.01"
               step="0.01"
@@ -274,7 +280,7 @@ const CrashGame: React.FC = () => {
               <button
                 onClick={placeBet}
                 disabled={gameState.phase !== 'waiting' || gameState.betAmount > stars || gameState.betAmount <= 0}
-                className="flex-1 bg-green-500 hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 px-6 rounded-lg transition-colors"
+                className="flex-1 bg-gradient-to-b from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-green-500/20 hover:shadow-green-500/30 border border-white/20"
               >
                 Place Bet ({gameState.betAmount} ⭐)
               </button>
@@ -282,7 +288,7 @@ const CrashGame: React.FC = () => {
               <button
                 onClick={cashout}
                 disabled={gameState.phase !== 'flying'}
-                className="flex-1 bg-yellow-500 hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold py-3 px-6 rounded-lg transition-colors"
+                className="flex-1 bg-gradient-to-b from-[#eab308] to-[#ca8a04] hover:from-[#facc15] hover:to-[#eab308] disabled:opacity-50 disabled:cursor-not-allowed text-black font-bold py-4 px-6 rounded-2xl transition-all shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border border-white/20"
               >
                 Cash Out ({Math.floor(gameState.betAmount * gameState.multiplier)} ⭐)
               </button>
@@ -291,7 +297,7 @@ const CrashGame: React.FC = () => {
 
           {/* Winnings Display */}
           {gameState.winnings > 0 && (
-            <div className="mt-4 text-center">
+            <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-4 text-center">
               <div className="text-green-400 font-bold text-lg">
                 +{gameState.winnings} ⭐ won!
               </div>
