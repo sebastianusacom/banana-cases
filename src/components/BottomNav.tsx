@@ -9,8 +9,8 @@ export const BottomNav: React.FC = () => {
   const { selectionChanged } = useHaptics();
   const { hasBet, phase } = useCrashGameStore();
   
-  // Disable navigation when player has a bet and round is flying
-  const isDisabled = hasBet && phase === 'flying';
+  // Disable navigation when player has a bet placed (or queued)
+  const isDisabled = hasBet;
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
     clsx(

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, X, TrendingUp, Check, XCircle, Star } from 'lucide-react';
+import { Flame, X, Check, XCircle, Star } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
@@ -23,7 +23,7 @@ interface PlayerBet {
   avatar: string;
   betAmount: number;
   autoCashout: number | null;
-  status?: 'active' | 'cashed_out' | 'lost';
+  status?: 'active' | 'cashed_out' | 'lost' | 'queued';
   cashoutMultiplier?: number;
 }
 
@@ -72,35 +72,62 @@ const CrashGame: React.FC = () => {
   };
 
   const placeBet = () => {
-    if (gameState.phase === 'flying' || gameState.hasBet) return;
+    if (gameState.hasBet) return;
     if (!subtractStars(gameState.betAmount)) {
       notificationError();
       return;
     }
 
     // Add player to current bets list
-    setCurrentBets(prev => [
-      ...prev,
-      {
-        id: 'player',
-        username: 'You',
-        avatar: '⭐',
-        betAmount: gameState.betAmount,
-        autoCashout: gameState.autoCashout,
-        status: 'active' as const,
-      }
-    ]);
+    const betStatus: PlayerBet['status'] = gameState.phase === 'flying' ? 'queued' : 'active';
+    const newBet = {
+      id: 'player',
+      username: 'You',
+      avatar: '⭐',
+      betAmount: gameState.betAmount,
+      autoCashout: gameState.autoCashout,
+      status: betStatus,
+    };
+
+    setCurrentBets(prev => [...prev, newBet]);
 
     // Cool betting haptics - multiple impacts for excitement
     impactLight();
     setTimeout(() => impactMedium(), 100);
-    setGameState(prev => ({ ...prev, hasBet: true }));
+  };
+
+  const cancelBet = () => {
+    // Check if player has an active or queued bet
+    const playerBet = currentBets.find(
+      bet => bet.id === 'player' && (bet.status === 'active' || bet.status === 'queued')
+    );
+    
+    if (!playerBet) return;
+
+    // Return the stars to the player
+    const betAmount = playerBet.betAmount;
+    addStars(betAmount);
+
+    // Remove the bet from current bets
+    setCurrentBets(prev => prev.filter(bet => bet.id !== 'player'));
+
+    // Reset game state
+    setGameState(prev => ({
+      ...prev,
+      hasBet: false,
+      betAmount: 10, // Reset to default
+      autoCashout: null,
+    }));
   };
 
   const cashout = () => {
-    if (gameState.phase !== 'flying' || !gameState.hasBet) return;
+    // Only allow cashout for active bets during flying phase
+    const playerBet = currentBets.find(
+      bet => bet.id === 'player' && bet.status === 'active'
+    );
+    if (gameState.phase !== 'flying' || !playerBet) return;
 
-    const winnings = Math.floor(gameState.betAmount * gameState.multiplier);
+    const winnings = Math.floor(playerBet.betAmount * gameState.multiplier);
     addStars(winnings);
 
     // Exciting cashout haptics - success with celebration
@@ -109,8 +136,8 @@ const CrashGame: React.FC = () => {
     setTimeout(() => impactMedium(), 300);
 
     // Mark player bet as cashed out instead of removing it
-    setCurrentBets(prev => prev.map(bet => 
-      bet.id === 'player' 
+    setCurrentBets(prev => prev.map(bet =>
+      bet.id === 'player'
         ? { ...bet, status: 'cashed_out' as const, cashoutMultiplier: gameState.multiplier }
         : bet
     ));
@@ -118,7 +145,7 @@ const CrashGame: React.FC = () => {
     setGameState(prev => ({
       ...prev,
       hasBet: false,
-      winnings: winnings - prev.betAmount,
+      winnings: winnings - playerBet.betAmount,
     }));
   };
 
@@ -142,9 +169,14 @@ const CrashGame: React.FC = () => {
       nextRoundIn: 0, // Reset countdown
     }));
 
-    // Keep only active bets, clear old ones (lost/cashed_out)
+    // Keep active bets and activate queued bets, clear old ones (lost/cashed_out)
     setCurrentBets(prev => {
-      return prev.filter(bet => bet.status === 'active');
+      return prev.map(bet => {
+        if (bet.status === 'queued') {
+          return { ...bet, status: 'active' as const };
+        }
+        return bet;
+      }).filter(bet => bet.status !== 'lost' && bet.status !== 'cashed_out');
     });
 
     // Reset flying haptic timer for new round
@@ -186,21 +218,19 @@ const CrashGame: React.FC = () => {
         }
 
         // Update state atomically - set crashed phase and freeze multiplier
-        // Also reset hasBet since the player lost their bet
         setGameState(prev => ({
           ...prev,
           phase: 'crashed',
           multiplier: crashedMultiplier, // Freeze at crash value
           nextRoundIn: 0, // Start at 0, will be set to 10 after delay
-          hasBet: false, // Player lost their bet
         }));
 
         // Add crashed multiplier to history - most recent always on the left, keep max 5 old ones
         setPastMultipliers(prev => [crashedMultiplier, ...prev.slice(0, 5)]); // Keep max 6 total (1 most recent + 5 old)
 
-        // Mark all active bets as lost
-        setCurrentBets(prev => prev.map(bet => 
-          bet.status === 'active' 
+        // Mark all active bets as lost, keep queued bets for next round
+        setCurrentBets(prev => prev.map(bet =>
+          bet.status === 'active'
             ? { ...bet, status: 'lost' as const }
             : bet
         ));
@@ -332,10 +362,26 @@ const CrashGame: React.FC = () => {
     };
   }, [gameState.phase, gameState.nextRoundIn]);
 
+  // Keep hasBet synchronized with actual bet state
+  useEffect(() => {
+    const playerBet = currentBets.find(
+      bet => bet.id === 'player' && (bet.status === 'active' || bet.status === 'queued')
+    );
+    const shouldHaveBet = !!playerBet;
+
+    if (gameState.hasBet !== shouldHaveBet) {
+      setGameState(prev => ({ ...prev, hasBet: shouldHaveBet }));
+    }
+  }, [currentBets, gameState.hasBet]);
+
   // Sync game state with global store for BottomNav
   useEffect(() => {
-    setCrashGameStore(gameState.hasBet, gameState.phase);
-  }, [gameState.hasBet, gameState.phase, setCrashGameStore]);
+    const playerBet = currentBets.find(
+      bet => bet.id === 'player' && (bet.status === 'active' || bet.status === 'queued')
+    );
+    const hasActiveBet = !!playerBet;
+    setCrashGameStore(hasActiveBet, gameState.phase);
+  }, [currentBets, gameState.phase, setCrashGameStore]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -461,47 +507,57 @@ const CrashGame: React.FC = () => {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {currentBets.map((bet, index) => (
-                    <motion.div
-                      key={bet.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className={`bg-white/10 rounded-lg p-3 flex items-center justify-between hover:bg-white/15 transition-colors ${
-                        bet.status === 'cashed_out' 
-                          ? 'bg-green-500/10' 
-                          : bet.status === 'lost'
-                          ? 'bg-red-500/10'
-                          : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{bet.avatar}</span>
-                        <span className="text-white text-sm font-medium">{bet.username}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-white font-bold text-sm">
-                          {bet.status === 'active' && gameState.phase === 'flying'
-                            ? `${Math.floor(bet.betAmount * gameState.multiplier)}⭐`
-                            : `${bet.betAmount}⭐`}
-                        </span>
-                        {bet.autoCashout && bet.status === 'active' && (
-                          <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
-                            @{bet.autoCashout}x
+                  {currentBets.map((bet, index) => {
+                    const isQueuedAndWaiting = bet.status === 'queued' && gameState.phase === 'waiting';
+                    return (
+                      <motion.div
+                        key={bet.id}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`bg-white/10 rounded-lg p-3 flex items-center justify-between hover:bg-white/15 transition-colors ${
+                          bet.status === 'cashed_out'
+                            ? 'bg-green-500/10'
+                            : bet.status === 'lost'
+                            ? 'bg-red-500/10'
+                            : bet.status === 'queued' && !isQueuedAndWaiting
+                            ? 'bg-yellow-500/10'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{bet.avatar}</span>
+                          <span className="text-white text-sm font-medium">{bet.username}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-white font-bold text-sm">
+                            {bet.status === 'active' && gameState.phase === 'flying'
+                              ? `${Math.floor(bet.betAmount * gameState.multiplier)}⭐`
+                              : `${bet.betAmount}⭐`}
                           </span>
-                        )}
-                        {bet.status === 'cashed_out' && bet.cashoutMultiplier && (
-                          <div className="flex items-center gap-1 text-green-400">
-                            <Check size={16} className="text-green-400" />
-                            <span className="text-xs font-semibold">{bet.cashoutMultiplier.toFixed(2)}x</span>
-                          </div>
-                        )}
-                        {bet.status === 'lost' && (
-                          <XCircle size={16} className="text-red-400" />
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
+                          {bet.autoCashout && (bet.status === 'active' || bet.status === 'queued') && (
+                            <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
+                              @{bet.autoCashout}x
+                            </span>
+                          )}
+                          {bet.status === 'cashed_out' && bet.cashoutMultiplier && (
+                            <div className="flex items-center gap-1 text-green-400">
+                              <Check size={16} className="text-green-400" />
+                              <span className="text-xs font-semibold">{bet.cashoutMultiplier.toFixed(2)}x</span>
+                            </div>
+                          )}
+                          {bet.status === 'lost' && (
+                            <XCircle size={16} className="text-red-400" />
+                          )}
+                          {bet.status === 'queued' && !isQueuedAndWaiting && (
+                            <span className="text-yellow-400 text-xs font-semibold bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
+                              Next Round
+                            </span>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -511,38 +567,59 @@ const CrashGame: React.FC = () => {
 
       <div className="flex-shrink-0 w-full z-30 pb-30 bg-[#0f0f10]">
         <div className="w-full max-w-md mx-auto px-4 space-y-4">
-          {/* Bet/Cash Out Button */}
-          {gameState.hasBet && gameState.phase === 'flying' ? (
-            <motion.button
-              onClick={cashout}
-              className="w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20"
-            >
-              <motion.div
-                initial={{ x: '-100%' }}
-                animate={{ x: '200%' }}
-                transition={{ repeat: Infinity, duration: 1.5, ease: "linear", repeatDelay: 0.5 }}
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
-              />
-              <div className="relative z-10 flex items-center justify-center gap-3 w-full">
-                <span className="uppercase tracking-wide font-black text-lg opacity-90">
-                  CASH OUT
-                </span>
-                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
-                  <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{Math.floor(gameState.betAmount * gameState.multiplier)}</span>
-                  <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                </div>
-              </div>
-            </motion.button>
-          ) : (
-            <button
-              onClick={() => setShowBetDrawer(true)}
-              disabled={gameState.phase === 'flying'}
-              className="w-full h-14 bg-white hover:bg-white/90 disabled:bg-white/6 disabled:text-white/30 text-black font-bold rounded-2xl shadow-lg shadow-white/20 hover:shadow-white/30 disabled:shadow-none transition-all flex items-center justify-center gap-2"
-            >
-              <Flame size={20} />
-              <span>Place Bet</span>
-            </button>
-          )}
+          {/* Bet/Cash Out/Cancel Button */}
+          {(() => {
+            const playerBet = currentBets.find(
+              bet => bet.id === 'player' && (bet.status === 'active' || bet.status === 'queued')
+            );
+            const hasActiveBet = !!playerBet;
+            const canCashOut = playerBet?.status === 'active' && gameState.phase === 'flying';
+
+            if (canCashOut) {
+              return (
+                <motion.button
+                  onClick={cashout}
+                  className="w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20"
+                >
+                  <motion.div
+                    initial={{ x: '-100%' }}
+                    animate={{ x: '200%' }}
+                    transition={{ repeat: Infinity, duration: 1.5, ease: "linear", repeatDelay: 0.5 }}
+                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
+                  />
+                  <div className="relative z-10 flex items-center justify-center gap-3 w-full">
+                    <span className="uppercase tracking-wide font-black text-lg opacity-90">
+                      CASH OUT
+                    </span>
+                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                      <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{Math.floor(gameState.betAmount * gameState.multiplier)}</span>
+                      <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                    </div>
+                  </div>
+                </motion.button>
+              );
+            } else if (hasActiveBet) {
+              return (
+                <button
+                  onClick={cancelBet}
+                  className="w-full h-14 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <X size={20} />
+                  <span>Cancel Bet</span>
+                </button>
+              );
+            } else {
+              return (
+                <button
+                  onClick={() => setShowBetDrawer(true)}
+                  className="w-full h-14 bg-white hover:bg-white/90 text-black font-bold rounded-2xl shadow-lg shadow-white/20 hover:shadow-white/30 transition-all flex items-center justify-center gap-2"
+                >
+                  <Flame size={20} />
+                  <span>Place Bet</span>
+                </button>
+              );
+            }
+          })()}
 
         </div>
       </div>
@@ -556,52 +633,73 @@ const CrashGame: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowBetDrawer(false)}
-              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[55]"
             />
             <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 bg-[#1c1c1e] rounded-t-[2rem] z-50 border-t border-white/10 max-h-[80vh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 bg-[#1c1c1e] rounded-t-2xl z-[60] max-h-[70vh] flex flex-col"
             >
               <div className="p-6 flex-1 overflow-hidden flex flex-col">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold">Place Your Bet</h3>
+                <div className="flex items-center justify-center mb-4 relative">
+                  <h3 className="text-lg font-semibold text-white/90">Place Bet</h3>
                   <button
                     onClick={() => setShowBetDrawer(false)}
-                    className="p-2 bg-white/5 rounded-full hover:bg-white/10"
+                    className="absolute right-0 p-1.5 hover:bg-white/5 rounded-lg transition-colors"
                   >
-                    <X size={20} />
+                    <X size={18} className="text-white/60" />
                   </button>
                 </div>
 
-                <div className="space-y-6 flex-1">
-                  {/* Balance Display */}
-                  <div className="text-center">
-                    <div className="text-white/40 text-sm uppercase tracking-wide">Balance</div>
-                    <div className="text-white font-bold text-2xl flex items-center justify-center gap-1">
-                      {stars} <span className="text-yellow-400">⭐</span>
-                    </div>
+                <div className="space-y-4 flex-1">
+                  {/* Bet Amount Display */}
+                  <div className="text-center py-3">
+                    <input
+                      type="number"
+                      value={gameState.betAmount || ''}
+                        onChange={(e) => {
+                        const value = e.target.value;
+                        const numValue = value === '' ? 0 : parseInt(value, 10);
+                        setGameState(prev => ({ ...prev, betAmount: Math.max(0, numValue) }));
+                      }}
+                      disabled={gameState.hasBet}
+                      className="text-center text-white text-3xl font-bold bg-transparent border-none outline-none w-full placeholder-white/30 disabled:opacity-50"
+                      min="1"
+                      max={stars}
+                    />
+                    <div className="text-yellow-400 text-lg mt-1">⭐</div>
                   </div>
 
-                  {/* Bet Amount */}
-                  <div>
-                    <label className="block text-white/80 text-sm mb-3 uppercase tracking-wide">Bet Amount</label>
-                    <div className="flex gap-3">
-                      <input
-                        type="number"
-                        value={gameState.betAmount}
-                        onChange={(e) => setGameState(prev => ({ ...prev, betAmount: parseInt(e.target.value) || 0 }))}
-                        disabled={gameState.phase === 'flying' || gameState.hasBet}
-                        className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 disabled:opacity-50 transition-colors text-lg"
-                        min="1"
-                        max={stars}
-                      />
+                  {/* Quick Add Buttons */}
+                  <div className="flex justify-center">
+                    <div className="bg-white/5 rounded-full p-1 flex gap-1">
+                      <button
+                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 100, stars) }))}
+                        disabled={gameState.hasBet}
+                        className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
+                      >
+                        +100
+                      </button>
+                      <button
+                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 500, stars) }))}
+                        disabled={gameState.hasBet}
+                        className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
+                      >
+                        +500
+                      </button>
+                      <button
+                        onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount + 2500, stars) }))}
+                        disabled={gameState.hasBet}
+                        className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/10 rounded-full font-medium transition-colors text-sm disabled:opacity-50"
+                      >
+                        +2500
+                      </button>
                       <button
                         onClick={() => setGameState(prev => ({ ...prev, betAmount: Math.min(prev.betAmount * 2, stars) }))}
-                        disabled={gameState.phase === 'flying' || gameState.hasBet}
-                        className="bg-yellow-500/10 hover:bg-yellow-500/20 disabled:opacity-50 text-yellow-400 disabled:text-white/20 font-bold px-4 py-3 rounded-xl border border-yellow-500/20 disabled:border-white/5 transition-colors"
+                        disabled={gameState.hasBet}
+                        className="px-4 py-2 bg-yellow-500/10 hover:bg-yellow-500/20 disabled:opacity-30 text-yellow-400 disabled:text-white/20 rounded-full font-medium transition-colors text-sm"
                       >
                         2x
                       </button>
@@ -609,21 +707,69 @@ const CrashGame: React.FC = () => {
                   </div>
 
                   {/* Auto Cashout */}
-                  <div>
-                    <label className="block text-white/80 text-sm mb-3 uppercase tracking-wide">Auto Cashout (optional)</label>
-                    <input
-                      type="number"
-                      value={gameState.autoCashout || ''}
-                      onChange={(e) => setGameState(prev => ({
-                        ...prev,
-                        autoCashout: e.target.value ? parseFloat(e.target.value) : null
-                      }))}
-                      disabled={gameState.phase === 'flying' || gameState.hasBet}
-                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/40 disabled:opacity-50 transition-colors text-lg"
-                      placeholder="Leave empty for manual"
-                      min="1.01"
-                      step="0.01"
-                    />
+                  <div className="flex items-center justify-center gap-3">
+                    <label className="flex items-center gap-2 cursor-pointer flex-shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={!!gameState.autoCashout}
+                        onChange={(e) => setGameState(prev => ({
+                          ...prev,
+                          autoCashout: e.target.checked ? (prev.autoCashout || 2.00) : null
+                        }))}
+                        disabled={gameState.hasBet}
+                        className="w-4 h-4 rounded border-white/20 bg-white/5 checked:bg-green-500 checked:border-green-500 focus:ring-0 focus:ring-offset-0"
+                      />
+                      <span className="text-white/70 text-xs uppercase tracking-wider">Auto</span>
+                    </label>
+
+                    {gameState.autoCashout && (
+                      <>
+                        {/* Preset Multipliers */}
+                        <div className="bg-white/5 rounded-full p-1 flex gap-1 flex-shrink-0">
+                          {[1.5, 2.0, 5.0].map((multiplier) => (
+                            <button
+                              key={multiplier}
+                              onClick={() => setGameState(prev => ({ ...prev, autoCashout: multiplier }))}
+                              disabled={gameState.hasBet}
+                              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                                gameState.autoCashout === multiplier
+                                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                  : 'text-white/70 hover:text-white hover:bg-white/10'
+                              } disabled:opacity-50`}
+                            >
+                              {multiplier}x
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Custom Multiplier Input */}
+                        <div className="flex items-center bg-white/5 rounded-full px-1 py-1 gap-1">
+                          <button
+                            onClick={() => setGameState(prev => ({
+                              ...prev,
+                              autoCashout: Math.max(1.01, (prev.autoCashout || 0) - 1)
+                            }))}
+                            disabled={gameState.hasBet}
+                            className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
+                          >
+                            −
+                          </button>
+                          <div className="px-2 py-1 text-white text-sm font-medium min-w-12 text-center">
+                            {gameState.autoCashout?.toFixed(1)}x
+                          </div>
+                          <button
+                            onClick={() => setGameState(prev => ({
+                              ...prev,
+                              autoCashout: (prev.autoCashout || 0) + 1
+                            }))}
+                            disabled={gameState.hasBet}
+                            className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
 
                   {/* Place Bet Button */}
@@ -632,29 +778,11 @@ const CrashGame: React.FC = () => {
                       placeBet();
                       setShowBetDrawer(false);
                     }}
-                    disabled={gameState.phase === 'flying' || gameState.hasBet || gameState.betAmount > stars || gameState.betAmount <= 0}
-                    className="w-full h-14 bg-gradient-to-b from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-lg shadow-green-500/20 hover:shadow-green-500/30 transition-all text-lg"
+                    disabled={gameState.hasBet || gameState.betAmount > stars || gameState.betAmount <= 0}
+                    className="w-full py-3 bg-green-500 hover:bg-green-400 disabled:opacity-30 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors text-base flex items-center justify-center mt-2"
                   >
-                    Place Bet ({gameState.betAmount} ⭐)
+                    {gameState.phase === 'flying' ? `Bet for Next Round (${gameState.betAmount} ⭐)` : `Place Bet (${gameState.betAmount} ⭐)`}
                   </button>
-
-                  {/* Game Stats */}
-                  <div className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <TrendingUp size={16} className="text-white/60" />
-                      <span className="text-white/80 text-sm font-semibold">Recent Multipliers</span>
-                    </div>
-                    <div className="flex gap-2 flex-wrap">
-                      {pastMultipliers.slice(0, 5).map((multiplier, index) => (
-                        <span
-                          key={`recent-${multiplier}-${index}`}
-                          className="px-3 py-1 bg-white/10 text-white/80 rounded-full text-sm"
-                        >
-                          {multiplier.toFixed(2)}x
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               </div>
             </motion.div>
