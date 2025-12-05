@@ -663,6 +663,8 @@ const CrashGame: React.FC = () => {
                   <div className="text-center py-3">
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={gameState.betAmount || ''}
                         onChange={(e) => {
                         const value = e.target.value;
