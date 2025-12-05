@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Settings, X, TrendingUp, Check, XCircle } from 'lucide-react';
+import { Flame, X, TrendingUp, Check, XCircle } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
@@ -491,7 +491,7 @@ const CrashGame: React.FC = () => {
               disabled={gameState.phase === 'flying'}
               className="w-full h-14 bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 disabled:opacity-50 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/20 hover:shadow-blue-500/30 transition-all flex items-center justify-center gap-2"
             >
-              <Settings size={20} />
+              <Flame size={20} />
               <span>Place Bet</span>
             </button>
           )}
