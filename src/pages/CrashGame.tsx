@@ -46,6 +46,7 @@ const CrashGame: React.FC = () => {
 
   const gameIntervalRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
+  const lastFlyingHapticRef = useRef<number>(0);
 
   // Lottie animation rotation based on multiplier
   // Starts at 45 degrees (top right) and rotates to 0 degrees (top) as multiplier increases
@@ -144,6 +145,9 @@ const CrashGame: React.FC = () => {
       return prev.filter(bet => bet.status === 'active');
     });
 
+    // Reset flying haptic timer for new round
+    lastFlyingHapticRef.current = Date.now();
+
     // Start the crash game simulation
     let currentMultiplier = 1.00;
     let lastMilestone = 1;
@@ -222,6 +226,20 @@ const CrashGame: React.FC = () => {
 
       const roundedMultiplier = Math.round(currentMultiplier * 100) / 100;
 
+      // Continuous flying haptics - subtle vibration every ~0.5 seconds
+      const now = Date.now();
+      const hapticInterval = 500; // Haptic every 500ms
+      
+      if (now - lastFlyingHapticRef.current >= hapticInterval) {
+        // Intensity increases slightly with multiplier
+        if (roundedMultiplier >= 5) {
+          impactMedium(); // Stronger haptics at higher multipliers
+        } else {
+          impactLight(); // Light haptics during normal flight
+        }
+        lastFlyingHapticRef.current = now;
+      }
+
       // Milestone haptics - celebrate big multipliers
       const currentMilestone = Math.floor(roundedMultiplier);
       if (currentMilestone > lastMilestone && currentMilestone >= 2) {
@@ -287,9 +305,14 @@ const CrashGame: React.FC = () => {
             return prev;
           }
 
-          // Countdown tick haptics (subtle)
+          // Countdown tick haptics for all numbers
+          // Stronger haptics as countdown approaches zero
           if (prev.nextRoundIn <= 3) {
-            impactLight();
+            impactMedium(); // Stronger for final 3 seconds
+          } else if (prev.nextRoundIn <= 5) {
+            impactLight(); // Medium for 4-5 seconds
+          } else {
+            impactLight(); // Light for 6-10 seconds
           }
 
           return { ...prev, nextRoundIn: prev.nextRoundIn - 1 };
