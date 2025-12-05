@@ -2,10 +2,15 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { Gift, User, Rocket } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
+import { useCrashGameStore } from '../store/crashGameStore';
 import clsx from 'clsx';
 
 export const BottomNav: React.FC = () => {
   const { selectionChanged } = useHaptics();
+  const { hasBet, phase } = useCrashGameStore();
+  
+  // Disable navigation when player has a bet and round is flying
+  const isDisabled = hasBet && phase === 'flying';
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
     clsx(
@@ -17,11 +22,15 @@ export const BottomNav: React.FC = () => {
 
   return (
     <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
-      <nav className="flex items-center gap-6 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto">
+      <nav className={clsx(
+        "flex items-center gap-6 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto transition-opacity duration-300",
+        isDisabled && "opacity-30 pointer-events-none"
+      )}>
         <NavLink
           to="/cases"
           className={navItemClass}
-          onClick={() => selectionChanged()}
+          onClick={() => !isDisabled && selectionChanged()}
+          onClickCapture={(e) => isDisabled && e.preventDefault()}
         >
           <Gift size={22} strokeWidth={2.5} />
         </NavLink>
@@ -31,7 +40,8 @@ export const BottomNav: React.FC = () => {
         <NavLink
           to="/crash"
           className={navItemClass}
-          onClick={() => selectionChanged()}
+          onClick={() => !isDisabled && selectionChanged()}
+          onClickCapture={(e) => isDisabled && e.preventDefault()}
         >
           <Rocket size={22} strokeWidth={2.5} />
         </NavLink>
@@ -41,7 +51,8 @@ export const BottomNav: React.FC = () => {
         <NavLink
           to="/profile"
           className={navItemClass}
-          onClick={() => selectionChanged()}
+          onClick={() => !isDisabled && selectionChanged()}
+          onClickCapture={(e) => isDisabled && e.preventDefault()}
         >
           <User size={22} strokeWidth={2.5} />
         </NavLink>

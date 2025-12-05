@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, X, TrendingUp, Check, XCircle } from 'lucide-react';
+import { Flame, X, TrendingUp, Check, XCircle, Star } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
 import StarField from '../components/StarField';
+import { useCrashGameStore } from '../store/crashGameStore';
 
 interface GameState {
   phase: 'waiting' | 'flying' | 'crashed';
@@ -29,6 +30,7 @@ interface PlayerBet {
 const CrashGame: React.FC = () => {
   const { stars, subtractStars, addStars } = useUserStore();
   const { impactLight, impactMedium, impactHeavy, notificationSuccess, notificationError } = useHaptics();
+  const { setGameState: setCrashGameStore } = useCrashGameStore();
 
   const [gameState, setGameState] = useState<GameState>({
     phase: 'waiting',
@@ -184,11 +186,13 @@ const CrashGame: React.FC = () => {
         }
 
         // Update state atomically - set crashed phase and freeze multiplier
+        // Also reset hasBet since the player lost their bet
         setGameState(prev => ({
           ...prev,
           phase: 'crashed',
           multiplier: crashedMultiplier, // Freeze at crash value
           nextRoundIn: 0, // Start at 0, will be set to 10 after delay
+          hasBet: false, // Player lost their bet
         }));
 
         // Add crashed multiplier to history - most recent always on the left, keep max 5 old ones
@@ -328,13 +332,20 @@ const CrashGame: React.FC = () => {
     };
   }, [gameState.phase, gameState.nextRoundIn]);
 
+  // Sync game state with global store for BottomNav
+  useEffect(() => {
+    setCrashGameStore(gameState.hasBet, gameState.phase);
+  }, [gameState.hasBet, gameState.phase, setCrashGameStore]);
+
   // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (gameIntervalRef.current) window.clearInterval(gameIntervalRef.current);
       if (countdownIntervalRef.current) window.clearInterval(countdownIntervalRef.current);
+      // Reset store when component unmounts
+      setCrashGameStore(false, 'waiting');
     };
-  }, []);
+  }, [setCrashGameStore]);
 
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
@@ -502,12 +513,26 @@ const CrashGame: React.FC = () => {
         <div className="w-full max-w-md mx-auto px-4 space-y-4">
           {/* Bet/Cash Out Button */}
           {gameState.hasBet && gameState.phase === 'flying' ? (
-            <button
+            <motion.button
               onClick={cashout}
-              className="w-full h-14 bg-gradient-to-b from-yellow-500 to-yellow-600 hover:from-yellow-400 hover:to-yellow-500 text-white font-bold rounded-2xl shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 transition-all"
+              className="w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20"
             >
-              Cash Out ({Math.floor(gameState.betAmount * gameState.multiplier)} ⭐)
-            </button>
+              <motion.div
+                initial={{ x: '-100%' }}
+                animate={{ x: '200%' }}
+                transition={{ repeat: Infinity, duration: 1.5, ease: "linear", repeatDelay: 0.5 }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
+              />
+              <div className="relative z-10 flex items-center justify-center gap-3 w-full">
+                <span className="uppercase tracking-wide font-black text-lg opacity-90">
+                  CASH OUT
+                </span>
+                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                  <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{Math.floor(gameState.betAmount * gameState.multiplier)}</span>
+                  <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                </div>
+              </div>
+            </motion.button>
           ) : (
             <button
               onClick={() => setShowBetDrawer(true)}
