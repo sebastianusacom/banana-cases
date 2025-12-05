@@ -58,6 +58,7 @@ declare global {
           secondary_bg_color?: string;
         };
         initDataUnsafe: {
+          query_id?: string;
           user?: {
             id: number;
             first_name: string;
@@ -65,6 +66,8 @@ declare global {
             username?: string;
             language_code?: string;
           };
+          auth_date?: number;
+          hash?: string;
         };
       };
     };
