@@ -23,7 +23,7 @@ export const BottomNav: React.FC = () => {
   return (
     <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
       <nav className={clsx(
-        "flex items-center gap-6 px-6 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto transition-opacity duration-300",
+        "flex items-center gap-4 px-4 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto transition-opacity duration-300",
         isDisabled && "opacity-30 pointer-events-none"
       )}>
         <NavLink
