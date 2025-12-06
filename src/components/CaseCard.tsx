@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import type { Case } from '../store/caseStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { Star, Timer } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import { UniversalMedia } from './UniversalMedia';
 
 interface CaseCardProps {
@@ -14,6 +16,7 @@ interface CaseCardProps {
 export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default' }) => {
   const { selectionChanged } = useHaptics();
   const isYellow = variant === 'yellow';
+  const isFree = caseItem.price === 0;
 
   const bgClass = isYellow
     ? 'bg-gradient-to-br from-yellow-500/20 to-orange-600/20 border-yellow-500/30 group-hover:from-yellow-500/30 group-hover:to-orange-600/30'
@@ -35,6 +38,18 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         
         {/* Glow Effect behind image */}
         <div className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full group-hover:opacity-30 transition-opacity ${glowClass}`} />
+
+        {caseItem.tag && (() => {
+          const IconComponent = (LucideIcons as any)[caseItem.tag!.icon] as LucideIcon;
+          return (
+            <div className={`absolute ${isYellow ? 'top-2 right-2' : 'top-[8.7rem] left-1/2 -translate-x-1/2'} inline-flex items-center gap-0.5 bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full z-20 shadow-sm`}>
+              {IconComponent && <IconComponent size={8} className={caseItem.tag.iconColor} />}
+              <span className="text-black/80 font-black text-[10px] leading-none tracking-tight uppercase">
+                {caseItem.tag.text}
+              </span>
+            </div>
+          );
+        })()}
 
         {/* Image/Lottie Container */}
         <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 overflow-visible`}>
@@ -72,26 +87,42 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         </div>
 
         {/* Text Content */}
-        <div className={`relative z-10 ${isYellow ? 'text-left' : 'text-center w-full'}`}>
+        <div className={`relative z-10 ${isYellow ? 'text-left' : 'text-center w-full mt-2'}`}>
           <h3 className="text-base font-semibold tracking-tight mb-1 text-white/90">
             {caseItem.name}
           </h3>
           
-          <div className={`flex ${isYellow ? 'justify-start' : 'justify-center'} items-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]`}>
-            <div className="inline-flex items-center gap-1.5 bg-yellow-500 px-3 py-1 rounded-full">
-              <span className="text-white font-bold">
-                {caseItem.price === 0 ? 'FREE' : caseItem.price}
-              </span>
-              {caseItem.price > 0 && <Star size={12} className="fill-white text-white" />}
-            </div>
-          </div>
-
           {isYellow && (
-            <div className="mt-2 inline-flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
+            <div className="mb-2 inline-flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-full border border-white/10 backdrop-blur-sm">
               <Timer size={12} className="text-white/70" />
               <span className="text-xs font-medium text-white/90">24:00:00</span>
             </div>
           )}
+
+          <div className={`flex ${isYellow ? 'justify-start' : 'justify-center'} items-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]`}>
+            {isFree ? (
+              <motion.div
+                className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 px-3 py-1 rounded-full"
+              >
+                <span className="text-white font-black text-sm tracking-wider uppercase drop-shadow-sm">
+                  FREE
+                </span>
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
+                >
+                  <Star size={12} className="fill-white text-white drop-shadow-sm" />
+                </motion.div>
+              </motion.div>
+            ) : (
+              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 px-3 py-1 rounded-full">
+                <span className="text-white font-black text-sm tracking-wider drop-shadow-sm">
+                  {caseItem.price}
+                </span>
+                <Star size={12} className="fill-white text-white drop-shadow-sm" />
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </Link>

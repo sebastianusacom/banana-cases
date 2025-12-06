@@ -1,6 +1,12 @@
 import { create } from 'zustand';
 import type { Prize } from './userStore';
 
+export interface CaseTag {
+  text: string;
+  icon: string;
+  iconColor: string;
+}
+
 export interface Case {
   id: string;
   name: string;
@@ -8,6 +14,7 @@ export interface Case {
   lottie?: string;
   price: number;
   items: Prize[];
+  tag?: CaseTag;
 }
 
 interface CaseState {
@@ -200,6 +207,11 @@ const mockCases: Case[] = [
     image: 'https://i.postimg.cc/ZnKVJdCk/Diamond-Ring.png',
     price: 233,
     items: STARTER_CASE_ITEMS,
+    tag: {
+      text: 'LIMITED',
+      icon: 'Sparkles',
+      iconColor: 'text-purple-500 fill-purple-500',
+    },
   },
   {
     id: 'case-3',
@@ -208,6 +220,11 @@ const mockCases: Case[] = [
     lottie: 'https://cdn.jsdelivr.net/gh/sebastianusacom/banana-cases@2c2412ec6f4bd11b10d1f324952268d33beb3f6d/pepe.lottie',
     price: 9999,
     items: LEGENDARY_CASE_ITEMS,
+    tag: {
+      text: 'WIN-WIN',
+      icon: 'Flame',
+      iconColor: 'text-orange-500 fill-orange-500',
+    },
   },
   {
     id: 'free-case',
@@ -222,6 +239,11 @@ const mockCases: Case[] = [
     image: 'https://i.postimg.cc/d3t4JyLw/Nail-Bracelet.png',
     price: 150,
     items: STARTER_CASE_ITEMS,
+    tag: {
+      text: 'WIN-WIN',
+      icon: 'Flame',
+      iconColor: 'text-orange-500 fill-orange-500',
+    },
   },
 ];
 
