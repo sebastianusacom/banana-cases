@@ -42,9 +42,19 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         {caseItem.tag && (() => {
           const IconComponent = (LucideIcons as any)[caseItem.tag!.icon] as LucideIcon;
           return (
-            <div className={`absolute ${isYellow ? 'top-2 right-2' : 'top-[8.7rem] left-1/2 -translate-x-1/2'} inline-flex items-center gap-0.5 bg-white/80 backdrop-blur-sm px-1.5 py-0.5 rounded-full z-20 shadow-sm`}>
-              {IconComponent && <IconComponent size={8} className={caseItem.tag.iconColor} />}
-              <span className="text-black/80 font-black text-[10px] leading-none tracking-tight uppercase">
+            <div className={`absolute ${isYellow ? 'top-2 left-1/2 -translate-x-1/2' : 'top-[8.7rem] left-1/2 -translate-x-1/2'} flex items-center gap-0.5 px-1.5 py-0.5 rounded-full z-20 overflow-hidden whitespace-nowrap`}
+              style={{
+                background: 'linear-gradient(135deg,rgb(255, 255, 255) 0%, #a8a8a8 50%,rgb(182, 182, 182) 100%)',
+                boxShadow: 'inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 2px 8px rgba(0, 0, 0, 0.4)',
+              }}>
+              <div 
+                className="absolute inset-0 opacity-70"
+                style={{
+                  background: 'linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%)',
+                }}
+              />
+              {IconComponent && <IconComponent size={8} className={caseItem.tag.iconColor} style={{ position: 'relative', zIndex: 1 }} />}
+              <span className="text-gray-900 font-black text-[10px] leading-none tracking-tight uppercase relative z-10 drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]">
                 {caseItem.tag.text}
               </span>
             </div>
