@@ -184,14 +184,19 @@ const CrashGame: React.FC = () => {
       nextRoundIn: 0, // Reset countdown
     }));
 
-    // Keep active bets and activate queued bets, clear old ones (lost/cashed_out)
+    // Keep active bets and activate queued bets, clear old ones (lost/cashed_out) including player's terminal bets
     setCurrentBets(prev => {
       return prev.map(bet => {
         if (bet.status === 'queued') {
           return { ...bet, status: 'active' as const };
         }
         return bet;
-      }).filter(bet => bet.status !== 'lost' && bet.status !== 'cashed_out');
+      }).filter(bet => {
+        if (bet.id === 'player' && (bet.status === 'lost' || bet.status === 'cashed_out')) {
+          return false;
+        }
+        return bet.status !== 'lost' && bet.status !== 'cashed_out';
+      });
     });
 
     // Reset flying haptic timer for new round
@@ -260,8 +265,13 @@ const CrashGame: React.FC = () => {
             phase: 'waiting', // Change to waiting phase when countdown starts
             nextRoundIn: 10,
           }));
-          // Clear lost bets when countdown starts
-          setCurrentBets(prev => prev.filter(bet => bet.status !== 'lost'));
+          // Clear lost bets and player's terminal bets (lost/cashed_out) when countdown starts
+          setCurrentBets(prev => prev.filter(bet => {
+            if (bet.id === 'player' && (bet.status === 'lost' || bet.status === 'cashed_out')) {
+              return false;
+            }
+            return bet.status !== 'lost';
+          }));
         }, 4000);
         
         return;
@@ -512,81 +522,156 @@ const CrashGame: React.FC = () => {
           </div>
 
           {/* Current Bets List - Always Visible */}
-          <div className="w-full max-w-sm mb-4">
+          <div className="w-full max-w-sm mb-4 space-y-3">
+            {/* Player's Bet - Separate Container */}
+            {(() => {
+              const playerBet = currentBets.find(bet => bet.id === 'player');
+              if (!playerBet) return null;
+              
+              const isQueuedAndWaiting = playerBet.status === 'queued' && gameState.phase === 'waiting';
+              const avatarInitial = (playerBet.username?.[0] || '⭐').toUpperCase();
+              
+              return (
+                <motion.div
+                  key={playerBet.id}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className={`rounded-2xl p-4 flex items-center justify-between ${
+                    playerBet.status === 'cashed_out'
+                      ? 'bg-green-500/10 border border-green-500/30'
+                      : playerBet.status === 'lost'
+                      ? 'bg-red-500/10 border border-red-500/30'
+                      : 'bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 border border-white/10 flex items-center justify-center text-white text-sm font-semibold">
+                      {playerBet.avatarUrl ? (
+                        <img
+                          src={playerBet.avatarUrl}
+                          alt={`${playerBet.username}'s avatar`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="text-lg">{playerBet.avatar || avatarInitial}</span>
+                      )}
+                    </div>
+                    <span className="text-white text-sm font-medium">{playerBet.username}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                      <span className="text-white font-black text-sm leading-none">
+                        {playerBet.status === 'active' && gameState.phase === 'flying'
+                          ? Math.floor(playerBet.betAmount * gameState.multiplier)
+                          : playerBet.betAmount}
+                      </span>
+                      <Star size={16} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                    </div>
+                    {playerBet.autoCashout && (playerBet.status === 'active' || playerBet.status === 'queued') && (
+                      <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
+                        @{playerBet.autoCashout}x
+                      </span>
+                    )}
+                    {playerBet.status === 'cashed_out' && playerBet.cashoutMultiplier && (
+                      <div className="flex items-center gap-1 text-green-400">
+                        <Check size={16} className="text-green-400" />
+                        <span className="text-xs font-semibold">{playerBet.cashoutMultiplier.toFixed(2)}x</span>
+                      </div>
+                    )}
+                    {playerBet.status === 'lost' && (
+                      <XCircle size={16} className="text-red-400" />
+                    )}
+                    {playerBet.status === 'queued' && !isQueuedAndWaiting && (
+                      <span className="text-yellow-400 text-xs font-semibold bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
+                        Next Round
+                      </span>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })()}
+
+            {/* Other Bets List */}
             <div className="bg-white/5 rounded-2xl p-4 min-h-[120px] max-h-40 overflow-y-auto">
-              {currentBets.length === 0 ? (
-                <div className="text-white/40 text-center py-8 text-sm">
-                  No bets placed yet...
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {currentBets.map((bet, index) => {
-                    const isQueuedAndWaiting = bet.status === 'queued' && gameState.phase === 'waiting';
-                    const avatarInitial = (bet.username?.[0] || '⭐').toUpperCase();
-                    return (
-                      <motion.div
-                        key={bet.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className={`bg-white/10 rounded-lg p-3 flex items-center justify-between hover:bg-white/15 transition-colors ${
-                          bet.status === 'cashed_out'
-                            ? 'bg-green-500/10'
-                            : bet.status === 'lost'
-                            ? 'bg-red-500/10'
-                            : bet.status === 'queued' && !isQueuedAndWaiting
-                            ? 'bg-yellow-500/10'
-                            : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 border border-white/10 flex items-center justify-center text-white text-sm font-semibold">
-                            {bet.avatarUrl ? (
-                              <img
-                                src={bet.avatarUrl}
-                                alt={`${bet.username}'s avatar`}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-lg">{bet.avatar || avatarInitial}</span>
+              {(() => {
+                const otherBets = currentBets.filter(bet => bet.id !== 'player');
+                if (otherBets.length === 0) {
+                  return (
+                    <div className="text-white/40 text-center py-8 text-sm">
+                      No bets placed yet...
+                    </div>
+                  );
+                }
+                return (
+                  <div className="space-y-3">
+                    {otherBets.map((bet, index) => {
+                      const isQueuedAndWaiting = bet.status === 'queued' && gameState.phase === 'waiting';
+                      const avatarInitial = (bet.username?.[0] || '⭐').toUpperCase();
+                      return (
+                        <motion.div
+                          key={bet.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: index * 0.1 }}
+                          className={`rounded-lg p-3 flex items-center justify-between transition-colors ${
+                            bet.status === 'cashed_out'
+                              ? 'border border-green-500/30'
+                              : bet.status === 'lost'
+                              ? 'border border-red-500/30'
+                              : bet.status === 'queued' && !isQueuedAndWaiting
+                              ? 'border border-yellow-500/30'
+                              : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full overflow-hidden bg-white/10 border border-white/10 flex items-center justify-center text-white text-sm font-semibold">
+                              {bet.avatarUrl ? (
+                                <img
+                                  src={bet.avatarUrl}
+                                  alt={`${bet.username}'s avatar`}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-lg">{bet.avatar || avatarInitial}</span>
+                              )}
+                            </div>
+                            <span className="text-white text-sm font-medium">{bet.username}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                              <span className="text-white font-black text-sm leading-none">
+                                {bet.status === 'active' && gameState.phase === 'flying'
+                                  ? Math.floor(bet.betAmount * gameState.multiplier)
+                                  : bet.betAmount}
+                              </span>
+                              <Star size={16} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
+                            </div>
+                            {bet.autoCashout && (bet.status === 'active' || bet.status === 'queued') && (
+                              <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
+                                @{bet.autoCashout}x
+                              </span>
+                            )}
+                            {bet.status === 'cashed_out' && bet.cashoutMultiplier && (
+                              <div className="flex items-center gap-1 text-green-400">
+                                <Check size={16} className="text-green-400" />
+                                <span className="text-xs font-semibold">{bet.cashoutMultiplier.toFixed(2)}x</span>
+                              </div>
+                            )}
+                            {bet.status === 'lost' && (
+                              <XCircle size={16} className="text-red-400" />
+                            )}
+                            {bet.status === 'queued' && !isQueuedAndWaiting && (
+                              <span className="text-yellow-400 text-xs font-semibold bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
+                                Next Round
+                              </span>
                             )}
                           </div>
-                          <span className="text-white text-sm font-medium">{bet.username}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
-                            <span className="text-white font-black text-sm leading-none">
-                              {bet.status === 'active' && gameState.phase === 'flying'
-                                ? Math.floor(bet.betAmount * gameState.multiplier)
-                                : bet.betAmount}
-                            </span>
-                            <Star size={16} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
-                          </div>
-                          {bet.autoCashout && (bet.status === 'active' || bet.status === 'queued') && (
-                            <span className="text-yellow-400 text-xs bg-yellow-400/20 px-2 py-1 rounded-full font-semibold border border-yellow-400/30">
-                              @{bet.autoCashout}x
-                            </span>
-                          )}
-                          {bet.status === 'cashed_out' && bet.cashoutMultiplier && (
-                            <div className="flex items-center gap-1 text-green-400">
-                              <Check size={16} className="text-green-400" />
-                              <span className="text-xs font-semibold">{bet.cashoutMultiplier.toFixed(2)}x</span>
-                            </div>
-                          )}
-                          {bet.status === 'lost' && (
-                            <XCircle size={16} className="text-red-400" />
-                          )}
-                          {bet.status === 'queued' && !isQueuedAndWaiting && (
-                            <span className="text-yellow-400 text-xs font-semibold bg-yellow-400/20 px-2 py-1 rounded-full border border-yellow-400/30">
-                              Next Round
-                            </span>
-                          )}
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              )}
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
             </div>
           </div>
         </div>
