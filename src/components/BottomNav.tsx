@@ -23,9 +23,18 @@ export const BottomNav: React.FC = () => {
   return (
     <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
       <nav className={clsx(
-        "flex items-center gap-4 px-4 py-3 bg-white/5 backdrop-blur-xl border border-white/20 rounded-full shadow-2xl pointer-events-auto transition-opacity duration-300",
+        "relative flex items-center gap-4 px-4 py-3 bg-white/5 backdrop-blur-xl rounded-full shadow-2xl pointer-events-auto transition-opacity duration-300",
         isDisabled && "opacity-30 pointer-events-none"
       )}>
+        <div 
+          className="absolute inset-0 rounded-full p-[1px] pointer-events-none bg-gradient-to-b from-white/50 to-transparent"
+          style={{
+            mask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+            maskComposite: 'exclude',
+            WebkitMaskComposite: 'xor',
+          }}
+        />
         <NavLink
           to="/cases"
           className={navItemClass}
