@@ -12,7 +12,7 @@ import CrashGame from './pages/CrashGame';
 
 function App() {
   const { tg, isTelegramWebApp, user: telegramUser } = useTelegram();
-  const { setUserId, fetchUser } = useUserStore();
+  const { setUserId, fetchUser, setUserData } = useUserStore();
 
   useEffect(() => {
     const initAuth = async () => {
@@ -28,18 +28,23 @@ function App() {
       // 2. Login / Register on Backend
       try {
           // If we have initData, we verify. If not (dev), we just pass ID.
-          await api.login(initData, userId);
+          const response = await api.login(initData, userId);
           
           // 3. Save ID and Fetch Profile
           setUserId(userId);
-          await fetchUser();
+          
+          if (response.user) {
+            setUserData(response.user);
+          } else {
+            await fetchUser();
+          }
       } catch (e) {
           console.error("Auth failed:", e);
       }
     };
 
     initAuth();
-  }, [isTelegramWebApp, telegramUser, setUserId, fetchUser]);
+  }, [isTelegramWebApp, telegramUser, setUserId, fetchUser, setUserData]);
 
   useEffect(() => {
     if (isTelegramWebApp) {

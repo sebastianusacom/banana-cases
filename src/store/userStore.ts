@@ -20,6 +20,7 @@ interface UserState {
   isLoading: boolean;
   
   setUserId: (id: string) => void;
+  setUserData: (data: { stars?: number; inventory?: Prize[] }) => void;
   fetchUser: () => Promise<void>;
   
   setDemoMode: (mode: boolean) => void;
@@ -42,6 +43,10 @@ export const useUserStore = create<UserState>()(
       isLoading: false,
 
       setUserId: (id) => set({ userId: id }),
+      setUserData: (data) => set((state) => ({
+        stars: data.stars !== undefined ? data.stars : state.stars,
+        inventory: data.inventory !== undefined ? data.inventory : state.inventory
+      })),
 
       fetchUser: async () => {
         const { userId } = get();
