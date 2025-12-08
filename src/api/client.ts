@@ -8,11 +8,14 @@ export interface ApiResponse<T> {
   userId?: string;
   prizes?: any[];
   gameId?: string;
+  roundId?: string;
   startTime?: number;
+  nextRoundStartTime?: number;
   status?: string;
   crashPoint?: number;
   multiplier?: number;
   winnings?: number;
+  bets?: any[];
 }
 
 export const api = {
@@ -49,18 +52,23 @@ export const api = {
   },
 
   // Crash Game
-  placeBet: async (userId: string, betAmount: number, autoCashout?: number | null) => {
+  getCrashState: async () => {
+    const res = await fetch(`${API_URL}/crash/state`);
+    return res.json();
+  },
+
+  placeBet: async (userId: string, betAmount: number, autoCashout?: number | null, username?: string, avatarUrl?: string) => {
     const res = await fetch(`${API_URL}/crash/bet`, {
       method: "POST",
-      body: JSON.stringify({ userId, betAmount, autoCashout }),
+      body: JSON.stringify({ userId, betAmount, autoCashout, username, avatarUrl }),
     });
     return res.json();
   },
 
-  cashout: async (userId: string, gameId: string) => {
+  cashout: async (userId: string, roundId: string) => {
     const res = await fetch(`${API_URL}/crash/cashout`, {
       method: "POST",
-      body: JSON.stringify({ userId, gameId }),
+      body: JSON.stringify({ userId, roundId }),
     });
     return res.json();
   },
