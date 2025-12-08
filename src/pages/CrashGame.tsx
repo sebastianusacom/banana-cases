@@ -935,10 +935,13 @@ const CrashGame: React.FC = () => {
                         {/* Custom Multiplier Input */}
                         <div className="flex items-center bg-white/5 rounded-full px-1 py-1 gap-1">
                           <button
-                            onClick={() => setGameState(prev => ({
-                              ...prev,
-                              autoCashout: Math.max(1.4, (prev.autoCashout || 0) - 0.2)
-                            }))}
+                            onClick={() => setGameState(prev => {
+                                const newVal = (prev.autoCashout || 0) - 0.2;
+                                return {
+                                  ...prev,
+                                  autoCashout: Math.max(1.4, Math.round(newVal * 10) / 10)
+                                };
+                            })}
                             disabled={gameState.hasBet}
                             className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
                           >
@@ -948,10 +951,13 @@ const CrashGame: React.FC = () => {
                             {gameState.autoCashout?.toFixed(1)}x
                           </div>
                           <button
-                            onClick={() => setGameState(prev => ({
-                              ...prev,
-                              autoCashout: (prev.autoCashout || 0) + 0.2
-                            }))}
+                            onClick={() => setGameState(prev => {
+                              const newVal = (prev.autoCashout || 0) + 0.2;
+                              return {
+                                ...prev,
+                                autoCashout: Math.round(newVal * 10) / 10
+                              };
+                            })}
                             disabled={gameState.hasBet}
                             className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
                           >
