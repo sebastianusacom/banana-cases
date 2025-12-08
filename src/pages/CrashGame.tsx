@@ -166,13 +166,19 @@ const CrashGame: React.FC = () => {
              winnings = Math.floor(myBet.betAmount * myBet.cashoutMultiplier) - myBet.betAmount;
         }
 
+        // Determine if we have an *active* bet that prevents new betting
+        // A bet is blocking if it's active in the current round
+        // If it's queued, it's not blocking (it's the new bet)
+        // If it's cashed_out or lost, it's done, so not blocking for next round (if phase is flying)
+        const isBlockingBet = !!myBet && myBet.status !== 'queued' && myBet.status !== 'cashed_out' && myBet.status !== 'lost';
+
         return {
             ...prev,
             phase: phase as any,
             multiplier,
             nextRoundIn,
             gameId: serverState.roundId,
-            hasBet: !!myBet && myBet.status !== 'queued',
+            hasBet: isBlockingBet,
             winnings,
         };
     });
@@ -286,24 +292,45 @@ const CrashGame: React.FC = () => {
             if (res.error) throw new Error(res.error);
             impactLight();
             setTimeout(() => impactMedium(), 100);
-        } catch (e) {
-            addStars(gameState.betAmount);
-            notificationError();
-        }
-    } else {
-        // Queue it
-        setQueuedBet({
-            amount: gameState.betAmount,
-            autoCashout: gameState.autoCashout
-        });
-        notificationSuccess(); // "Bet Queued" feedback
-    }
+          } catch (e) {
+              addStars(gameState.betAmount); // Refund
+              notificationError();
+          }
+      } else {
+          // Queue it
+          setQueuedBet({
+              amount: gameState.betAmount,
+              autoCashout: gameState.autoCashout
+          });
+          notificationSuccess(); // "Bet Queued" feedback
+      }
   };
 
-  const cancelBet = () => {
+  const cancelBet = async () => {
      if (queuedBet) {
          setQueuedBet(null);
+     } else if (gameState.phase === 'waiting' && userId) {
+         try {
+             const res = await api.cancelBet(userId);
+             if (res.error) throw new Error(res.error);
+             
+             // Server refunded the DB, so we should update our local balance to reflect that.
+             // We use addStars to optimistically update the UI, assuming the server refund succeeded.
+             addStars(gameState.betAmount); 
+             notificationSuccess();
+         } catch (e: any) {
+             console.error(e);
+             // Show error alert similar to High Ping
+             showErrorAlert(e.message || "Failed to cancel bet");
+         }
      }
+  };
+
+  const [errorAlert, setErrorAlert] = useState<string | null>(null);
+
+  const showErrorAlert = (msg: string) => {
+      setErrorAlert(msg);
+      setTimeout(() => setErrorAlert(null), 3000);
   };
 
   const cashout = async () => {
@@ -359,6 +386,19 @@ const CrashGame: React.FC = () => {
               <WifiOff size={16} className="text-red-400 animate-pulse" />
               <span className="text-red-200 text-xs font-bold uppercase tracking-wide">
                 High Ping {pingMs > 0 && <span className="opacity-60 ml-1">{pingMs}ms</span>}
+              </span>
+            </motion.div>
+          )}
+          {errorAlert && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-16 left-1/2 -translate-x-1/2 z-50 bg-red-500/80 backdrop-blur-md px-6 py-3 rounded-full flex items-center gap-2 shadow-lg shadow-red-500/20"
+            >
+              <XCircle size={18} className="text-white" />
+              <span className="text-white text-sm font-bold tracking-wide">
+                {errorAlert}
               </span>
             </motion.div>
           )}
@@ -633,6 +673,8 @@ const CrashGame: React.FC = () => {
             // Also check queuedBet for immediate UI feedback
             const hasQueuedBet = !!queuedBet || (playerBet && playerBet.status === 'queued');
             const canCashOut = playerBet?.status === 'active' && gameState.phase === 'flying';
+            // Allow cancelling if we have an active bet in waiting phase
+            const canCancelActive = playerBet?.status === 'active' && gameState.phase === 'waiting';
 
             if (canCashOut) {
               return (
@@ -658,14 +700,14 @@ const CrashGame: React.FC = () => {
                   </div>
                 </motion.button>
               );
-            } else if (hasQueuedBet) {
+            } else if (hasQueuedBet || canCancelActive) {
               return (
                 <button
                   onClick={cancelBet}
                   className="w-full h-14 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all flex items-center justify-center gap-2"
                 >
                   <X size={20} />
-                  <span>Cancel Bet (Next Round)</span>
+                  <span>{hasQueuedBet ? 'Cancel Bet (Next Round)' : 'Cancel Bet'}</span>
                 </button>
               );
             } else {

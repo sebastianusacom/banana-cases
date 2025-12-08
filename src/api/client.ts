@@ -1,4 +1,4 @@
-const API_URL = "https://tc2af9s735.execute-api.us-east-1.amazonaws.com";
+const API_URL = "https://tfg3xntkmf.execute-api.us-east-1.amazonaws.com"; 
 
 export interface ApiResponse<T> {
   success?: boolean;
@@ -61,6 +61,14 @@ export const api = {
     const res = await fetch(`${API_URL}/crash/bet`, {
       method: "POST",
       body: JSON.stringify({ userId, betAmount, autoCashout, username, avatarUrl }),
+    });
+    return res.json();
+  },
+
+  cancelBet: async (userId: string) => {
+    const res = await fetch(`${API_URL}/crash/cancel`, {
+      method: "POST",
+      body: JSON.stringify({ userId }),
     });
     return res.json();
   },
