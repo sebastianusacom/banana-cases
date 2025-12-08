@@ -235,7 +235,6 @@ const CrashGame: React.FC = () => {
               // We should clear queuedBet immediately to prevent double submission
               // If it fails, we refund/notify
               
-              const betToSubmit = { ...queuedBet };
               setQueuedBet(null); // Clear queue
 
               // Deduct stars optimistically
