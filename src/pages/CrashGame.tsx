@@ -71,10 +71,33 @@ const CrashGame: React.FC = () => {
   const lastMilestoneRef = useRef<number>(1);
   const isCashingOutRef = useRef(false);
   const queuedBetRef = useRef(queuedBet);
+  const prevPhaseRef = useRef(gameState.phase);
 
   useEffect(() => {
     queuedBetRef.current = queuedBet;
   }, [queuedBet]);
+
+  // Phase Transition Effects
+  useEffect(() => {
+    const prev = prevPhaseRef.current;
+    const curr = gameState.phase;
+
+    // Detect Crash Transition for Haptics
+    if (prev === 'flying' && curr === 'crashed') {
+         crashImpact(gameState.multiplier);
+    }
+
+    // Detect New Round Transition
+    if ((prev === 'crashed' || prev === 'waiting') && curr === 'flying') {
+         // Reset haptics ref
+         lastFlyingHapticRef.current = Date.now();
+         lastMilestoneRef.current = 1;
+         impactLight();
+         setTimeout(() => impactMedium(), 150);
+    }
+    
+    prevPhaseRef.current = curr;
+  }, [gameState.phase, gameState.multiplier, crashImpact, impactLight, impactMedium]);
 
   // Poll Game State
   useEffect(() => {
@@ -135,6 +158,14 @@ const CrashGame: React.FC = () => {
 
     setCurrentBets(bets);
 
+    // Sync History
+    if (serverState.crashHistory) {
+        setPastMultipliers(prev => {
+             if (JSON.stringify(prev) === JSON.stringify(serverState.crashHistory)) return prev;
+             return serverState.crashHistory;
+        });
+    }
+
     // 2. Determine Phase & Multiplier
     const now = Date.now();
     let phase = serverState.status.toLowerCase();
@@ -153,21 +184,6 @@ const CrashGame: React.FC = () => {
 
     // 3. Update State
     setGameState(prev => {
-        // Detect Crash Transition for Haptics
-        if (prev.phase === 'flying' && phase === 'crashed') {
-             crashImpact(multiplier);
-             setPastMultipliers(curr => [multiplier, ...curr.slice(0, 5)]);
-        }
-
-        // Detect New Round Transition
-        if ((prev.phase === 'crashed' || prev.phase === 'waiting') && phase === 'flying') {
-             // Reset haptics ref
-             lastFlyingHapticRef.current = Date.now();
-             lastMilestoneRef.current = 1;
-             impactLight();
-             setTimeout(() => impactMedium(), 150);
-        }
-
         // Check if we won
         const myBet = bets.find((b: any) => b.id === 'player');
         let winnings = 0;
@@ -176,9 +192,6 @@ const CrashGame: React.FC = () => {
         }
 
         // Determine if we have an *active* bet that prevents new betting
-        // A bet is blocking if it's active in the current round
-        // If it's queued, it's not blocking (it's the new bet)
-        // If it's cashed_out or lost, it's done, so not blocking for next round (if phase is flying)
         const isBlockingBet = !!myBet && myBet.status !== 'queued' && myBet.status !== 'cashed_out' && myBet.status !== 'lost';
 
         return {
@@ -192,7 +205,7 @@ const CrashGame: React.FC = () => {
         };
     });
 
-  }, [userId, user, crashImpact, impactLight, impactMedium]);
+  }, [userId, user]);
 
 
   // Interpolation Animation Loop
