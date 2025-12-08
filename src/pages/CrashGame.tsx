@@ -128,7 +128,9 @@ const CrashGame: React.FC = () => {
   // Sync logic
   const syncGameState = useCallback((serverState: any) => {
     // 1. Process Bets
-    let bets = (serverState.bets || []).map((b: any) => ({
+    let bets = (serverState.bets || [])
+        .filter((b: any) => b.status !== 'cancelled')
+        .map((b: any) => ({
         id: b.userId === userId ? 'player' : b.userId,
         username: b.username,
         avatar: '⭐',
@@ -935,7 +937,7 @@ const CrashGame: React.FC = () => {
                           <button
                             onClick={() => setGameState(prev => ({
                               ...prev,
-                              autoCashout: Math.max(1.01, (prev.autoCashout || 0) - 1)
+                              autoCashout: Math.max(1.4, (prev.autoCashout || 0) - 0.2)
                             }))}
                             disabled={gameState.hasBet}
                             className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
@@ -948,7 +950,7 @@ const CrashGame: React.FC = () => {
                           <button
                             onClick={() => setGameState(prev => ({
                               ...prev,
-                              autoCashout: (prev.autoCashout || 0) + 1
+                              autoCashout: (prev.autoCashout || 0) + 0.2
                             }))}
                             disabled={gameState.hasBet}
                             className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 disabled:opacity-50 text-white/70 hover:text-white flex items-center justify-center text-sm font-medium transition-colors"
