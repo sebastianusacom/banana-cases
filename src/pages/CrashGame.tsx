@@ -8,32 +8,6 @@ import StarField from '../components/StarField';
 import { useCrashGameStore } from '../store/crashGameStore';
 import { useTelegram } from '../hooks/useTelegram';
 import { api } from '../api/client';
-import { Amplify } from 'aws-amplify';
-import { PubSub } from '@aws-amplify/pubsub';
-import { AWSIoTProvider } from '@aws-amplify/pubsub';
-
-// Initialize Amplify for IoT (Ensure VITE_AWS variables are set in .env)
-// We add the pluggable only once
-try {
-    Amplify.configure({
-        Auth: {
-            Cognito: {
-                identityPoolId: import.meta.env.VITE_AWS_IDENTITY_POOL_ID || '',
-                allowGuestAccess: true
-            }
-        }
-    });
-
-    // Check if pluggable exists or add it (simple check often omitted, just add)
-    // Note: In strict mode/dev, this might run twice.
-    Amplify.addPluggable(new AWSIoTProvider({
-        aws_pubsub_region: import.meta.env.VITE_AWS_REGION || 'us-east-1',
-        aws_pubsub_endpoint: `wss://${import.meta.env.VITE_AWS_IOT_ENDPOINT}/mqtt`,
-    }));
-} catch (e) {
-    // Already configured or error
-    console.debug("Amplify/IoT Config:", e);
-}
 
 interface GameState {
   phase: 'waiting' | 'flying' | 'crashed';
@@ -125,50 +99,30 @@ const CrashGame: React.FC = () => {
     prevPhaseRef.current = curr;
   }, [gameState.phase, gameState.multiplier, crashImpact, impactLight, impactMedium]);
 
-  // Subscribe to IoT Core
+  // Poll Game State
   useEffect(() => {
-    let sub: any;
-    
-    // Initial fetch to get state quickly (optional, but good for cold start)
+    let intervalId: any;
+
     const fetchState = async () => {
         try {
+            const start = Date.now();
             const serverState = await api.getCrashState();
+            const latency = Date.now() - start;
+            setPingMs(latency);
+            setHighPing(latency > 500);
+
             lastServerStateRef.current = serverState;
             syncGameState(serverState);
         } catch (e) {
-            console.error("Initial fetch failed", e);
+            console.error("Polling error", e);
+            setHighPing(true);
         }
     };
+
     fetchState();
+    intervalId = setInterval(fetchState, 1000); // Poll every 1s
 
-    // Subscribe
-    try {
-        sub = PubSub.subscribe('crash/game').subscribe({
-            next: (data: any) => {
-                const serverState = data.value;
-                if (serverState) {
-                    const now = Date.now();
-                    const latency = now - (serverState.timestamp || now);
-                    setPingMs(latency);
-                    setHighPing(latency > 500);
-
-                    lastServerStateRef.current = serverState;
-                    syncGameState(serverState);
-                }
-            },
-            error: (error: any) => {
-                console.error("IoT Sub Error:", error);
-                setHighPing(true);
-            },
-            complete: () => console.log('Done'),
-        });
-    } catch (err) {
-        console.error("Failed to subscribe:", err);
-    }
-
-    return () => {
-        if (sub && sub.unsubscribe) sub.unsubscribe();
-    };
+    return () => clearInterval(intervalId);
   }, [userId]);
 
   // Sync logic
