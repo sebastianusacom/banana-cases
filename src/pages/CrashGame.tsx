@@ -68,6 +68,7 @@ const CrashGame: React.FC = () => {
   const countdownIntervalRef = useRef<number | null>(null);
   const lastFlyingHapticRef = useRef<number>(0);
   const pingIntervalRef = useRef<number | null>(null);
+  const isCashingOutRef = useRef(false);
 
   // Ping check logic
   useEffect(() => {
@@ -176,10 +177,14 @@ const CrashGame: React.FC = () => {
   };
 
   const cashout = async () => {
+    if (isCashingOutRef.current) return;
+
     const playerBet = currentBets.find(
       bet => bet.id === 'player' && bet.status === 'active'
     );
     if (gameState.phase !== 'flying' || !playerBet || !gameState.gameId || !userId) return;
+
+    isCashingOutRef.current = true;
 
     // Call API to cashout
     try {
@@ -211,6 +216,8 @@ const CrashGame: React.FC = () => {
         }
     } catch (e) {
         console.error("Cashout failed", e);
+    } finally {
+        isCashingOutRef.current = false;
     }
   };
 
@@ -347,15 +354,6 @@ const CrashGame: React.FC = () => {
       setGameState(prev => {
         if (prev.phase === 'crashed') return prev;
 
-        // Auto cashout logic
-        // We need to call the API here too if auto-cashout hits
-        if (prev.autoCashout && roundedMultiplier >= prev.autoCashout && prev.hasBet && prev.gameId) {
-             // Trigger cashout (fire and forget for UI, but await for logic?)
-             // Better to wrap in a self-executing async function or call cashout()
-             // which is async now.
-             cashout(); 
-        }
-
         return {
           ...prev,
           multiplier: roundedMultiplier,
@@ -363,6 +361,19 @@ const CrashGame: React.FC = () => {
       });
     }, 50); 
   };
+
+  // Auto Cashout Check
+  useEffect(() => {
+    if (gameState.phase === 'flying' && gameState.autoCashout && gameState.hasBet && gameState.gameId) {
+        // Check if we hit the target
+        if (gameState.multiplier >= gameState.autoCashout) {
+             const playerBet = currentBets.find(b => b.id === 'player');
+             if (playerBet && playerBet.status === 'active' && !isCashingOutRef.current) {
+                 cashout();
+             }
+        }
+    }
+  }, [gameState.multiplier, gameState.autoCashout, gameState.phase, gameState.hasBet, gameState.gameId, currentBets]);
 
   // Handle countdown between rounds
   useEffect(() => {
@@ -750,9 +761,10 @@ const CrashGame: React.FC = () => {
                     className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent z-0 skew-x-12 pointer-events-none"
                   />
                   <div className="relative z-10 flex items-center justify-center gap-3 w-full">
-                    <span className="uppercase tracking-wide font-black text-lg opacity-90">
-                      CASH OUT
-                    </span>
+                    <div className="flex flex-col items-center">
+                        <span className="uppercase tracking-wide font-black text-lg opacity-90 leading-none">CASH OUT</span>
+                        {gameState.autoCashout && <span className="text-[10px] text-yellow-200/80 font-bold tracking-wider leading-none mt-0.5">AUTO @ {gameState.autoCashout}x</span>}
+                    </div>
                     <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
                       <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{Math.floor(gameState.betAmount * gameState.multiplier)}</span>
                       <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
