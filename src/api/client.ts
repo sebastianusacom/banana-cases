@@ -1,4 +1,4 @@
-const API_URL = "https://tfg3xntkmf.execute-api.us-east-1.amazonaws.com"; 
+const API_URL = import.meta.env.VITE_API_URL || "https://tfg3xntkmf.execute-api.us-east-1.amazonaws.com"; 
 
 export interface ApiResponse<T> {
   success?: boolean;
