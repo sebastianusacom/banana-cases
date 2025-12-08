@@ -18,9 +18,9 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
   // Calculate total value of prizes
   const totalValue = prizes.reduce((sum, p) => sum + p.value, 0);
 
-  const handleSellAll = () => {
+  const handleSellAll = async () => {
     impactMedium();
-    prizes.forEach(p => sellItem(p.id));
+    await Promise.all(prizes.map(p => sellItem(p.id)));
     notificationSuccess();
     onClose();
   };

@@ -29,8 +29,8 @@ interface UserState {
   subtractStars: (amount: number) => boolean;
   addItem: (item: Prize) => void;
   removeItem: (itemId: string) => void;
-  sellItem: (itemId: string) => void;
-  resetBalance: () => void; 
+  sellItem: (itemId: string) => Promise<void>;
+  // resetBalance removed as per request
 }
 
 export const useUserStore = create<UserState>()(
@@ -67,7 +67,7 @@ export const useUserStore = create<UserState>()(
 
       setDemoMode: (mode) => set(() => ({ isDemoMode: mode })),
       toggleDemoMode: () => set((state) => ({ isDemoMode: !state.isDemoMode })),
-      resetBalance: () => set({ stars: 1000 }), 
+      
       addStars: (amount) => set((state) => ({ stars: state.stars + amount })),
       
       // Optimistic update (client-side check), but server is source of truth
@@ -85,14 +85,21 @@ export const useUserStore = create<UserState>()(
         set((state) => ({
           inventory: state.inventory.filter((item) => item.id !== itemId),
         })),
-      sellItem: (itemId) => {
-        const { inventory, addStars } = get();
-        const item = inventory.find((i) => i.id === itemId);
-        if (item) {
-          addStars(item.value);
-          set((state) => ({
-            inventory: state.inventory.filter((i) => i.id !== itemId),
-          }));
+      
+      sellItem: async (itemId) => {
+        const { userId } = get();
+        if (!userId) return;
+        
+        try {
+            const res = await api.sellItem(userId, itemId);
+            if (res.success && res.soldAmount) {
+                 set((state) => ({
+                    stars: state.stars + res.soldAmount,
+                    inventory: state.inventory.filter((i) => i.id !== itemId),
+                 }));
+            }
+        } catch (e) {
+            console.error("Sell failed", e);
         }
       },
     }),

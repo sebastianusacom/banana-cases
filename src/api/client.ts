@@ -40,6 +40,14 @@ export const api = {
     return res.json();
   },
 
+  sellItem: async (userId: string, itemId: string) => {
+    const res = await fetch(`${API_URL}/case/sell`, {
+      method: "POST",
+      body: JSON.stringify({ userId, itemId }),
+    });
+    return res.json();
+  },
+
   // Crash Game
   placeBet: async (userId: string, betAmount: number) => {
     const res = await fetch(`${API_URL}/crash/bet`, {
