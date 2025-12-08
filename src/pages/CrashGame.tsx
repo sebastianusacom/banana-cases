@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, X, Check, XCircle, Star, WifiOff } from 'lucide-react';
+import { Flame, X, Check, XCircle, Star, WifiOff, Wifi } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
@@ -70,6 +70,11 @@ const CrashGame: React.FC = () => {
   const lastFlyingHapticRef = useRef<number>(0);
   const lastMilestoneRef = useRef<number>(1);
   const isCashingOutRef = useRef(false);
+  const queuedBetRef = useRef(queuedBet);
+
+  useEffect(() => {
+    queuedBetRef.current = queuedBet;
+  }, [queuedBet]);
 
   // Poll Game State
   useEffect(() => {
@@ -112,7 +117,8 @@ const CrashGame: React.FC = () => {
     }));
 
     // Add queued bet locally if exists
-    if (queuedBet) {
+    const qBet = queuedBetRef.current;
+    if (qBet) {
         // Remove existing player bet from server state (e.g. from previous round) so queued bet takes priority
         bets = bets.filter((b: any) => b.id !== 'player');
         
@@ -121,8 +127,8 @@ const CrashGame: React.FC = () => {
             username: user?.first_name || 'You',
             avatar: '⭐',
             avatarUrl: user?.photo_url,
-            betAmount: queuedBet.amount,
-            autoCashout: queuedBet.autoCashout,
+            betAmount: qBet.amount,
+            autoCashout: qBet.autoCashout,
             status: 'queued',
         });
     }
@@ -186,7 +192,7 @@ const CrashGame: React.FC = () => {
         };
     });
 
-  }, [queuedBet, userId, user, crashImpact, impactLight, impactMedium]);
+  }, [userId, user, crashImpact, impactLight, impactMedium]);
 
 
   // Interpolation Animation Loop
@@ -385,9 +391,10 @@ const CrashGame: React.FC = () => {
   
   // Sync global store
   useEffect(() => {
-     const hasActiveBet = currentBets.some(b => b.id === 'player' && b.status === 'active');
-     setCrashGameStore(hasActiveBet, gameState.phase);
-  }, [currentBets, gameState.phase, setCrashGameStore]);
+     const hasActiveBet = currentBets.some(b => b.id === 'player' && (b.status === 'active' || b.status === 'queued'));
+     const isQueued = !!queuedBet;
+     setCrashGameStore(hasActiveBet || isQueued, gameState.phase);
+  }, [currentBets, gameState.phase, setCrashGameStore, queuedBet]);
 
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
@@ -421,6 +428,17 @@ const CrashGame: React.FC = () => {
             </motion.div>
           )}
         </AnimatePresence>
+
+        {/* Subtle Ping Tracker */}
+        <div className="absolute top-4 left-4 z-40 flex items-center gap-1.5 opacity-60 bg-black/20 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/5 select-none">
+             <Wifi 
+                size={14} 
+                className={pingMs < 150 ? "text-green-400" : pingMs < 300 ? "text-yellow-400" : "text-red-400"} 
+             />
+             <span className={`text-[10px] font-bold tabular-nums ${pingMs < 150 ? "text-green-400/80" : pingMs < 300 ? "text-yellow-400/80" : "text-red-400/80"}`}>
+                 {pingMs}ms
+             </span>
+        </div>
 
         {/* Animated Star Field Background */}
         <StarField isFlying={gameState.phase === 'flying'} />
