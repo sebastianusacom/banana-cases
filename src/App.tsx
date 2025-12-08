@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Layout } from './components/Layout';
 import { useEffect } from 'react';
 import { useTelegram } from './hooks/useTelegram';
+import { useUserStore } from './store/userStore';
+import { api } from './api/client';
 
 import CasesPage from './pages/CasesPage';
 import CaseDetailPage from './pages/CaseDetailPage';
@@ -9,7 +11,35 @@ import ProfilePage from './pages/ProfilePage';
 import CrashGame from './pages/CrashGame';
 
 function App() {
-  const { tg, isTelegramWebApp } = useTelegram();
+  const { tg, isTelegramWebApp, user: telegramUser } = useTelegram();
+  const { setUserId, fetchUser } = useUserStore();
+
+  useEffect(() => {
+    const initAuth = async () => {
+      // 1. Get User ID (Real from TG or Fake for Dev)
+      let userId = "test-user-dev";
+      let initData = "";
+      
+      if (isTelegramWebApp && telegramUser) {
+          userId = telegramUser.id.toString();
+          initData = window.Telegram?.WebApp?.initData || "";
+      }
+
+      // 2. Login / Register on Backend
+      try {
+          // If we have initData, we verify. If not (dev), we just pass ID.
+          await api.login(initData, userId);
+          
+          // 3. Save ID and Fetch Profile
+          setUserId(userId);
+          await fetchUser();
+      } catch (e) {
+          console.error("Auth failed:", e);
+      }
+    };
+
+    initAuth();
+  }, [isTelegramWebApp, telegramUser, setUserId, fetchUser]);
 
   useEffect(() => {
     if (isTelegramWebApp) {

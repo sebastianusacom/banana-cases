@@ -2,20 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Star, ShieldCheck, X, Flame } from 'lucide-react';
-import { useCaseStore, pickWinner } from '../store/caseStore';
+import { useCaseStore } from '../store/caseStore'; 
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { useTelegram } from '../hooks/useTelegram';
 import clsx from 'clsx';
 import { Roulette } from '../components/Roulette';
 import { PrizeModal } from '../components/PrizeModal';
+import { api } from '../api/client';
 
 const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { getCaseById } = useCaseStore();
-  const { stars, isDemoMode, toggleDemoMode, setDemoMode, addItem, subtractStars } = useUserStore();
-  const { selectionChanged, impactMedium, impactHeavy, notificationSuccess } = useHaptics();
+  const { stars, isDemoMode, toggleDemoMode, setDemoMode, addItem, subtractStars, userId } = useUserStore();
+  const { selectionChanged, impactMedium, impactHeavy, notificationSuccess, notificationError } = useHaptics();
   const { tg, isTelegramWebApp } = useTelegram();
 
   const caseItem = getCaseById(id || '');
@@ -71,64 +72,78 @@ const CaseDetailPage: React.FC = () => {
   const totalPrice = caseItem.price * count;
   const canAfford = stars >= totalPrice;
 
-  const handleQuickSpin = () => {
-    if (isOpening) return;
+  // Shared logic for calling API and setting state
+  const executeOpen = async (isQuickSpin: boolean) => {
+      if (isOpening || !userId) return;
 
-    if (!isDemoMode && !canAfford) {
-      tg.showAlert("You don't have enough stars!");
-      return;
-    }
+      if (!isDemoMode && !canAfford) {
+        tg.showAlert("You don't have enough stars!");
+        return;
+      }
 
-    impactHeavy();
-    notificationSuccess();
+      if (isQuickSpin) {
+        impactHeavy();
+      } else {
+        impactMedium();
+      }
 
-    if (!isDemoMode) {
-        const success = subtractStars(totalPrice);
-        if (!success) return;
-    }
+      // 1. Optimistic UI update
+      if (!isDemoMode) {
+          const success = subtractStars(totalPrice);
+          if (!success) {
+             notificationError();
+             return; 
+          }
+      }
 
-    const generatedPrizes: Prize[] = [];
+      // 2. Call API (The Real Source of Truth)
+      let prizes: Prize[] = [];
 
-    for (let i = 0; i < count; i++) {
-      const winner = pickWinner(caseItem.items);
-      const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() };
-      generatedPrizes.push(prizeInstance);
-      addItem(prizeInstance);
-    }
+      if (!isDemoMode) {
+          try {
+              const res = await api.openCase(userId, caseItem.id, count);
+              if (res.error) {
+                  console.error(res.error);
+                  notificationError();
+                  // In a real app, you might want to re-fetch user balance here to sync
+                  return;
+              }
+              prizes = res.prizes.map((p: any, i: number) => ({
+                  ...p,
+                  id: `won-${Date.now()}-${i}`,
+                  wonAt: Date.now()
+              }));
+          } catch (e) {
+              console.error("Failed to open case", e);
+              notificationError();
+              return;
+          }
+      } else {
+          // Demo Mode Logic (Local Fallback)
+          const demoPick = (items: any[]) => items[Math.floor(Math.random() * items.length)];
+          
+          for (let i = 0; i < count; i++) {
+              const winner = demoPick(caseItem.items);
+              prizes.push({ ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() });
+          }
+      }
+      
+      // 3. Update Inventory locally
+      prizes.forEach(p => addItem(p));
+      setWinningPrizes(prizes);
 
-    setWinningPrizes(generatedPrizes);
-    setShowPrizeModal(true);
+      if (isQuickSpin) {
+          notificationSuccess();
+          setShowPrizeModal(true);
+      } else {
+          setIsOpening(true);
+          completedSpins.current = 0;
+          window.dispatchEvent(new Event('case-spin-start'));
+      }
   };
 
-  const handleOpen = () => {
-    if (isOpening) return;
-
-    if (!isDemoMode && !canAfford) {
-      tg.showAlert("You don't have enough stars!");
-      return;
-    }
-
-    impactMedium();
-
-    if (!isDemoMode) {
-        const success = subtractStars(totalPrice);
-        if (!success) return;
-    }
-
-    const generatedPrizes: Prize[] = [];
-
-    for (let i = 0; i < count; i++) {
-      const winner = pickWinner(caseItem.items);
-      const prizeInstance = { ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() };
-      generatedPrizes.push(prizeInstance);
-      addItem(prizeInstance);
-    }
-
-    setWinningPrizes(generatedPrizes);
-    setIsOpening(true);
-    completedSpins.current = 0;
-    window.dispatchEvent(new Event('case-spin-start'));
-  };
+  const handleQuickSpin = () => executeOpen(true);
+  const handleOpen = () => executeOpen(false);
 
   const handleMouseDown = () => {
     if (caseItem.id === 'free-case') {

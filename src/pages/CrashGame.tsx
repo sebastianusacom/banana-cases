@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Flame, X, Check, XCircle, Star } from 'lucide-react';
+import { Flame, X, Check, XCircle, Star, WifiOff } from 'lucide-react';
 import { useUserStore } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
 import StarField from '../components/StarField';
 import { useCrashGameStore } from '../store/crashGameStore';
 import { useTelegram } from '../hooks/useTelegram';
+import { api } from '../api/client';
 
 interface GameState {
   phase: 'waiting' | 'flying' | 'crashed';
@@ -16,6 +17,7 @@ interface GameState {
   hasBet: boolean;
   winnings: number;
   nextRoundIn: number;
+  gameId: string | null;
 }
 
 interface PlayerBet {
@@ -29,11 +31,11 @@ interface PlayerBet {
   cashoutMultiplier?: number;
 }
 
-const MAX_BET = 10000; // Maximum bet limit in stars
-const COUNTDOWN_TICK_MS = 900; // 10→1 over ~8s
+const MAX_BET = 10000;
+const COUNTDOWN_TICK_MS = 900; 
 
 const CrashGame: React.FC = () => {
-  const { stars, subtractStars, addStars } = useUserStore();
+  const { stars, subtractStars, addStars, userId } = useUserStore(); 
   const {
     impactLight,
     impactMedium,
@@ -53,45 +55,83 @@ const CrashGame: React.FC = () => {
     hasBet: false,
     winnings: 0,
     nextRoundIn: 10,
+    gameId: null,
   });
 
   const [showBetDrawer, setShowBetDrawer] = useState(false);
   const [pastMultipliers, setPastMultipliers] = useState<number[]>([]);
   const [currentBets, setCurrentBets] = useState<PlayerBet[]>([]);
+  const [highPing, setHighPing] = useState(false);
 
   const gameIntervalRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
   const lastFlyingHapticRef = useRef<number>(0);
+  const pingIntervalRef = useRef<number | null>(null);
 
-  // Lottie animation rotation based on multiplier
-  // Starts at 45 degrees (top right) and rotates to 0 degrees (top) as multiplier increases
+  // Ping check logic
+  useEffect(() => {
+    const checkPing = async () => {
+      if (!userId) return;
+      const start = Date.now();
+      try {
+        // We can use getUser as a lightweight ping
+        await api.getUser(userId);
+        const latency = Date.now() - start;
+        setHighPing(latency > 300); // Alert if > 300ms
+      } catch (e) {
+        setHighPing(true);
+      }
+    };
+
+    // Check initially and then every 10 seconds
+    checkPing();
+    pingIntervalRef.current = window.setInterval(checkPing, 10000);
+
+    return () => {
+      if (pingIntervalRef.current) clearInterval(pingIntervalRef.current);
+    };
+  }, [userId]);
+
   const getRotation = () => {
     if (gameState.phase === 'waiting') return 45;
-    // Start at 45 degrees, rotate to 0 degrees as multiplier increases
-    // At multiplier 1.00: 45 degrees
-    // At multiplier 5.00: 0 degrees
-    // Clamp to prevent negative rotation
     const rotation = 45 - (gameState.multiplier - 1) * (45 / 4);
     return Math.max(0, rotation);
   };
 
-  // Calculate shake intensity based on multiplier
   const getShakeIntensity = () => {
     if (gameState.phase !== 'flying') return 0;
-    // Shake intensity increases with multiplier
-    // At 1x: no shake, at 5x: max shake (5px)
     const intensity = Math.max(0, (gameState.multiplier - 1) * 1.25);
-    return Math.min(intensity, 5); // Cap at 5px
+    return Math.min(intensity, 5); 
   };
 
-  const placeBet = () => {
-    if (gameState.hasBet) return;
+  const placeBet = async () => {
+    if (gameState.hasBet || !userId) return; // Require userId
+    
+    // Optimistic UI update first
     if (!subtractStars(gameState.betAmount)) {
       notificationError();
       return;
     }
 
-    // Add player to current bets list
+    // Call API
+    try {
+        const response = await api.placeBet(userId, gameState.betAmount);
+        
+        if (response.gameId) {
+             setGameState(prev => ({ ...prev, gameId: response.gameId }));
+        } else {
+             // Rollback if failed
+             addStars(gameState.betAmount);
+             notificationError();
+             return;
+        }
+    } catch (e) {
+        console.error(e);
+        addStars(gameState.betAmount);
+        notificationError();
+        return;
+    }
+
     const betStatus: PlayerBet['status'] = gameState.phase === 'flying' ? 'queued' : 'active';
     const userAvatarUrl = user?.photo_url;
     const newBet = {
@@ -106,85 +146,128 @@ const CrashGame: React.FC = () => {
 
     setCurrentBets(prev => [...prev, newBet]);
 
-    // Cool betting haptics - multiple impacts for excitement
     impactLight();
     setTimeout(() => impactMedium(), 100);
   };
 
   const cancelBet = () => {
-    // Check if player has an active or queued bet
+    // Note: Cancel API is not implemented yet in backend for MVP
+    // So we just refund locally if it was queued.
     const playerBet = currentBets.find(
       bet => bet.id === 'player' && (bet.status === 'active' || bet.status === 'queued')
     );
     
     if (!playerBet) return;
 
-    // Return the stars to the player
     const betAmount = playerBet.betAmount;
     addStars(betAmount);
 
-    // Remove the bet from current bets
     setCurrentBets(prev => prev.filter(bet => bet.id !== 'player'));
 
-    // Reset game state
     setGameState(prev => ({
       ...prev,
       hasBet: false,
-      betAmount: 50, // Reset to default
+      betAmount: 50, 
       autoCashout: null,
+      gameId: null
     }));
   };
 
-  const cashout = () => {
-    // Only allow cashout for active bets during flying phase
+  const cashout = async () => {
     const playerBet = currentBets.find(
       bet => bet.id === 'player' && bet.status === 'active'
     );
-    if (gameState.phase !== 'flying' || !playerBet) return;
+    if (gameState.phase !== 'flying' || !playerBet || !gameState.gameId || !userId) return;
 
-    const winnings = Math.floor(playerBet.betAmount * gameState.multiplier);
-    addStars(winnings);
+    // Call API to cashout
+    try {
+        const result = await api.cashout(userId, gameState.gameId);
+        
+        if (result.status === 'WON') {
+            const winnings = result.winnings;
+            addStars(winnings);
+            
+            notificationSuccess();
+            setTimeout(() => impactLight(), 200);
+            setTimeout(() => impactMedium(), 300);
 
-    // Exciting cashout haptics - success with celebration
-    notificationSuccess();
-    setTimeout(() => impactLight(), 200);
-    setTimeout(() => impactMedium(), 300);
+            setCurrentBets(prev => prev.map(bet =>
+              bet.id === 'player'
+                ? { ...bet, status: 'cashed_out' as const, cashoutMultiplier: result.multiplier }
+                : bet
+            ));
 
-    // Mark player bet as cashed out instead of removing it
-    setCurrentBets(prev => prev.map(bet =>
-      bet.id === 'player'
-        ? { ...bet, status: 'cashed_out' as const, cashoutMultiplier: gameState.multiplier }
-        : bet
-    ));
-
-    setGameState(prev => ({
-      ...prev,
-      hasBet: false,
-      winnings: winnings - playerBet.betAmount,
-    }));
+            setGameState(prev => ({
+              ...prev,
+              hasBet: false,
+              winnings: winnings - playerBet.betAmount,
+            }));
+        } else if (result.status === 'CRASHED') {
+            // Server says we crashed! Even if client didn't see it yet.
+            // Force crash locally
+             handleCrash(result.crashPoint);
+        }
+    } catch (e) {
+        console.error("Cashout failed", e);
+    }
   };
 
+  const handleCrash = (crashValue: number) => {
+        // Clear interval immediately
+        if (gameIntervalRef.current) {
+          window.clearInterval(gameIntervalRef.current);
+          gameIntervalRef.current = null;
+        }
+
+        setGameState(prev => ({
+          ...prev,
+          phase: 'crashed',
+          multiplier: crashValue,
+          nextRoundIn: 0, 
+        }));
+
+        setPastMultipliers(prev => [crashValue, ...prev.slice(0, 5)]);
+
+        setCurrentBets(prev => prev.map(bet =>
+          bet.status === 'active'
+            ? { ...bet, status: 'lost' as const }
+            : bet
+        ));
+
+        crashImpact(crashValue);
+        
+        setTimeout(() => {
+          setGameState(prev => ({
+            ...prev,
+            phase: 'waiting', 
+            nextRoundIn: 10,
+          }));
+          setCurrentBets(prev => prev.filter(bet => {
+            if (bet.id === 'player' && (bet.status === 'lost' || bet.status === 'cashed_out')) {
+              return false;
+            }
+            return bet.status !== 'lost';
+          }));
+        }, 4000);
+  }
+
   const startRound = () => {
-    // Allow starting from waiting or crashed phase
     if (gameState.phase !== 'waiting' && gameState.phase !== 'crashed') return;
 
-    // Clear any existing game interval
     if (gameIntervalRef.current) {
       window.clearInterval(gameIntervalRef.current);
       gameIntervalRef.current = null;
     }
 
-    // Reset game state for new round
     setGameState(prev => ({
       ...prev,
       phase: 'flying',
       multiplier: 1.00,
       winnings: 0,
-      hasBet: prev.hasBet, // Keep bet state if user has bet
-      nextRoundIn: 0, // Reset countdown
+      hasBet: prev.hasBet, 
+      nextRoundIn: 0, 
     }));
 
-    // Keep active bets and activate queued bets, clear old ones (lost/cashed_out) including player's terminal bets
     setCurrentBets(prev => {
       return prev.map(bet => {
         if (bet.status === 'queued') {
@@ -199,16 +282,13 @@ const CrashGame: React.FC = () => {
       });
     });
 
-    // Reset flying haptic timer for new round
     lastFlyingHapticRef.current = Date.now();
 
-    // Start the crash game simulation
     let currentMultiplier = 1.00;
     let lastMilestone = 1;
-    let hasCrashed = false; // Flag to prevent multiple crash handlers
+    let hasCrashed = false; 
 
     gameIntervalRef.current = window.setInterval(() => {
-      // Prevent updates if already crashed
       if (hasCrashed) {
         if (gameIntervalRef.current) {
           window.clearInterval(gameIntervalRef.current);
@@ -217,109 +297,61 @@ const CrashGame: React.FC = () => {
         return;
       }
 
-      // Calculate crash probability - increases gradually with multiplier
-      // Formula ensures crashes happen at various multipliers, not just near 1.00x
-      // Probability starts at 0 when multiplier is 1.00x and increases linearly
-      // This creates a fair distribution where crashes can happen at any multiplier
-      const crashProbability = (currentMultiplier - 1) * 0.0005; // 0.05% per multiplier point above 1.00x
+      // Simulation only for visual feedback
+      // In real app, we should ideally listen to WebSocket for crashes
+      // But for this HTTP MVP, we act as the "Server Simulation" locally too
+      // However, the REAL check is on cashout.
+      
+      const crashProbability = (currentMultiplier - 1) * 0.0005; 
       const crashChance = Math.random();
       const shouldCrash = crashChance < crashProbability || currentMultiplier > 100;
 
       if (shouldCrash) {
         hasCrashed = true;
-        
-        // Capture the exact crash multiplier before clearing interval
         const crashedMultiplier = Math.round(currentMultiplier * 100) / 100;
-        
-        // Clear interval immediately
-        if (gameIntervalRef.current) {
-          window.clearInterval(gameIntervalRef.current);
-          gameIntervalRef.current = null;
-        }
-
-        // Update state atomically - set crashed phase and freeze multiplier
-        setGameState(prev => ({
-          ...prev,
-          phase: 'crashed',
-          multiplier: crashedMultiplier, // Freeze at crash value
-          nextRoundIn: 0, // Start at 0, will be set to 10 after delay
-        }));
-
-        // Add crashed multiplier to history - most recent always on the left, keep max 5 old ones
-        setPastMultipliers(prev => [crashedMultiplier, ...prev.slice(0, 5)]); // Keep max 6 total (1 most recent + 5 old)
-
-        // Mark all active bets as lost, keep queued bets for next round
-        setCurrentBets(prev => prev.map(bet =>
-          bet.status === 'active'
-            ? { ...bet, status: 'lost' as const }
-            : bet
-        ));
-
-        // Dramatic crash haptics with multiplier-aware rumble
-        crashImpact(crashedMultiplier);
-        
-        // Delay before starting countdown (4 seconds)
-        setTimeout(() => {
-          setGameState(prev => ({
-            ...prev,
-            phase: 'waiting', // Change to waiting phase when countdown starts
-            nextRoundIn: 10,
-          }));
-          // Clear lost bets and player's terminal bets (lost/cashed_out) when countdown starts
-          setCurrentBets(prev => prev.filter(bet => {
-            if (bet.id === 'player' && (bet.status === 'lost' || bet.status === 'cashed_out')) {
-              return false;
-            }
-            return bet.status !== 'lost';
-          }));
-        }, 4000);
-        
+        handleCrash(crashedMultiplier);
         return;
       }
 
-      // Increase multiplier exponentially (even faster rounds)
-      const growthRate = 1.006; // Quicker ramp to higher multipliers
+      const growthRate = 1.006; 
       currentMultiplier *= growthRate;
 
       const roundedMultiplier = Math.round(currentMultiplier * 100) / 100;
 
-      // Continuous flying haptics - subtle vibration every ~0.5 seconds
       const now = Date.now();
-      const hapticInterval = 500; // Haptic every 500ms
+      const hapticInterval = 500; 
       
       if (now - lastFlyingHapticRef.current >= hapticInterval) {
-        // Intensity increases slightly with multiplier
         if (roundedMultiplier >= 5) {
-          impactMedium(); // Stronger haptics at higher multipliers
+          impactMedium(); 
         } else {
-          impactLight(); // Light haptics during normal flight
+          impactLight(); 
         }
         lastFlyingHapticRef.current = now;
       }
 
-      // Milestone haptics - celebrate big multipliers
       const currentMilestone = Math.floor(roundedMultiplier);
       if (currentMilestone > lastMilestone && currentMilestone >= 2) {
         if (currentMilestone >= 10) {
-          impactHeavy(); // Big milestone
+          impactHeavy(); 
         } else if (currentMilestone >= 5) {
-          impactMedium(); // Medium milestone
+          impactMedium(); 
         } else {
-          impactLight(); // Small milestone
+          impactLight(); 
         }
         lastMilestone = currentMilestone;
       }
 
       setGameState(prev => {
-        // Don't update if already crashed
-        if (prev.phase === 'crashed') {
-          return prev;
-        }
+        if (prev.phase === 'crashed') return prev;
 
-        // Auto cashout if set
-        if (prev.autoCashout && roundedMultiplier >= prev.autoCashout && prev.hasBet) {
-          // Auto cashout haptics
-          setTimeout(() => cashout(), 100);
+        // Auto cashout logic
+        // We need to call the API here too if auto-cashout hits
+        if (prev.autoCashout && roundedMultiplier >= prev.autoCashout && prev.hasBet && prev.gameId) {
+             // Trigger cashout (fire and forget for UI, but await for logic?)
+             // Better to wrap in a self-executing async function or call cashout()
+             // which is async now.
+             cashout(); 
         }
 
         return {
@@ -327,9 +359,8 @@ const CrashGame: React.FC = () => {
           multiplier: roundedMultiplier,
         };
       });
-    }, 50); // Update every 50ms for smooth animation
+    }, 50); 
   };
-
 
   // Handle countdown between rounds
   useEffect(() => {
@@ -419,6 +450,21 @@ const CrashGame: React.FC = () => {
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-4">
+        {/* High Ping Alert */}
+        <AnimatePresence>
+          {highPing && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-500/20 border border-red-500/50 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2"
+            >
+              <WifiOff size={16} className="text-red-400 animate-pulse" />
+              <span className="text-red-200 text-xs font-bold uppercase tracking-wide">High Ping</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Animated Star Field Background */}
         <StarField isFlying={gameState.phase === 'flying'} />
         {/* Game Display */}
