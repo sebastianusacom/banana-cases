@@ -10,7 +10,7 @@ import { useTelegram } from '../hooks/useTelegram';
 import { api } from '../api/client';
 import { Amplify } from 'aws-amplify';
 import { PubSub } from '@aws-amplify/pubsub';
-import { AWSIoTProvider } from '@aws-amplify/pubsub/lib/Providers/AWSIotProvider';
+import { AWSIoTProvider } from '@aws-amplify/pubsub';
 
 // Initialize Amplify for IoT (Ensure VITE_AWS variables are set in .env)
 // We add the pluggable only once
