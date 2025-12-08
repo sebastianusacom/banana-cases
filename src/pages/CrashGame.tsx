@@ -62,6 +62,7 @@ const CrashGame: React.FC = () => {
   const [pastMultipliers, setPastMultipliers] = useState<number[]>([]);
   const [currentBets, setCurrentBets] = useState<PlayerBet[]>([]);
   const [highPing, setHighPing] = useState(false);
+  const [pingMs, setPingMs] = useState(0);
 
   const gameIntervalRef = useRef<number | null>(null);
   const countdownIntervalRef = useRef<number | null>(null);
@@ -77,6 +78,7 @@ const CrashGame: React.FC = () => {
         // We can use getUser as a lightweight ping
         await api.getUser(userId);
         const latency = Date.now() - start;
+        setPingMs(latency);
         setHighPing(latency > 300); // Alert if > 300ms
       } catch (e) {
         setHighPing(true);
@@ -115,7 +117,7 @@ const CrashGame: React.FC = () => {
 
     // Call API
     try {
-        const response = await api.placeBet(userId, gameState.betAmount);
+        const response = await api.placeBet(userId, gameState.betAmount, gameState.autoCashout);
         
         if (response.gameId) {
              setGameState(prev => ({ ...prev, gameId: response.gameId }));
@@ -457,10 +459,12 @@ const CrashGame: React.FC = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-500/20 border border-red-500/50 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2"
+              className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-red-500/20 backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2"
             >
               <WifiOff size={16} className="text-red-400 animate-pulse" />
-              <span className="text-red-200 text-xs font-bold uppercase tracking-wide">High Ping</span>
+              <span className="text-red-200 text-xs font-bold uppercase tracking-wide">
+                High Ping {pingMs > 0 && <span className="opacity-60 ml-1">{pingMs}ms</span>}
+              </span>
             </motion.div>
           )}
         </AnimatePresence>

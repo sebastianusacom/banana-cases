@@ -49,10 +49,10 @@ export const api = {
   },
 
   // Crash Game
-  placeBet: async (userId: string, betAmount: number) => {
+  placeBet: async (userId: string, betAmount: number, autoCashout?: number | null) => {
     const res = await fetch(`${API_URL}/crash/bet`, {
       method: "POST",
-      body: JSON.stringify({ userId, betAmount }),
+      body: JSON.stringify({ userId, betAmount, autoCashout }),
     });
     return res.json();
   },
