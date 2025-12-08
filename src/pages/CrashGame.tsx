@@ -100,7 +100,7 @@ const CrashGame: React.FC = () => {
   // Sync logic
   const syncGameState = useCallback((serverState: any) => {
     // 1. Process Bets
-    const bets = (serverState.bets || []).map((b: any) => ({
+    let bets = (serverState.bets || []).map((b: any) => ({
         id: b.userId === userId ? 'player' : b.userId,
         username: b.username,
         avatar: '⭐',
@@ -113,6 +113,9 @@ const CrashGame: React.FC = () => {
 
     // Add queued bet locally if exists
     if (queuedBet) {
+        // Remove existing player bet from server state (e.g. from previous round) so queued bet takes priority
+        bets = bets.filter((b: any) => b.id !== 'player');
+        
         bets.push({
             id: 'player',
             username: user?.first_name || 'You',
@@ -298,6 +301,10 @@ const CrashGame: React.FC = () => {
           }
       } else {
           // Queue it
+          if (gameState.betAmount > stars) {
+             notificationError();
+             return;
+          }
           setQueuedBet({
               amount: gameState.betAmount,
               autoCashout: gameState.autoCashout
