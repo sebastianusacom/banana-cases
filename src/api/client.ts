@@ -1,6 +1,6 @@
 const API_URL = "https://tc2af9s735.execute-api.us-east-1.amazonaws.com";
 
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   success?: boolean;
   error?: string;
   data?: T;

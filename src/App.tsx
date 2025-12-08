@@ -22,7 +22,7 @@ function App() {
       
       if (isTelegramWebApp && telegramUser) {
           userId = telegramUser.id.toString();
-          initData = window.Telegram?.WebApp?.initData || "";
+          initData = (window.Telegram?.WebApp as any)?.initData || "";
       }
 
       // 2. Login / Register on Backend
