@@ -230,6 +230,17 @@ const CrashGame: React.FC = () => {
     };
   }, [impactLight, impactMedium, impactHeavy]);
 
+  // Countdown Haptics
+  useEffect(() => {
+    if (gameState.phase === 'waiting' && gameState.nextRoundIn > 0) {
+        if (gameState.nextRoundIn <= 3) {
+            impactMedium();
+        } else {
+            impactLight();
+        }
+    }
+  }, [gameState.nextRoundIn, gameState.phase, impactLight, impactMedium]);
+
   // Queue Processing: If waiting and have queued bet, submit it
   useEffect(() => {
       if (gameState.phase === 'waiting' && queuedBet) {
