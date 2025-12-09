@@ -444,16 +444,6 @@ const CrashGame: React.FC = () => {
           )}
         </AnimatePresence>
 
-        {/* Subtle Ping Tracker */}
-        <div className="absolute top-4 left-4 z-40 flex items-center gap-1.5 opacity-60 bg-black/20 backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/5 select-none">
-             <Wifi 
-                size={14} 
-                className={pingMs < 150 ? "text-green-400" : pingMs < 300 ? "text-yellow-400" : "text-red-400"} 
-             />
-             <span className={`text-[10px] font-bold tabular-nums ${pingMs < 150 ? "text-green-400/80" : pingMs < 300 ? "text-yellow-400/80" : "text-red-400/80"}`}>
-                 {pingMs}ms
-             </span>
-        </div>
 
         {/* Animated Star Field Background */}
         <StarField isFlying={gameState.phase === 'flying'} />
@@ -526,7 +516,18 @@ const CrashGame: React.FC = () => {
           </div>
 
           {/* Multiplier History Capsules */}
-          <div className="mb-4">
+          <div className="mb-4 relative">
+             {pingMs > 150 && (
+                <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 opacity-40 select-none pointer-events-none">
+                     <Wifi 
+                        size={12} 
+                        className={pingMs < 300 ? "text-yellow-400" : "text-red-400"} 
+                     />
+                     <span className={`text-[10px] font-bold tabular-nums ${pingMs < 300 ? "text-yellow-400/80" : "text-red-400/80"}`}>
+                         {pingMs}ms
+                     </span>
+                </div>
+             )}
             <div className="flex gap-2 justify-center overflow-x-auto pb-2 max-w-full">
               {/* Active multiplier (first capsule) */}
               <motion.div
