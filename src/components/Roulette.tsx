@@ -42,11 +42,13 @@ export const Roulette: React.FC<RouletteProps> = ({
   const config = getSizeConfig(multiplier);
   const CARD_WIDTH = config.card;
   const CARD_HEIGHT = config.card;
-  const EXTRA_CARDS_BEFORE = 50;
-  const EXTRA_CARDS_AFTER = 20;
+  const EXTRA_CARDS_BEFORE = 35;
+  const EXTRA_CARDS_AFTER = 15;
 
   useEffect(() => {
-    if (!idle || items.length === 0) return;
+    const isLoading = !idle && !winningItem;
+    // Run if idle OR loading (waiting for winner)
+    if ((!idle && !isLoading) || items.length === 0) return;
     
     hasSpunRef.current = false;
     controls.stop();
@@ -70,13 +72,17 @@ export const Roulette: React.FC<RouletteProps> = ({
     
     x.set(startX);
 
+    // Speed: idle is slow, loading is fast
+    // Increased speed to match the aggressive start of the deceleration curve
+    const duration = isLoading ? totalWidth / 3000 : totalWidth / 100;
+
     controls.start({
       x: [startX, startX - totalWidth],
       transition: {
         x: {
           repeat: Infinity,
           repeatType: "loop",
-          duration: totalWidth / 100, // idle speed
+          duration: duration,
           ease: "linear",
         }
       }
@@ -85,7 +91,7 @@ export const Roulette: React.FC<RouletteProps> = ({
     return () => {
       controls.stop();
     };
-  }, [idle, items, controls, x, multiplier, CARD_WIDTH]);
+  }, [idle, items, controls, x, multiplier, CARD_WIDTH, winningItem]);
 
   useEffect(() => {
     if (idle || !winningItem || isSpinning || hasSpunRef.current) return;
@@ -133,13 +139,16 @@ export const Roulette: React.FC<RouletteProps> = ({
       
       x.set(startX);
       
-      await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+      if (delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay * 1000));
+      }
       
       await controls.start({
         x: targetX,
         transition: {
-          duration: 5.5,
-          ease: [0.15, 0.85, 0.30, 1.0],
+          duration: 4.5,
+          // Custom bezier: Fast start (to match spin), smooth deceleration
+          ease: [0.12, 0.8, 0.2, 1], 
         },
       });
 

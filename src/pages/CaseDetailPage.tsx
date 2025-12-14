@@ -23,12 +23,16 @@ const CaseDetailPage: React.FC = () => {
   const [count, setCount] = useState<1 | 2 | 3>(1);
   
   const [isOpening, setIsOpening] = useState(false);
+  const [isPending, setIsPending] = useState(false); // Immediate feedback state
   const [winningPrizes, setWinningPrizes] = useState<Prize[]>([]);
+  const pendingPrizesRef = useRef<Prize[] | null>(null); // Store API result while animating
+  const itemsAddedRef = useRef(false); // Prevent double-adding items
   const completedSpins = useRef(0);
   const holdTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [showPrizeModal, setShowPrizeModal] = useState(false);
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
+  const apiPromiseRef = useRef<Promise<Prize[]> | null>(null);
 
   useEffect(() => {
     setDemoMode(false);
@@ -72,22 +76,36 @@ const CaseDetailPage: React.FC = () => {
   const totalPrice = caseItem.price * count;
   const canAfford = stars >= totalPrice;
 
+  // Fetch prizes from API (non-blocking)
+  const fetchPrizesFromAPI = async (): Promise<Prize[]> => {
+    const res = await api.openCase(userId!, caseItem.id, count);
+    if (res.error) {
+      throw new Error(res.error);
+    }
+    return res.prizes.map((p: any, i: number) => ({
+      ...p,
+      id: `won-${Date.now()}-${i}`,
+      wonAt: Date.now()
+    }));
+  };
+
   // Shared logic for calling API and setting state
   const executeOpen = async (isQuickSpin: boolean) => {
-      if (isOpening || !userId) return;
+      if (isOpening || isPending || !userId) return;
 
       if (!isDemoMode && !canAfford) {
         tg.showAlert("You don't have enough stars!");
         return;
       }
 
+      // Immediate haptic feedback
       if (isQuickSpin) {
         impactHeavy();
       } else {
         impactMedium();
       }
 
-      // 1. Optimistic UI update
+      // 1. Optimistic UI update - deduct stars immediately
       if (!isDemoMode) {
           const success = subtractStars(totalPrice);
           if (!success) {
@@ -96,49 +114,83 @@ const CaseDetailPage: React.FC = () => {
           }
       }
 
-      // 2. Call API (The Real Source of Truth)
-      let prizes: Prize[] = [];
+      // 2. Set pending state for immediate visual feedback
+      setIsPending(true);
+      pendingPrizesRef.current = null;
+      itemsAddedRef.current = false;
 
       if (!isDemoMode) {
-          try {
-              const res = await api.openCase(userId, caseItem.id, count);
-              if (res.error) {
-                  console.error(res.error);
+          // Start API call immediately (don't await yet)
+          const apiPromise = fetchPrizesFromAPI();
+          apiPromiseRef.current = apiPromise;
+
+          if (isQuickSpin) {
+              // For quick spin, we need to wait for API result
+              try {
+                  const prizes = await apiPromise;
+                  if (!itemsAddedRef.current) {
+                    itemsAddedRef.current = true;
+                    prizes.forEach(p => addItem(p));
+                  }
+                  setWinningPrizes(prizes);
+                  setIsPending(false);
+                  notificationSuccess();
+                  setShowPrizeModal(true);
+              } catch (e) {
+                  console.error("Failed to open case", e);
                   notificationError();
-                  // In a real app, you might want to re-fetch user balance here to sync
-                  return;
+                  setIsPending(false);
+                  // TODO: Refund stars on error
               }
-              prizes = res.prizes.map((p: any, i: number) => ({
-                  ...p,
-                  id: `won-${Date.now()}-${i}`,
-                  wonAt: Date.now()
-              }));
-          } catch (e) {
-              console.error("Failed to open case", e);
-              notificationError();
-              return;
+          } else {
+              // For regular spin, start "loading" animation immediately
+              setIsOpening(true);
+              
+              try {
+                  const prizes = await apiPromise;
+                  
+                  // Store in ref for spin completion handler
+                  pendingPrizesRef.current = prizes;
+
+                  if (!itemsAddedRef.current) {
+                    itemsAddedRef.current = true;
+                    prizes.forEach(p => addItem(p));
+                  }
+
+                  setWinningPrizes(prizes);
+                  setIsPending(false);
+                  completedSpins.current = 0;
+                  window.dispatchEvent(new Event('case-spin-start'));
+              } catch (e) {
+                  console.error("Failed to open case", e);
+                  notificationError();
+                  setIsPending(false);
+                  setIsOpening(false);
+                  pendingPrizesRef.current = null;
+              }
           }
       } else {
-          // Demo Mode Logic (Local Fallback)
+          // Demo Mode Logic (Local Fallback) - instant
           const demoPick = (items: any[]) => items[Math.floor(Math.random() * items.length)];
+          const prizes: Prize[] = [];
           
           for (let i = 0; i < count; i++) {
               const winner = demoPick(caseItem.items);
               prizes.push({ ...winner, id: `won-${Date.now()}-${i}`, wonAt: Date.now() });
           }
-      }
-      
-      // 3. Update Inventory locally
-      prizes.forEach(p => addItem(p));
-      setWinningPrizes(prizes);
+          
+          prizes.forEach(p => addItem(p));
+          setWinningPrizes(prizes);
+          setIsPending(false);
 
-      if (isQuickSpin) {
-          notificationSuccess();
-          setShowPrizeModal(true);
-      } else {
-          setIsOpening(true);
-          completedSpins.current = 0;
-          window.dispatchEvent(new Event('case-spin-start'));
+          if (isQuickSpin) {
+              notificationSuccess();
+              setShowPrizeModal(true);
+          } else {
+              setIsOpening(true);
+              completedSpins.current = 0;
+              window.dispatchEvent(new Event('case-spin-start'));
+          }
       }
   };
 
@@ -178,9 +230,30 @@ const CaseDetailPage: React.FC = () => {
     }
   };
 
-  const handleSpinComplete = () => {
+  const handleSpinComplete = async () => {
     completedSpins.current += 1;
     if (completedSpins.current >= count) {
+        // Wait for API if it hasn't resolved yet (only for real mode)
+        if (!isDemoMode && apiPromiseRef.current) {
+          try {
+            // If pendingPrizesRef is still null, wait for the API
+            if (!pendingPrizesRef.current) {
+              const prizes = await apiPromiseRef.current;
+              pendingPrizesRef.current = prizes;
+              // Only add items if not already added
+              if (!itemsAddedRef.current) {
+                itemsAddedRef.current = true;
+                prizes.forEach(p => addItem(p));
+              }
+            }
+            // Use the actual API prizes for the modal
+            setWinningPrizes(pendingPrizesRef.current);
+          } catch (e) {
+            // API failed - the error was already handled
+            console.error("API failed during spin complete");
+          }
+        }
+        
         setTimeout(() => {
             impactHeavy();
             notificationSuccess();
@@ -191,8 +264,12 @@ const CaseDetailPage: React.FC = () => {
 
   const resetOpening = () => {
       setIsOpening(false);
+      setIsPending(false);
       setWinningPrizes([]);
       completedSpins.current = 0;
+      pendingPrizesRef.current = null;
+      itemsAddedRef.current = false;
+      apiPromiseRef.current = null;
       setShowPrizeModal(false);
       window.dispatchEvent(new Event('case-spin-end'));
   };
@@ -323,24 +400,24 @@ const CaseDetailPage: React.FC = () => {
             </div>
 
             <motion.button
-                animate={isHolding ? { scale: 0.98, opacity: 0.9 } : { scale: 1, opacity: 1 }}
+                animate={isHolding || isPending ? { scale: 0.98, opacity: 0.9 } : { scale: 1, opacity: 1 }}
                 transition={{ duration: 0.1 }}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 onTouchStart={handleMouseDown}
                 onTouchEnd={handleMouseUp}
-                disabled={isOpening || (!isDemoMode && !canAfford)}
+                disabled={isOpening || isPending || (!isDemoMode && !canAfford)}
                 className={clsx(
                     "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
-                    isOpening 
+                    (isOpening || isPending)
                         ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-t border-black/10 opacity-40'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
                             : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
                 )}
             >
-                {isOpening && (
+                {(isOpening || isPending) && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0, 0.5, 0] }}
@@ -349,7 +426,7 @@ const CaseDetailPage: React.FC = () => {
                     />
                 )}
 
-                {!isOpening && (isDemoMode || canAfford) && (
+                {!isOpening && !isPending && (isDemoMode || canAfford) && (
                     <motion.div
                         initial={{ x: '-100%' }}
                         animate={{ x: '200%' }}
@@ -359,7 +436,7 @@ const CaseDetailPage: React.FC = () => {
                 )}
 
                 <div className="relative z-10 flex items-center justify-center gap-3 w-full">
-                    {isOpening ? (
+                    {(isOpening || isPending) ? (
                         <motion.span 
                             animate={{ opacity: [0.6, 1, 0.6] }}
                             transition={{ repeat: Infinity, duration: 1.5 }}

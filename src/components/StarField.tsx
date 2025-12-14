@@ -13,36 +13,46 @@ interface Particle {
   angle: number;
   color: string;
   isGolden: boolean;
+  pulseSpeed: number;
+}
+
+interface ShootingStar {
+  id: number;
+  x: number;
+  y: number;
+  len: number;
+  speed: number;
+  angle: number; // in radians
+  opacity: number;
+  active: boolean;
 }
 
 const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const shootingStarsRef = useRef<ShootingStar[]>([]);
   const animationRef = useRef<number | null>(null);
   const flyingStartTimeRef = useRef<number | null>(null);
-  const FLIGHT_DURATION_MS = 16000; // Sync with even faster bet ramp
+  const FLIGHT_DURATION_MS = 16000;
 
   // Handle flying state changes
   useEffect(() => {
     if (isFlying && !flyingStartTimeRef.current) {
-      // Start flying - record the timestamp
       flyingStartTimeRef.current = Date.now();
     } else if (!isFlying) {
-      // Stop flying - reset timestamp
       flyingStartTimeRef.current = null;
     }
   }, [isFlying]);
 
-  // Calculate rotation angle based on time elapsed since flying started
   const getRotationAngle = () => {
     if (!isFlying || !flyingStartTimeRef.current) return 135;
-
     const elapsed = Date.now() - flyingStartTimeRef.current;
-    // Match the faster time it takes to reach 5x multiplier (~21 seconds)
+    
+    // Once we pass the "duration", lock it to max progress (1)
+    // which results in exactly 90 degrees.
     const progress = Math.min(elapsed / FLIGHT_DURATION_MS, 1);
-
-    // Go from 135° (top-right to bottom-left) to 90° (straight down) over the duration
-    // This matches the rocket rotation from 45° to 0°
+    
+    // 135 - (45 * 1) = 90
     return 135 - (45 * progress);
   };
 
@@ -53,7 +63,6 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -62,20 +71,22 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Initialize particles
     const initParticles = () => {
       particlesRef.current = [];
-      const particleCount = 50;
+      const particleCount = 70; // Slightly increased standard star count since dust is gone
 
+      const colors = ['#ffffff', '#ffe9c4', '#d4fbff']; // White, Warm, Cool
+
+      // Create Stars
       for (let i = 0; i < particleCount; i++) {
-        // Create more small stars (75%) and fewer big stars (25%)
-        const isBigStar = Math.random() < 0.25;
-        const isGolden = Math.random() < 0.08;
+        const isBigStar = Math.random() < 0.2;
+        const isGolden = Math.random() < 0.05;
         const size = isBigStar
-          ? Math.random() * 1.2 + 1.8
-          : Math.random() * 0.8 + 0.4 + (isGolden ? 0.4 : 0);
-        // Small stars move much faster than big ones
-        const baseSpeed = isBigStar ? Math.random() * 2.0 + 1.0 : Math.random() * 4.0 + 3.0;
+          ? Math.random() * 1.5 + 2.0
+          : Math.random() * 0.8 + 0.5 + (isGolden ? 0.4 : 0);
+        const baseSpeed = isBigStar ? Math.random() * 1.5 + 0.8 : Math.random() * 3.5 + 2.5;
+        
+        const baseColor = isGolden ? '#ffde8a' : colors[Math.floor(Math.random() * colors.length)];
 
         particlesRef.current.push({
           x: Math.random() * canvas.width,
@@ -84,141 +95,204 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
           opacity: Math.random() * 0.8 + 0.2,
           baseSpeed: baseSpeed,
           angle: Math.random() * Math.PI * 2,
-          color: isGolden ? '#ffde8a' : 'white',
+          color: baseColor,
           isGolden,
+          pulseSpeed: Math.random() * 0.02 + 0.005,
         });
       }
     };
 
     initParticles();
 
-    // Animation loop
+    // Shooting star helper
+    const createShootingStar = (): ShootingStar => {
+      const startX = Math.random() * canvas.width;
+      const startY = Math.random() * (canvas.height / 2); 
+      const angle = 135 * (Math.PI / 180); 
+      return {
+        id: Date.now() + Math.random(),
+        x: startX,
+        y: startY,
+        len: Math.random() * 80 + 100,
+        speed: Math.random() * 10 + 15,
+        angle: angle,
+        opacity: 1,
+        active: true
+      };
+    };
+
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // -- Calculate Flight Metrics --
+      const elapsed = isFlying && flyingStartTimeRef.current ? Date.now() - flyingStartTimeRef.current : 0;
+      
+      const speedElapsed = Math.min(elapsed, FLIGHT_DURATION_MS * 1.5);
+      const speedProgress = speedElapsed / FLIGHT_DURATION_MS;
+      
+      const speedMultiplier = 1 + (speedProgress * 2.5);
+      
+      // -- Handle Shooting Stars --
+      // Only spawn if NOT flying
+      if (!isFlying && Math.random() < 0.005 && shootingStarsRef.current.length < 3) {
+         shootingStarsRef.current.push(createShootingStar());
+      }
 
+      shootingStarsRef.current.forEach(star => {
+        if (!star.active) return;
+        star.x += Math.cos(star.angle) * star.speed;
+        star.y += Math.sin(star.angle) * star.speed;
+        star.opacity -= 0.015;
+
+        if (star.opacity <= 0 || star.x > canvas.width + 100 || star.y > canvas.height + 100) {
+          star.active = false;
+        }
+
+        const tailX = star.x - Math.cos(star.angle) * star.len;
+        const tailY = star.y - Math.sin(star.angle) * star.len;
+
+        const grad = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`);
+        grad.addColorStop(1, `rgba(255, 255, 255, 0)`);
+
+        ctx.beginPath();
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.moveTo(star.x, star.y);
+        ctx.lineTo(tailX, tailY);
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.shadowColor = 'white';
+        ctx.shadowBlur = 10;
+        ctx.arc(star.x, star.y, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+      shootingStarsRef.current = shootingStarsRef.current.filter(s => s.active);
+
+      // -- Draw Constellations -- (Removed)
+
+
+
+      // -- Particles (Stars) --
       const drawTrail = (particle: Particle, vx: number, vy: number, alpha: number) => {
+        // Longer trails when flying
+        const length = particle.isGolden ? 45 : 25; 
         const mag = Math.sqrt(vx * vx + vy * vy) || 1;
         const nx = vx / mag;
         const ny = vy / mag;
-        const length = particle.isGolden ? 38 : 16;
+        
         const tailX = particle.x - nx * length;
         const tailY = particle.y - ny * length;
-        const startOpacity = particle.isGolden ? 0.95 : 0.55;
-        const endOpacity = 0;
+        
         const grad = ctx.createLinearGradient(particle.x, particle.y, tailX, tailY);
-        grad.addColorStop(
-          0,
-          particle.isGolden
-            ? `rgba(255, 222, 138, ${Math.min(1, startOpacity * alpha)})`
-            : `rgba(255, 255, 255, ${Math.min(1, startOpacity * alpha)})`
-        );
-        grad.addColorStop(
-          1,
-          particle.isGolden
-            ? `rgba(255, 222, 138, ${endOpacity})`
-            : `rgba(255, 255, 255, ${endOpacity})`
-        );
+        
+        grad.addColorStop(0, particle.color); 
+        grad.addColorStop(1, 'rgba(0,0,0,0)');
 
         ctx.save();
         ctx.globalCompositeOperation = 'lighter';
         ctx.strokeStyle = grad;
-        ctx.lineWidth = particle.size * (particle.isGolden ? 1.4 : 1);
+        ctx.lineWidth = particle.size * (particle.isGolden ? 1.5 : 0.8);
+        ctx.lineCap = 'round';
         ctx.beginPath();
         ctx.moveTo(particle.x, particle.y);
         ctx.lineTo(tailX, tailY);
+        ctx.globalAlpha = alpha;
         ctx.stroke();
+        
+        // Optional: Secondary chromatic aberration line for "warp"
+        if (isFlying && speedMultiplier > 2.5) {
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)'; // Cyan ghost
+            ctx.beginPath();
+            ctx.moveTo(particle.x - 2, particle.y);
+            ctx.lineTo(tailX - 2, tailY);
+            ctx.stroke();
+            
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)'; // Red ghost
+            ctx.beginPath();
+            ctx.moveTo(particle.x + 2, particle.y);
+            ctx.lineTo(tailX + 2, tailY);
+            ctx.stroke();
+        }
+        
         ctx.restore();
       };
 
       particlesRef.current.forEach((particle, index) => {
         const twinkle = particle.isGolden
           ? (Math.sin(Date.now() * 0.0075 + index) + 1) * 0.25 + 0.85
-          : 1;
+          : (Math.sin(Date.now() * particle.pulseSpeed + index) + 1) * 0.15 + 0.7;
+        
         const hdrBoost = particle.isGolden ? 1.4 : 1;
         const alpha = Math.min(1, particle.opacity * twinkle * hdrBoost);
         let vx = 0;
         let vy = 0;
 
-        // Draw particle
+        // Draw particle body
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.fillStyle = particle.color;
+        
+        // Glow
+        ctx.shadowColor = particle.color;
+        ctx.shadowBlur = particle.isGolden ? particle.size * 10 : particle.size * 4;
+        
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Add glow effect
-        ctx.shadowColor = particle.color;
-        ctx.shadowBlur = particle.isGolden ? particle.size * 8 : particle.size * 2.5;
         ctx.fill();
         ctx.restore();
 
         if (isFlying) {
-          // Treadmill effect: stars move based on time-based rotation angle
-          // Creating the illusion of forward movement through space
-          
-          // Calculate speed multiplier that increases over time
-          const elapsed = flyingStartTimeRef.current ? Date.now() - flyingStartTimeRef.current : 0;
-          const progress = Math.min(elapsed / FLIGHT_DURATION_MS, 1);
-          // Speed increases from 1x to 3x over the duration
-          const speedMultiplier = 1 + (progress * 2);
-          
-          const moveSpeed = particle.baseSpeed * 2.5 * speedMultiplier;
-
-          // Get current rotation angle based on time elapsed
+          const moveSpeed = particle.baseSpeed * 2.5 * speedMultiplier; // Stars move fast
+            
           const currentAngle = getRotationAngle();
-
-          // Convert rotation angle from degrees to radians
-          // Angle goes from 135° (top-right to bottom-left) to 90° (straight down)
           const angleRad = currentAngle * Math.PI / 180;
 
+          // Standard movement logic
           vx = Math.cos(angleRad) * moveSpeed;
           vy = Math.sin(angleRad) * moveSpeed;
+          
           const speedMag = Math.hypot(vx, vy);
           if (speedMag > 0.5) {
             drawTrail(particle, vx, vy, alpha);
           }
+          
           particle.x += vx;
           particle.y += vy;
           
-          // Wrap around screen edges - create continuous treadmill effect
-          // When stars exit one side, they reappear on the opposite side
-          if (particle.x < -150) {
-            particle.x = canvas.width + 150;
+          // Wrap logic
+          const PADDING = 150;
+          if (particle.x < -PADDING) {
+            particle.x = canvas.width + PADDING;
             particle.y = Math.random() * canvas.height;
-            particle.opacity = Math.random() * 0.5 + 0.2;
           }
-          if (particle.x > canvas.width + 150) {
-            particle.x = -150;
+          if (particle.x > canvas.width + PADDING) {
+            particle.x = -PADDING;
             particle.y = Math.random() * canvas.height;
-            particle.opacity = Math.random() * 0.5 + 0.2;
           }
-          if (particle.y < -150) {
-            particle.y = canvas.height + 150;
+          if (particle.y < -PADDING) {
+            particle.y = canvas.height + PADDING;
             particle.x = Math.random() * canvas.width;
-            particle.opacity = Math.random() * 0.5 + 0.2;
           }
-          if (particle.y > canvas.height + 150) {
-            particle.y = -150;
+          if (particle.y > canvas.height + PADDING) {
+            particle.y = -PADDING;
             particle.x = Math.random() * canvas.width;
-            particle.opacity = Math.random() * 0.5 + 0.2;
           }
         } else {
-          // Static movement when not flying - gentle floating
-          vx = Math.cos(particle.angle) * particle.baseSpeed * 0.1;
-          vy = Math.sin(particle.angle) * particle.baseSpeed * 0.1;
+          // Static floating
+          vx = Math.cos(particle.angle) * particle.baseSpeed * 0.15;
+          vy = Math.sin(particle.angle) * particle.baseSpeed * 0.15;
           particle.x += vx;
           particle.y += vy;
 
-          // Wrap around screen edges
           if (particle.x < 0) particle.x = canvas.width;
           if (particle.x > canvas.width) particle.x = 0;
           if (particle.y < 0) particle.y = canvas.height;
           if (particle.y > canvas.height) particle.y = 0;
-
-          // Subtle opacity pulsing
-          particle.opacity += Math.sin(Date.now() * 0.001 + index) * 0.005;
-          particle.opacity = Math.max(0.1, Math.min(0.9, particle.opacity));
         }
       });
 
@@ -239,7 +313,6 @@ const StarField: React.FC<StarFieldProps> = ({ isFlying }) => {
     <canvas
       ref={canvasRef}
       className="absolute inset-0 pointer-events-none"
-      style={{ background: 'transparent' }}
     />
   );
 };
