@@ -81,14 +81,16 @@ const UpgradePage: React.FC = () => {
     // Spin fast!
     controls.start("rolling");
     
-    // Start shake animation
+    // Start shake animation - more visible and intense
     buttonControls.start({
-      x: [0, -4, 4, -4, 4, -3, 3, 0],
-      y: [0, -2, 2, -2, 2, -1, 1, 0],
+      x: [0, -8, 8, -6, 6, -4, 4, -2, 2, 0],
+      y: [0, -6, 6, -4, 4, -3, 3, -1, 1, 0],
+      rotate: [0, -2, 2, -1, 1, 0],
       transition: {
-        duration: 0.1,
+        duration: 0.15,
         repeat: Infinity,
-        repeatType: "reverse" as const
+        repeatType: "loop" as const,
+        ease: "easeInOut"
       }
     });
     
@@ -143,7 +145,7 @@ const UpgradePage: React.FC = () => {
       rollSpring.set(finalAngle);
       
       // Stop shake animation
-      buttonControls.start({ x: 0, y: 0, transition: { duration: 0.3 } });
+      buttonControls.start({ x: 0, y: 0, rotate: 0, transition: { duration: 0.3, ease: "easeOut" } });
       
       // Wait for spring to settle roughly
       setTimeout(() => {
@@ -159,7 +161,7 @@ const UpgradePage: React.FC = () => {
       notificationError();
       setIsUpgrading(false);
       setUpgradeStatus('idle');
-      buttonControls.start({ x: 0, y: 0 });
+      buttonControls.start({ x: 0, y: 0, rotate: 0, transition: { duration: 0.3 } });
       clearInterval(spinInterval!);
     }
   };
@@ -169,7 +171,7 @@ const UpgradePage: React.FC = () => {
       setTimeout(() => {
           setUpgradeStatus('success');
           controls.start("success");
-          buttonControls.start({ x: 0, y: 0, transition: { duration: 0.2 } });
+          buttonControls.start({ x: 0, y: 0, rotate: 0, transition: { duration: 0.2 } });
           impactHeavy();
           notificationSuccess();
 
@@ -194,7 +196,7 @@ const UpgradePage: React.FC = () => {
       setTimeout(() => {
           setUpgradeStatus('fail');
           controls.start("fail");
-          buttonControls.start({ x: 0, y: 0, transition: { duration: 0.2 } });
+          buttonControls.start({ x: 0, y: 0, rotate: 0, transition: { duration: 0.2 } });
           impactHeavy();
           notificationError();
 
@@ -359,13 +361,13 @@ const UpgradePage: React.FC = () => {
                    animate={buttonControls}
                    whileTap={{ scale: 0.95 }}
                    className={clsx(
-                      "w-44 h-44 rounded-full relative flex items-center justify-center overflow-hidden z-10 transition-all duration-300",
+                      "w-44 h-44 rounded-full relative flex items-center justify-center z-10 transition-all duration-300",
                       // Clean minimalistic design
-                      upgradeStatus === 'rolling' ? "bg-black/90 backdrop-blur-sm shadow-[0_0_80px_rgba(139,92,246,0.5)]" :
-                      upgradeStatus === 'success' ? "bg-emerald-500/95 backdrop-blur-sm shadow-[0_0_60px_rgba(16,185,129,0.6)]" :
-                      upgradeStatus === 'fail' ? "bg-red-500/95 backdrop-blur-sm shadow-[0_0_60px_rgba(239,68,68,0.5)]" :
-                      (!hasSelectedBoth) ? "bg-white/95 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.2)]" :
-                      "bg-[#0a0a0a]/95 backdrop-blur-sm border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.3)]"
+                      upgradeStatus === 'rolling' ? "bg-gradient-to-br from-black via-[#0a0a0a] to-black border border-purple-500/30 shadow-[0_0_40px_rgba(139,92,246,0.4)]" :
+                      upgradeStatus === 'success' ? "bg-gradient-to-br from-emerald-600 to-emerald-500 border border-emerald-400/50 shadow-[0_0_40px_rgba(16,185,129,0.5)]" :
+                      upgradeStatus === 'fail' ? "bg-gradient-to-br from-red-600 to-red-500 border border-red-400/50 shadow-[0_0_40px_rgba(239,68,68,0.5)]" :
+                      (!hasSelectedBoth) ? "bg-white border border-gray-200 shadow-lg" :
+                      "bg-gradient-to-br from-[#0a0a0a] to-black border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
                    )}
                 >
                    {/* Subtle inner glow when rolling */}
@@ -373,13 +375,13 @@ const UpgradePage: React.FC = () => {
                        <motion.div 
                           className="absolute inset-0 rounded-full"
                           animate={{
-                            background: [
-                              "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(0,0,0,0) 70%)",
-                              "radial-gradient(circle, rgba(139,92,246,0.5) 0%, rgba(0,0,0,0) 70%)",
-                              "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(0,0,0,0) 70%)"
-                            ]
+                            opacity: [0.3, 0.6, 0.3],
+                            scale: [1, 1.05, 1]
                           }}
-                          transition={{ duration: 1.5, repeat: Infinity }}
+                          transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                          style={{
+                            background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(0,0,0,0) 70%)"
+                          }}
                        />
                    )}
                    
@@ -389,47 +391,47 @@ const UpgradePage: React.FC = () => {
                              {upgradeStatus === 'rolling' && (
                                 <motion.div
                                   animate={{ rotate: 360 }}
-                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
                                 >
-                                  <Loader2 size={36} className="text-white/90" strokeWidth={2} />
+                                  <Loader2 size={32} className="text-white" strokeWidth={2.5} />
                                 </motion.div>
                              )}
                              {upgradeStatus === 'success' && (
                                 <motion.div
-                                  initial={{ scale: 0 }}
-                                  animate={{ scale: 1 }}
-                                  transition={{ type: "spring", stiffness: 200 }}
+                                  initial={{ scale: 0, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
                                 >
-                                  <Zap size={40} className="text-white fill-white" />
+                                  <Zap size={36} className="text-white fill-white" />
                                 </motion.div>
                              )}
                              {upgradeStatus === 'fail' && (
                                 <motion.div
-                                  initial={{ scale: 0, rotate: -180 }}
+                                  initial={{ scale: 0, rotate: 180 }}
                                   animate={{ scale: 1, rotate: 0 }}
-                                  transition={{ type: "spring", stiffness: 200 }}
+                                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
                                 >
-                                  <X size={40} className="text-white" strokeWidth={2.5} />
+                                  <X size={36} className="text-white" strokeWidth={2.5} />
                                 </motion.div>
                              )}
                           </>
                        ) : hasSelectedBoth ? (
                           <>
-                             <div className="text-[9px] uppercase tracking-wider text-white/40 mb-1 font-medium">Win Chance</div>
-                             <div className="text-3xl font-black tracking-tight mb-3" style={{ color: getChanceColor(winChance) }}>
+                             <div className="text-[8px] uppercase tracking-widest text-white/50 mb-1.5 font-semibold">Win Chance</div>
+                             <div className="text-3xl font-black tracking-tighter mb-2.5" style={{ color: getChanceColor(winChance) }}>
                                 {winChance.toFixed(1)}%
                              </div>
-                             <div className="px-4 py-1.5 bg-white text-black rounded-full flex items-center gap-1.5 shadow-md">
-                                <span className="text-[11px] font-bold uppercase tracking-wide">Upgrade</span>
-                                <Play size={9} className="fill-black" />
+                             <div className="px-5 py-1.5 bg-white text-black rounded-full flex items-center gap-1.5 shadow-lg">
+                                <span className="text-[10px] font-bold uppercase tracking-wider">Upgrade</span>
+                                <Play size={8} className="fill-black" />
                              </div>
                           </>
                        ) : (
-                          <div className="flex flex-col items-center gap-2 text-black/70">
-                             <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center">
-                                <Plus size={20} className="text-black/50" />
+                          <div className="flex flex-col items-center gap-2.5 text-black/60">
+                             <div className="w-9 h-9 rounded-full bg-black/5 flex items-center justify-center">
+                                <Plus size={18} className="text-black/40" />
                              </div>
-                             <div className="text-black/80 text-xs font-semibold uppercase tracking-wide px-2">
+                             <div className="text-black/70 text-[10px] font-semibold uppercase tracking-wider px-2">
                                 Select Items
                              </div>
                           </div>

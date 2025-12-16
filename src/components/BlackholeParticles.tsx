@@ -68,14 +68,14 @@ export const BlackholeParticles: React.FC<BlackholeParticlesProps> = ({ status, 
             y: centerY + Math.sin(angle) * dist,
             angle,
             dist,
-            speed: Math.random() * 2.5 + 1.5,
-            size: Math.random() * 2 + 0.8,
+            speed: Math.random() * 1.8 + 1.2, // Slightly slower for realism
+            size: Math.random() * 1.5 + 1, // Slightly larger particles
             color
         };
     };
 
-    // Fill initial pool
-    for(let i=0; i<50; i++) particles.push(createParticle());
+    // Fill initial pool - reduced for more realistic look
+    for(let i=0; i<25; i++) particles.push(createParticle());
 
     const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -87,90 +87,104 @@ export const BlackholeParticles: React.FC<BlackholeParticlesProps> = ({ status, 
 
         // Enhanced logic: When rolling, gravity (inward speed) increases significantly, spin increases.
         
-        let gravityMult = 0.4;
+        let gravityMult = 0.3;
         let spinMult = 1;
-        let particleCount = 50;
+        let particleCount = 25;
 
         if (isRolling) {
-            gravityMult = 5 + (intensity * 20); // Very strong gravity
-            spinMult = 1.5 + (intensity * 1.5); // Increased spin
-            particleCount = 100;
+            gravityMult = 3 + (intensity * 8); // Strong but realistic gravity
+            spinMult = 1.2 + (intensity * 0.8); // Moderate spin increase
+            particleCount = 40; // Reduced for cleaner look
         } else if (isSuccess) {
-            gravityMult = 2.5;
-            spinMult = 4; // Fast spin on win
-            particleCount = 250;
+            gravityMult = 2;
+            spinMult = 2.5; // Moderate spin on win
+            particleCount = 60; // Reduced significantly
         } else if (isFail) {
-            gravityMult = 1.5;
-            spinMult = 2;
-            particleCount = 150;
+            gravityMult = 1.2;
+            spinMult = 1.5;
+            particleCount = 35; // Reduced
         }
 
         if (particles.length < particleCount) {
-            if (Math.random() < (isActive ? 0.6 : 0.15)) particles.push(createParticle());
+            if (Math.random() < (isActive ? 0.3 : 0.08)) particles.push(createParticle());
+        }
+
+        // Draw black hole accretion disk (realistic effect)
+        if (isActive) {
+            const diskGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
+            diskGradient.addColorStop(0, 'rgba(0, 0, 0, 0.95)'); // Black center
+            diskGradient.addColorStop(0.3, 'rgba(20, 20, 30, 0.8)');
+            diskGradient.addColorStop(0.6, 'rgba(40, 30, 60, 0.4)');
+            diskGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            
+            ctx.beginPath();
+            ctx.fillStyle = diskGradient;
+            ctx.globalAlpha = 0.6;
+            ctx.arc(centerX, centerY, 60, 0, Math.PI * 2);
+            ctx.fill();
         }
 
         particles.forEach((p, i) => {
-            // Update
-            p.dist -= p.speed * gravityMult;
+            // Update - more realistic physics
+            const distRatio = Math.max(0, p.dist / maxDist);
+            const gravityStrength = gravityMult * (1 - distRatio * 0.7); // Stronger near center
+            p.dist -= p.speed * gravityStrength;
             
-            // Enhanced spin logic - faster near center
-            const distRatio = 1 - (p.dist / maxDist);
-            const baseSpin = 0.015 + distRatio * 0.08;
-            p.angle += baseSpin * spinMult; 
+            // Realistic spin - faster near center (like real black hole)
+            const spinSpeed = 0.02 + (1 - distRatio) * 0.12;
+            p.angle += spinSpeed * spinMult; 
             
             p.x = centerX + Math.cos(p.angle) * p.dist;
             p.y = centerY + Math.sin(p.angle) * p.dist;
 
-            // Enhanced drawing with glow effect
-            const alpha = Math.min(1, (p.dist / maxDist));
-            const glowSize = p.size * (isActive ? 1.5 : 1);
+            // Realistic particle rendering
+            const alpha = Math.min(1, distRatio * 1.2);
+            const particleSize = p.size * (1 + (1 - distRatio) * 0.5); // Slightly larger near center
             
-            // Outer glow
-            if (isActive) {
-                const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, glowSize * 2);
-                gradient.addColorStop(0, p.color);
-                gradient.addColorStop(0.5, p.color + '80');
-                gradient.addColorStop(1, p.color + '00');
+            // Improved trail - smoother and more realistic
+            if (isActive && p.dist < maxDist * 0.8) {
+                const trailLength = Math.min(30, p.speed * gravityStrength * 3);
+                const trailSteps = 8;
+                const trailOpacity = alpha * 0.6;
                 
-                ctx.beginPath();
-                ctx.fillStyle = gradient;
-                ctx.globalAlpha = alpha * 0.4;
-                ctx.arc(p.x, p.y, glowSize * 2, 0, Math.PI * 2);
-                ctx.fill();
+                for (let step = 1; step <= trailSteps; step++) {
+                    const trailRatio = step / trailSteps;
+                    const trailDist = p.dist + trailLength * trailRatio;
+                    const trailAngle = p.angle - (spinSpeed * spinMult * trailRatio * 2);
+                    const trailX = centerX + Math.cos(trailAngle) * trailDist;
+                    const trailY = centerY + Math.sin(trailAngle) * trailDist;
+                    
+                    ctx.beginPath();
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = trailOpacity * (1 - trailRatio) * 0.4;
+                    ctx.arc(trailX, trailY, particleSize * (1 - trailRatio * 0.5), 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
             
-            // Main particle
+            // Main particle with subtle glow
             ctx.beginPath();
             ctx.fillStyle = p.color;
-            ctx.globalAlpha = alpha * (isActive ? 1 : 0.6);
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.globalAlpha = alpha * 0.9;
+            ctx.arc(p.x, p.y, particleSize, 0, Math.PI * 2);
             ctx.fill();
             
-            // Enhanced trail with gradient
-            if (isActive) {
-                const tailLen = p.speed * gravityMult * (isRolling ? 4 : isSuccess ? 3 : 2);
-                const tailAngle = p.angle - (0.08 * spinMult);
-                const tailX = centerX + Math.cos(tailAngle) * (p.dist + tailLen);
-                const tailY = centerY + Math.sin(tailAngle) * (p.dist + tailLen);
-                
-                // Create gradient trail
-                const trailGradient = ctx.createLinearGradient(p.x, p.y, tailX, tailY);
-                trailGradient.addColorStop(0, p.color + 'FF');
-                trailGradient.addColorStop(0.5, p.color + '80');
-                trailGradient.addColorStop(1, p.color + '00');
+            // Subtle outer glow for active particles
+            if (isActive && distRatio < 0.5) {
+                const glowGradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, particleSize * 2.5);
+                glowGradient.addColorStop(0, p.color + '80');
+                glowGradient.addColorStop(0.5, p.color + '40');
+                glowGradient.addColorStop(1, p.color + '00');
                 
                 ctx.beginPath();
-                ctx.strokeStyle = trailGradient;
-                ctx.globalAlpha = alpha * 0.5;
-                ctx.lineWidth = p.size * 1.2;
-                ctx.lineCap = 'round';
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(tailX, tailY);
-                ctx.stroke();
+                ctx.fillStyle = glowGradient;
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.arc(p.x, p.y, particleSize * 2.5, 0, Math.PI * 2);
+                ctx.fill();
             }
 
-            // Reset if sucked in
-            if (p.dist < 8) {
+            // Reset if sucked into black hole
+            if (p.dist < 12) {
                 particles[i] = createParticle();
             }
         });
