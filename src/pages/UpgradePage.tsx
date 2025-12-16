@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation, useSpring } from 'framer-motion';
 import { X, Star, Zap, Loader2, Plus, RotateCw, Play } from 'lucide-react';
 import { useUserStore, type Prize } from '../store/userStore';
@@ -6,150 +6,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import { api } from '../api/client';
 import clsx from 'clsx';
 import { PrizeModal } from '../components/PrizeModal';
-
-// --- Blackhole Particle System ---
-const BlackholeParticles: React.FC<{ status: 'idle' | 'rolling' | 'success' | 'fail'; intensity: number }> = ({ status, intensity }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    let particles: { x: number; y: number; angle: number; dist: number; speed: number; size: number; color: string }[] = [];
-    let animationFrameId: number;
-
-    const resize = () => {
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const maxDist = Math.max(canvas.width, canvas.height) / 1.5;
-
-    const createParticle = () => {
-        const angle = Math.random() * Math.PI * 2;
-        const dist = maxDist;
-        const isSuccess = status === 'success';
-        
-        let color = '#ffffff';
-        if (isSuccess) {
-             // Green shades for success
-            color = Math.random() > 0.5 ? '#4ade80' : '#22c55e';
-        } else {
-            // Default purple/white
-            color = Math.random() > 0.8 ? '#a78bfa' : '#ffffff';
-        }
-
-        return {
-            x: centerX + Math.cos(angle) * dist,
-            y: centerY + Math.sin(angle) * dist,
-            angle,
-            dist,
-            speed: Math.random() * 2 + 1,
-            size: Math.random() * 1.5 + 0.5,
-            color
-        };
-    };
-
-    // Fill initial pool
-    for(let i=0; i<50; i++) particles.push(createParticle());
-
-    const animate = () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        const isRolling = status === 'rolling';
-        const isSuccess = status === 'success';
-        const isActive = isRolling || isSuccess;
-
-        // Logic: When rolling, gravity (inward speed) increases significantly, spin increases slightly.
-        
-        let gravityMult = 0.5;
-        let spinMult = 1;
-
-        if (isRolling) {
-            gravityMult = 4 + (intensity * 15); // Strong gravity
-            spinMult = 1.2 + intensity;        // Slight spin increase
-        } else if (isSuccess) {
-            gravityMult = 2;
-            spinMult = 3; // Fast spin on win
-        }
-
-        if (particles.length < (isActive ? 200 : 50)) {
-            if (Math.random() < (isActive ? 0.5 : 0.2)) particles.push(createParticle());
-        }
-
-        particles.forEach((p, i) => {
-            // Update
-            p.dist -= p.speed * gravityMult;
-            
-            // Spin logic
-            const baseSpin = 0.01 + (1 - p.dist/maxDist) * 0.05;
-            p.angle += baseSpin * spinMult; 
-            
-            p.x = centerX + Math.cos(p.angle) * p.dist;
-            p.y = centerY + Math.sin(p.angle) * p.dist;
-
-            // Draw
-            const alpha = Math.min(1, (p.dist / maxDist));
-            ctx.beginPath();
-            ctx.fillStyle = p.color;
-            ctx.globalAlpha = alpha;
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Trail
-            if (isActive) {
-                const tailLen = p.speed * gravityMult * (isRolling ? 3 : 1.5);
-                const tailX = centerX + Math.cos(p.angle - 0.05) * (p.dist + tailLen);
-                const tailY = centerY + Math.sin(p.angle - 0.05) * (p.dist + tailLen);
-                
-                ctx.beginPath();
-                ctx.strokeStyle = p.color;
-                ctx.globalAlpha = alpha * 0.3;
-                ctx.lineWidth = p.size;
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(tailX, tailY);
-                ctx.stroke();
-            }
-
-            // Reset if sucked in
-            if (p.dist < 10) {
-                particles[i] = createParticle();
-            }
-        });
-
-        animationFrameId = requestAnimationFrame(animate);
-    };
-    
-    animate();
-
-    return () => {
-        window.removeEventListener('resize', resize);
-        cancelAnimationFrame(animationFrameId);
-    };
-  }, [status, intensity]);
-
-  return (
-    <>
-        <canvas ref={canvasRef} className="absolute inset-[-100px] w-[calc(100%+200px)] h-[calc(100%+200px)] pointer-events-none z-0 opacity-80" />
-        {/* Warp Distortion Effect Layer */}
-        {status === 'rolling' && (
-            <div className="absolute inset-[-50px] w-[calc(100%+100px)] h-[calc(100%+100px)] rounded-full animate-pulse opacity-20 pointer-events-none z-[-1]"
-                 style={{
-                     background: 'radial-gradient(circle, rgba(139,92,246,0) 0%, rgba(139,92,246,0.2) 40%, rgba(0,0,0,0) 70%)',
-                     filter: 'blur(20px)',
-                     transform: 'scale(1.2)'
-                 }}
-            />
-        )}
-    </>
-  );
-};
+import { BlackholeParticles } from '../components/BlackholeParticles';
 
 const UpgradePage: React.FC = () => {
   const { inventory, userId, fetchUser, removeItem, addItem } = useUserStore();
@@ -169,6 +26,7 @@ const UpgradePage: React.FC = () => {
 
   // Animation states
   const controls = useAnimation();
+  const buttonControls = useAnimation();
   const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'rolling' | 'success' | 'fail'>('idle');
   
   // Roll Animation
@@ -223,6 +81,18 @@ const UpgradePage: React.FC = () => {
     // Spin fast!
     controls.start("rolling");
     
+    // Start shake animation - more pronounced
+    buttonControls.start({
+      x: [0, -6, 6, -5, 5, -4, 4, -3, 3, 0],
+      y: [0, -3, 3, -2, 2, -1, 1, 0],
+      rotate: [0, -2, 2, -1, 1, 0],
+      transition: {
+        duration: 0.08,
+        repeat: Infinity,
+        ease: "easeInOut"
+      }
+    });
+    
     // Animate rotation manually to simulate fast spinning
     spinInterval = setInterval(() => {
         currentRotation += 15 + Math.random() * 10; 
@@ -273,6 +143,9 @@ const UpgradePage: React.FC = () => {
       // Execute final slow roll to landing
       rollSpring.set(finalAngle);
       
+      // Stop shake animation
+      buttonControls.start({ x: 0, y: 0, transition: { duration: 0.3 } });
+      
       // Wait for spring to settle roughly
       setTimeout(() => {
           if (res.success) {
@@ -287,49 +160,58 @@ const UpgradePage: React.FC = () => {
       notificationError();
       setIsUpgrading(false);
       setUpgradeStatus('idle');
+      buttonControls.start({ x: 0, y: 0 });
       clearInterval(spinInterval!);
     }
   };
 
   const finishSuccess = () => {
-      setUpgradeStatus('success');
-      controls.start("success");
-      impactHeavy();
-      notificationSuccess();
-
-      // Process inventory changes
-      removeItem(selectedUserItem!.id);
-      const newItem = { ...selectedTargetItem!, id: `upgraded-${Date.now()}`, wonAt: Date.now() };
-      addItem(newItem);
-
+      // Wait 0.5 seconds before showing result
       setTimeout(() => {
-         setShowPrizeModal(true);
-         setIsUpgrading(false);
-         setUpgradeStatus('idle');
-         controls.start("idle");
-         rollSpring.set(0);
-      }, 1500);
-      fetchUser();
+          setUpgradeStatus('success');
+          controls.start("success");
+          buttonControls.start({ x: 0, y: 0, transition: { duration: 0.2 } });
+          impactHeavy();
+          notificationSuccess();
+
+          // Process inventory changes
+          removeItem(selectedUserItem!.id);
+          const newItem = { ...selectedTargetItem!, id: `upgraded-${Date.now()}`, wonAt: Date.now() };
+          addItem(newItem);
+
+          setTimeout(() => {
+             setShowPrizeModal(true);
+             setIsUpgrading(false);
+             setUpgradeStatus('idle');
+             controls.start("idle");
+             rollSpring.set(0);
+          }, 1500);
+          fetchUser();
+      }, 500);
   };
 
   const finishFail = () => {
-      setUpgradeStatus('fail');
-      controls.start("fail");
-      impactHeavy();
-      notificationError();
-
-      // Burn item
-      removeItem(selectedUserItem!.id);
-
+      // Wait 0.5 seconds before showing result
       setTimeout(() => {
-         setIsUpgrading(false);
-         setUpgradeStatus('idle');
-         controls.start("idle");
-         setSelectedUserItem(null);
-         setSelectedTargetItem(null);
-         rollSpring.set(0);
-      }, 2000);
-      fetchUser();
+          setUpgradeStatus('fail');
+          controls.start("fail");
+          buttonControls.start({ x: 0, y: 0, transition: { duration: 0.2 } });
+          impactHeavy();
+          notificationError();
+
+          // Burn item
+          removeItem(selectedUserItem!.id);
+
+          setTimeout(() => {
+             setIsUpgrading(false);
+             setUpgradeStatus('idle');
+             controls.start("idle");
+             setSelectedUserItem(null);
+             setSelectedTargetItem(null);
+             rollSpring.set(0);
+          }, 2000);
+          fetchUser();
+      }, 500);
   };
 
   const reset = () => {
@@ -360,7 +242,7 @@ const UpgradePage: React.FC = () => {
            }} 
       />
 
-      <div className="flex-1 flex flex-col items-center justify-center relative z-10 w-full p-4 max-w-lg mx-auto gap-4">
+      <div className="flex-1 flex flex-col items-center justify-start pt-12 relative z-10 w-full p-4 max-w-lg mx-auto gap-4">
         
         {/* --- Top: Target Slot --- */}
         <div className="relative z-20 w-full flex justify-center">
@@ -389,7 +271,7 @@ const UpgradePage: React.FC = () => {
                      className="relative w-full h-full p-3"
                   >
                       <img src={selectedTargetItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
-                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
                          <Star size={8} className="text-yellow-400 fill-yellow-400" />
                          <span className="text-[10px] font-bold text-white">{selectedTargetItem.value}</span>
                       </div>
@@ -440,7 +322,7 @@ const UpgradePage: React.FC = () => {
                             cy={circleSize / 2}
                             r={radius}
                             fill="none"
-                            stroke={getChanceColor(winChance)}
+                            stroke={upgradeStatus === 'fail' ? '#ef4444' : '#4ade80'}
                             strokeWidth={strokeWidth}
                             strokeLinecap="round"
                         />
@@ -475,49 +357,82 @@ const UpgradePage: React.FC = () => {
                              }
                         }
                    }}
+                   animate={buttonControls}
                    whileTap={{ scale: 0.95 }}
                    className={clsx(
-                      "w-44 h-44 rounded-full relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10",
-                      // Background handling
-                      upgradeStatus === 'rolling' ? "bg-black shadow-[0_0_60px_rgba(139,92,246,0.6)] scale-95" :
-                      upgradeStatus === 'success' ? "bg-emerald-500 shadow-[0_0_100px_rgba(16,185,129,0.9)]" :
-                      upgradeStatus === 'fail' ? "bg-red-500 shadow-[0_0_60px_rgba(239,68,68,0.6)]" :
-                      (!hasSelectedBoth) ? "bg-white shadow-[0_0_30px_rgba(255,255,255,0.15)] border-4 border-white" :
-                      "bg-[#18181b] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-[#27272a]"
+                      "w-44 h-44 rounded-full relative flex items-center justify-center overflow-hidden z-10 transition-all duration-300",
+                      // Clean minimalistic design
+                      upgradeStatus === 'rolling' ? "bg-black/90 backdrop-blur-sm shadow-[0_0_80px_rgba(139,92,246,0.5)]" :
+                      upgradeStatus === 'success' ? "bg-emerald-500/95 backdrop-blur-sm shadow-[0_0_60px_rgba(16,185,129,0.6)]" :
+                      upgradeStatus === 'fail' ? "bg-red-500/95 backdrop-blur-sm shadow-[0_0_60px_rgba(239,68,68,0.5)]" :
+                      (!hasSelectedBoth) ? "bg-white/95 backdrop-blur-sm shadow-[0_0_20px_rgba(255,255,255,0.2)]" :
+                      "bg-[#0a0a0a]/95 backdrop-blur-sm border border-white/10 shadow-[0_0_30px_rgba(0,0,0,0.3)]"
                    )}
                 >
-                   {/* Inner Blackhole Gradient (only when rolling) */}
+                   {/* Subtle inner glow when rolling */}
                    {upgradeStatus === 'rolling' && (
-                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black via-purple-900/40 to-black animate-pulse" />
+                       <motion.div 
+                          className="absolute inset-0 rounded-full"
+                          animate={{
+                            background: [
+                              "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(0,0,0,0) 70%)",
+                              "radial-gradient(circle, rgba(139,92,246,0.5) 0%, rgba(0,0,0,0) 70%)",
+                              "radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(0,0,0,0) 70%)"
+                            ]
+                          }}
+                          transition={{ duration: 1.5, repeat: Infinity }}
+                       />
                    )}
                    
                    <div className="relative z-10 flex flex-col items-center justify-center text-center p-4">
                        {isUpgrading ? (
                           <>
-                             {upgradeStatus === 'rolling' && <Loader2 size={40} className="animate-spin text-white opacity-80" />}
-                             {upgradeStatus === 'success' && <Zap size={48} className="text-white fill-white drop-shadow-[0_0_15px_white]" />}
-                             {upgradeStatus === 'fail' && <X size={48} className="text-white drop-shadow-[0_0_15px_black]" />}
+                             {upgradeStatus === 'rolling' && (
+                                <motion.div
+                                  animate={{ rotate: 360 }}
+                                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                >
+                                  <Loader2 size={36} className="text-white/90" strokeWidth={2} />
+                                </motion.div>
+                             )}
+                             {upgradeStatus === 'success' && (
+                                <motion.div
+                                  initial={{ scale: 0 }}
+                                  animate={{ scale: 1 }}
+                                  transition={{ type: "spring", stiffness: 200 }}
+                                >
+                                  <Zap size={40} className="text-white fill-white" />
+                                </motion.div>
+                             )}
+                             {upgradeStatus === 'fail' && (
+                                <motion.div
+                                  initial={{ scale: 0, rotate: -180 }}
+                                  animate={{ scale: 1, rotate: 0 }}
+                                  transition={{ type: "spring", stiffness: 200 }}
+                                >
+                                  <X size={40} className="text-white" strokeWidth={2.5} />
+                                </motion.div>
+                             )}
                           </>
                        ) : hasSelectedBoth ? (
                           <>
-                             <div className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5 font-medium">Win Chance</div>
-                             <div className="text-4xl font-black text-white tracking-tighter drop-shadow-lg mb-2" style={{ color: getChanceColor(winChance) }}>
-                                {winChance.toFixed(2)}%
+                             <div className="text-[9px] uppercase tracking-wider text-white/40 mb-1 font-medium">Win Chance</div>
+                             <div className="text-3xl font-black tracking-tight mb-3" style={{ color: getChanceColor(winChance) }}>
+                                {winChance.toFixed(1)}%
                              </div>
-                             <div className="px-5 py-2 bg-white text-black rounded-full flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
-                                <span className="text-xs font-bold uppercase tracking-wider">Upgrade</span>
-                                <Play size={10} className="fill-black" />
+                             <div className="px-4 py-1.5 bg-white text-black rounded-full flex items-center gap-1.5 shadow-md">
+                                <span className="text-[11px] font-bold uppercase tracking-wide">Upgrade</span>
+                                <Play size={9} className="fill-black" />
                              </div>
                           </>
                        ) : (
-                          <div className="flex flex-col items-center gap-2 text-black">
-                             <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center mb-1">
-                                <Plus size={24} className="text-black/60" />
+                          <div className="flex flex-col items-center gap-2 text-black/70">
+                             <div className="w-10 h-10 rounded-full bg-black/5 flex items-center justify-center">
+                                <Plus size={20} className="text-black/50" />
                              </div>
-                             <div className="text-black text-sm font-bold uppercase tracking-wider px-2 leading-tight">
+                             <div className="text-black/80 text-xs font-semibold uppercase tracking-wide px-2">
                                 Select Items
                              </div>
-                             <span className="text-[10px] text-black/40 font-medium">To Start Upgrade</span>
                           </div>
                        )}
                    </div>
@@ -539,9 +454,9 @@ const UpgradePage: React.FC = () => {
                 disabled={isUpgrading}
                 whileTap={{ scale: 0.95 }}
                 className={clsx(
-                    "w-24 h-24 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
+                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
                     selectedUserItem
-                      ? "bg-[#18181b] border-white/10 shadow-lg"
+                      ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
                       : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60"
                 )}
             >
@@ -557,7 +472,11 @@ const UpgradePage: React.FC = () => {
                      transition={{ duration: 0.5 }}
                      className="relative w-full h-full p-3"
                   >
-                      <img src={selectedUserItem.image} className="w-full h-full object-contain drop-shadow-xl" alt="" />
+                      <img src={selectedUserItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
+                         <Star size={8} className="text-yellow-400 fill-yellow-400" />
+                         <span className="text-[10px] font-bold text-white">{selectedUserItem.value}</span>
+                      </div>
                   </motion.div>
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-white/20">
