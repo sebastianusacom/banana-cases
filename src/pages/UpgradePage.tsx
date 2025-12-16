@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, useAnimation, useSpring } from 'framer-motion';
-import { X, Star, Zap, Loader2, Plus, RotateCw, Play } from 'lucide-react';
+import { X, Star, Zap, Loader2, Plus, RotateCw, Play, Sparkles } from 'lucide-react';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { api } from '../api/client';
@@ -70,6 +70,9 @@ const UpgradePage: React.FC = () => {
     setIsUpgrading(true);
     setUpgradeStatus('rolling');
     impactMedium();
+    
+    // Dispatch event to notify other components that upgrade is spinning
+    window.dispatchEvent(new CustomEvent('upgrade-spin-start'));
     
     // Reset roll
     rollSpring.set(0);
@@ -163,6 +166,8 @@ const UpgradePage: React.FC = () => {
       setUpgradeStatus('idle');
       buttonControls.start({ x: 0, y: 0, rotate: 0, transition: { duration: 0.3 } });
       clearInterval(spinInterval!);
+      // Dispatch event to notify other components that upgrade spinning has ended
+      window.dispatchEvent(new CustomEvent('upgrade-spin-end'));
     }
   };
 
@@ -186,6 +191,8 @@ const UpgradePage: React.FC = () => {
              setUpgradeStatus('idle');
              controls.start("idle");
              rollSpring.set(0);
+             // Dispatch event to notify other components that upgrade spinning has ended
+             window.dispatchEvent(new CustomEvent('upgrade-spin-end'));
           }, 1500);
           fetchUser();
       }, 500);
@@ -210,6 +217,8 @@ const UpgradePage: React.FC = () => {
              setSelectedUserItem(null);
              setSelectedTargetItem(null);
              rollSpring.set(0);
+             // Dispatch event to notify other components that upgrade spinning has ended
+             window.dispatchEvent(new CustomEvent('upgrade-spin-end'));
           }, 2000);
           fetchUser();
       }, 500);
@@ -222,12 +231,6 @@ const UpgradePage: React.FC = () => {
     setIsUpgrading(false);
     setAvailableTargets([]);
     rollSpring.set(0);
-  };
-
-  const getChanceColor = (chance: number) => {
-    if (chance > 50) return '#4ade80'; // green
-    if (chance > 20) return '#facc15'; // yellow
-    return '#ef4444'; // red
   };
 
   const hasSelectedBoth = selectedUserItem && selectedTargetItem;
@@ -246,7 +249,7 @@ const UpgradePage: React.FC = () => {
       <div className="flex-1 flex flex-col items-center justify-start pt-12 relative z-10 w-full p-4 max-w-lg mx-auto gap-4">
         
         {/* --- Top: Target Slot --- */}
-        <div className="relative z-20 w-full flex justify-center">
+        <div className="relative z-40 w-full flex justify-center">
             <motion.button
                 onClick={() => {
                   if (!isUpgrading && selectedUserItem) {
@@ -258,10 +261,11 @@ const UpgradePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 animate={upgradeStatus === 'success' ? { scale: [1, 1.2, 1], filter: ["brightness(1)", "brightness(2)", "brightness(1)"] } : {}}
                 className={clsx(
-                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
+                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
                     selectedTargetItem
                       ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
-                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60"
+                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60",
+                    (!selectedUserItem || isUpgrading) && "cursor-not-allowed"
                 )}
             >
                 {selectedTargetItem ? (
@@ -293,7 +297,7 @@ const UpgradePage: React.FC = () => {
         <div className="relative z-30 flex items-center justify-center my-4">
             
             {/* Particle Container */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[450px] pointer-events-none">
                 <BlackholeParticles status={upgradeStatus} intensity={0.5} />
             </div>
 
@@ -311,7 +315,7 @@ const UpgradePage: React.FC = () => {
                             cy={circleSize / 2}
                             r={radius}
                             fill="none"
-                            stroke="#1a1a1c"
+                            stroke="#000000"
                             strokeWidth={strokeWidth}
                         />
                         {/* Win Zone Arc */}
@@ -323,7 +327,11 @@ const UpgradePage: React.FC = () => {
                             cy={circleSize / 2}
                             r={radius}
                             fill="none"
-                            stroke={upgradeStatus === 'fail' ? '#ef4444' : '#4ade80'}
+                            stroke={
+                                upgradeStatus === 'success' ? '#10b981' :
+                                upgradeStatus === 'fail' ? '#ef4444' :
+                                '#a855f7'
+                            }
                             strokeWidth={strokeWidth}
                             strokeLinecap="round"
                         />
@@ -347,6 +355,14 @@ const UpgradePage: React.FC = () => {
                    disabled={isUpgrading}
                    onClick={() => {
                         if (!isUpgrading) {
+                             // Bouncy click feedback - very noticeable
+                             buttonControls.start({
+                               scale: [1, 0.1, 2.5, 1],
+                               transition: {
+                                 duration: 0.4,
+                                 ease: [0.34, 1.56, 0.64, 1]
+                               }
+                             });
                              if (!selectedUserItem) {
                                   setShowInventory(true);
                                   selectionChanged();
@@ -359,15 +375,14 @@ const UpgradePage: React.FC = () => {
                         }
                    }}
                    animate={buttonControls}
-                   whileTap={{ scale: 0.95 }}
                    className={clsx(
                       "w-44 h-44 rounded-full relative flex items-center justify-center z-10 transition-all duration-300",
                       // Clean minimalistic design
-                      upgradeStatus === 'rolling' ? "bg-gradient-to-br from-black via-[#0a0a0a] to-black border border-purple-500/30 shadow-[0_0_40px_rgba(139,92,246,0.4)]" :
-                      upgradeStatus === 'success' ? "bg-gradient-to-br from-emerald-600 to-emerald-500 border border-emerald-400/50 shadow-[0_0_40px_rgba(16,185,129,0.5)]" :
-                      upgradeStatus === 'fail' ? "bg-gradient-to-br from-red-600 to-red-500 border border-red-400/50 shadow-[0_0_40px_rgba(239,68,68,0.5)]" :
-                      (!hasSelectedBoth) ? "bg-white border border-gray-200 shadow-lg" :
-                      "bg-gradient-to-br from-[#0a0a0a] to-black border border-white/20 shadow-[0_0_20px_rgba(0,0,0,0.5)]"
+                      upgradeStatus === 'rolling' ? "bg-gradient-to-br from-black via-[#0a0a0a] to-black shadow-[0_0_5px_rgba(139,92,246,0.3)]" :
+                      upgradeStatus === 'success' ? "bg-gradient-to-br from-emerald-600 to-emerald-500 shadow-[0_0_5px_rgba(16,185,129,0.4)]" :
+                      upgradeStatus === 'fail' ? "bg-gradient-to-br from-red-600 to-red-500 shadow-[0_0_5px_rgba(239,68,68,0.4)]" :
+                      (!hasSelectedBoth) ? "bg-white shadow-lg" :
+                      "bg-gradient-to-br from-[#0a0a0a] to-black shadow-[0_0_5px_rgba(0,0,0,0.5)]"
                    )}
                 >
                    {/* Subtle inner glow when rolling */}
@@ -380,7 +395,7 @@ const UpgradePage: React.FC = () => {
                           }}
                           transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
                           style={{
-                            background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(0,0,0,0) 70%)"
+                            background: "radial-gradient(circle, rgba(139,92,246,0.4) 0%, rgba(0,0,0,0) 50%)"
                           }}
                        />
                    )}
@@ -418,7 +433,7 @@ const UpgradePage: React.FC = () => {
                        ) : hasSelectedBoth ? (
                           <>
                              <div className="text-[8px] uppercase tracking-widest text-white/50 mb-1.5 font-semibold">Win Chance</div>
-                             <div className="text-3xl font-black tracking-tighter mb-2.5" style={{ color: getChanceColor(winChance) }}>
+                             <div className="text-3xl font-black tracking-tighter mb-2.5" style={{ color: '#A65CF0' }}>
                                 {winChance.toFixed(1)}%
                              </div>
                              <div className="px-5 py-1.5 bg-white text-black rounded-full flex items-center gap-1.5 shadow-lg">
@@ -429,10 +444,10 @@ const UpgradePage: React.FC = () => {
                        ) : (
                           <div className="flex flex-col items-center gap-2.5 text-black/60">
                              <div className="w-9 h-9 rounded-full bg-black/5 flex items-center justify-center">
-                                <Plus size={18} className="text-black/40" />
+                                <Sparkles size={18} className="text-black/40 fill-black/40" />
                              </div>
                              <div className="text-black/70 text-[10px] font-semibold uppercase tracking-wider px-2">
-                                Select Items
+                                UPGRADE YOUR GIFTS
                              </div>
                           </div>
                        )}
@@ -444,7 +459,7 @@ const UpgradePage: React.FC = () => {
 
 
         {/* --- Bottom: Source Slot --- */}
-        <div className="relative z-20 w-full flex justify-center">
+        <div className="relative z-40 w-full flex justify-center">
             <motion.button
                 onClick={() => {
                   if (!isUpgrading) {
@@ -455,10 +470,11 @@ const UpgradePage: React.FC = () => {
                 disabled={isUpgrading}
                 whileTap={{ scale: 0.95 }}
                 className={clsx(
-                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
+                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
                     selectedUserItem
                       ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
-                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60"
+                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60",
+                    isUpgrading && "cursor-not-allowed"
                 )}
             >
                 {selectedUserItem ? (
@@ -466,9 +482,8 @@ const UpgradePage: React.FC = () => {
                      key={selectedUserItem.id}
                      initial={{ opacity: 0, scale: 0.5 }}
                      animate={{ 
-                         opacity: upgradeStatus === 'rolling' ? 0 : 1, 
-                         scale: upgradeStatus === 'rolling' ? 0 : 1,
-                         rotate: upgradeStatus === 'rolling' ? 180 : 0
+                         opacity: 1, 
+                         scale: 1
                      }}
                      transition={{ duration: 0.5 }}
                      className="relative w-full h-full p-3"

@@ -26,11 +26,12 @@ export const TopLiveBar: React.FC = () => {
   const { stars, addStars } = useUserStore();
   const { impactLight } = useHaptics();
   const [isSpinning, setIsSpinning] = useState(false);
+  const [isUpgradeSpinning, setIsUpgradeSpinning] = useState(false);
   const { phase, hasBet } = useCrashGameStore();
   const isFlying = phase === 'flying';
-  const isDimmed = isSpinning || (isFlying && hasBet);
+  const isDimmed = isSpinning || isUpgradeSpinning || (isFlying && hasBet);
 
-  // Listen for spinning state from a custom event
+  // Listen for case spinning state from a custom event
   useEffect(() => {
     const handleSpinStart = () => setIsSpinning(true);
     const handleSpinEnd = () => setIsSpinning(false);
@@ -41,6 +42,20 @@ export const TopLiveBar: React.FC = () => {
     return () => {
       window.removeEventListener('case-spin-start', handleSpinStart);
       window.removeEventListener('case-spin-end', handleSpinEnd);
+    };
+  }, []);
+
+  // Listen for upgrade spinning state from a custom event
+  useEffect(() => {
+    const handleUpgradeSpinStart = () => setIsUpgradeSpinning(true);
+    const handleUpgradeSpinEnd = () => setIsUpgradeSpinning(false);
+
+    window.addEventListener('upgrade-spin-start', handleUpgradeSpinStart);
+    window.addEventListener('upgrade-spin-end', handleUpgradeSpinEnd);
+
+    return () => {
+      window.removeEventListener('upgrade-spin-start', handleUpgradeSpinStart);
+      window.removeEventListener('upgrade-spin-end', handleUpgradeSpinEnd);
     };
   }, []);
 

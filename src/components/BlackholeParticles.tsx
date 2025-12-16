@@ -63,13 +63,27 @@ export const BlackholeParticles: React.FC<BlackholeParticlesProps> = ({ status, 
             color = Math.random() > 0.7 ? '#a78bfa' : '#ffffff';
         }
 
+        // Varied particle sizes - some much bigger than others
+        const sizeVariation = Math.random();
+        let particleSize;
+        if (sizeVariation < 0.6) {
+            // 60% small particles
+            particleSize = Math.random() * 1.5 + 0.5;
+        } else if (sizeVariation < 0.9) {
+            // 30% medium particles
+            particleSize = Math.random() * 1 + 1.5;
+        } else {
+            // 10% large particles
+            particleSize = Math.random() * 2 + 2;
+        }
+
         return {
             x: centerX + Math.cos(angle) * dist,
             y: centerY + Math.sin(angle) * dist,
             angle,
             dist,
             speed: Math.random() * 1.8 + 1.2, // Slightly slower for realism
-            size: Math.random() * 1.5 + 1, // Slightly larger particles
+            size: particleSize,
             color
         };
     };
@@ -202,42 +216,47 @@ export const BlackholeParticles: React.FC<BlackholeParticlesProps> = ({ status, 
 
   return (
     <>
-        <canvas ref={canvasRef} className="absolute inset-[-100px] w-[calc(100%+200px)] h-[calc(100%+200px)] pointer-events-none z-0 opacity-90" />
+        <div className="absolute inset-0 w-full h-full pointer-events-none z-0" style={{
+            maskImage: 'radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%)',
+            WebkitMaskImage: 'radial-gradient(circle, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 100%)'
+        }}>
+            <canvas ref={canvasRef} className="w-full h-full opacity-90" />
+        </div>
         {/* Enhanced Warp Distortion Effect Layers */}
         {status === 'rolling' && (
             <>
                 {/* Outer glow */}
-                <div className="absolute inset-[-60px] w-[calc(100%+120px)] h-[calc(100%+120px)] rounded-full pointer-events-none z-[-1]"
+                <div className="absolute inset-0 rounded-full pointer-events-none z-[-1]"
                      style={{
-                         background: 'radial-gradient(circle, rgba(139,92,246,0) 0%, rgba(139,92,246,0.4) 35%, rgba(0,0,0,0) 65%)',
-                         filter: 'blur(25px)',
+                         background: 'radial-gradient(circle, rgba(139,92,246,0) 0%, rgba(139,92,246,0.2) 30%, rgba(0,0,0,0) 45%)',
+                         filter: 'blur(1px)',
                          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                      }}
                 />
                 {/* Inner core glow */}
-                <div className="absolute inset-[-30px] w-[calc(100%+60px)] h-[calc(100%+60px)] rounded-full pointer-events-none z-[-1]"
+                <div className="absolute inset-0 rounded-full pointer-events-none z-[-1]"
                      style={{
-                         background: 'radial-gradient(circle, rgba(139,92,246,0.6) 0%, rgba(139,92,246,0.2) 50%, rgba(0,0,0,0) 80%)',
-                         filter: 'blur(15px)',
+                         background: 'radial-gradient(circle, rgba(139,92,246,0.3) 0%, rgba(139,92,246,0.1) 40%, rgba(0,0,0,0) 55%)',
+                         filter: 'blur(1px)',
                          animation: 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                      }}
                 />
             </>
         )}
         {status === 'success' && (
-            <div className="absolute inset-[-50px] w-[calc(100%+100px)] h-[calc(100%+100px)] rounded-full pointer-events-none z-[-1]"
+            <div className="absolute inset-0 rounded-full pointer-events-none z-[-1]"
                  style={{
-                     background: 'radial-gradient(circle, rgba(16,185,129,0.3) 0%, rgba(16,185,129,0.1) 50%, rgba(0,0,0,0) 70%)',
-                     filter: 'blur(20px)',
+                     background: 'radial-gradient(circle, rgba(16,185,129,0.15) 0%, rgba(16,185,129,0.05) 40%, rgba(0,0,0,0) 50%)',
+                     filter: 'blur(1px)',
                      animation: 'pulse 1s ease-in-out infinite'
                  }}
             />
         )}
         {status === 'fail' && (
-            <div className="absolute inset-[-50px] w-[calc(100%+100px)] h-[calc(100%+100px)] rounded-full pointer-events-none z-[-1]"
+            <div className="absolute inset-0 rounded-full pointer-events-none z-[-1]"
                  style={{
-                     background: 'radial-gradient(circle, rgba(239,68,68,0.3) 0%, rgba(239,68,68,0.1) 50%, rgba(0,0,0,0) 70%)',
-                     filter: 'blur(20px)',
+                     background: 'radial-gradient(circle, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 40%, rgba(0,0,0,0) 50%)',
+                     filter: 'blur(1px)',
                      animation: 'pulse 1.2s ease-in-out infinite'
                  }}
             />

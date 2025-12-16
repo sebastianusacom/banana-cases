@@ -30,7 +30,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex flex-col bg-[#0f0f10]"
+      className="fixed inset-0 z-[60] flex flex-col bg-[#0f0f10]"
     >
       <div className="flex-1 w-full flex flex-col items-center justify-center p-6 relative overflow-hidden">
         {/* Background Ambient */}

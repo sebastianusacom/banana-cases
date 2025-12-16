@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { Gift, User, Rocket, TrendingUp } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
@@ -8,9 +8,24 @@ import clsx from 'clsx';
 export const BottomNav: React.FC = () => {
   const { selectionChanged } = useHaptics();
   const { hasBet } = useCrashGameStore();
+  const [isUpgradeSpinning, setIsUpgradeSpinning] = useState(false);
   
-  // Disable navigation when player has a bet placed (or queued)
-  const isDisabled = hasBet;
+  // Listen for upgrade spinning events
+  useEffect(() => {
+    const handleUpgradeSpinStart = () => setIsUpgradeSpinning(true);
+    const handleUpgradeSpinEnd = () => setIsUpgradeSpinning(false);
+
+    window.addEventListener('upgrade-spin-start', handleUpgradeSpinStart);
+    window.addEventListener('upgrade-spin-end', handleUpgradeSpinEnd);
+
+    return () => {
+      window.removeEventListener('upgrade-spin-start', handleUpgradeSpinStart);
+      window.removeEventListener('upgrade-spin-end', handleUpgradeSpinEnd);
+    };
+  }, []);
+  
+  // Disable navigation when player has a bet placed (or queued) or when upgrade is spinning
+  const isDisabled = hasBet || isUpgradeSpinning;
 
   const navItemClass = ({ isActive }: { isActive: boolean }) =>
     clsx(
