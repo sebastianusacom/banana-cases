@@ -84,19 +84,6 @@ const UpgradePage: React.FC = () => {
     // Spin fast!
     controls.start("rolling");
     
-    // Start shake animation - more visible and intense
-    buttonControls.start({
-      x: [0, -8, 8, -6, 6, -4, 4, -2, 2, 0],
-      y: [0, -6, 6, -4, 4, -3, 3, -1, 1, 0],
-      rotate: [0, -2, 2, -1, 1, 0],
-      transition: {
-        duration: 0.15,
-        repeat: Infinity,
-        repeatType: "loop" as const,
-        ease: "easeInOut"
-      }
-    });
-    
     // Animate rotation manually to simulate fast spinning
     spinInterval = setInterval(() => {
         currentRotation += 15 + Math.random() * 10; 
@@ -357,7 +344,7 @@ const UpgradePage: React.FC = () => {
                         if (!isUpgrading) {
                              // Bouncy click feedback - very noticeable
                              buttonControls.start({
-                               scale: [1, 0.1, 2.5, 1],
+                               scale: [1, 0.6, 1.8, 1],
                                transition: {
                                  duration: 0.4,
                                  ease: [0.34, 1.56, 0.64, 1]
