@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useAnimation, useSpring } from 'framer-motion';
-import { X, Star, Zap, Loader2, Plus, ArrowUpRight, RotateCw } from 'lucide-react';
+import { X, Star, Zap, Loader2, Plus, RotateCw, Play } from 'lucide-react';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { api } from '../api/client';
@@ -8,7 +8,7 @@ import clsx from 'clsx';
 import { PrizeModal } from '../components/PrizeModal';
 
 // --- Blackhole Particle System ---
-const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = ({ isActive, intensity }) => {
+const BlackholeParticles: React.FC<{ status: 'idle' | 'rolling' | 'success' | 'fail'; intensity: number }> = ({ status, intensity }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
@@ -34,6 +34,17 @@ const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = (
     const createParticle = () => {
         const angle = Math.random() * Math.PI * 2;
         const dist = maxDist;
+        const isSuccess = status === 'success';
+        
+        let color = '#ffffff';
+        if (isSuccess) {
+             // Green shades for success
+            color = Math.random() > 0.5 ? '#4ade80' : '#22c55e';
+        } else {
+            // Default purple/white
+            color = Math.random() > 0.8 ? '#a78bfa' : '#ffffff';
+        }
+
         return {
             x: centerX + Math.cos(angle) * dist,
             y: centerY + Math.sin(angle) * dist,
@@ -41,7 +52,7 @@ const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = (
             dist,
             speed: Math.random() * 2 + 1,
             size: Math.random() * 1.5 + 0.5,
-            color: Math.random() > 0.8 ? '#a78bfa' : '#ffffff' // Purple or white
+            color
         };
     };
 
@@ -51,17 +62,34 @@ const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = (
     const animate = () => {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
-        // Intensity multiplier
-        const currentSpeedMult = isActive ? 3 + (intensity * 5) : 0.5;
+        const isRolling = status === 'rolling';
+        const isSuccess = status === 'success';
+        const isActive = isRolling || isSuccess;
 
-        if (particles.length < (isActive ? 150 : 50)) {
-            if (Math.random() < 0.2) particles.push(createParticle());
+        // Logic: When rolling, gravity (inward speed) increases significantly, spin increases slightly.
+        
+        let gravityMult = 0.5;
+        let spinMult = 1;
+
+        if (isRolling) {
+            gravityMult = 4 + (intensity * 15); // Strong gravity
+            spinMult = 1.2 + intensity;        // Slight spin increase
+        } else if (isSuccess) {
+            gravityMult = 2;
+            spinMult = 3; // Fast spin on win
+        }
+
+        if (particles.length < (isActive ? 200 : 50)) {
+            if (Math.random() < (isActive ? 0.5 : 0.2)) particles.push(createParticle());
         }
 
         particles.forEach((p, i) => {
             // Update
-            p.dist -= p.speed * currentSpeedMult;
-            p.angle += (0.01 + (1 - p.dist/maxDist) * 0.05) * currentSpeedMult; // Spiral faster as gets closer
+            p.dist -= p.speed * gravityMult;
+            
+            // Spin logic
+            const baseSpin = 0.01 + (1 - p.dist/maxDist) * 0.05;
+            p.angle += baseSpin * spinMult; 
             
             p.x = centerX + Math.cos(p.angle) * p.dist;
             p.y = centerY + Math.sin(p.angle) * p.dist;
@@ -76,12 +104,13 @@ const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = (
             
             // Trail
             if (isActive) {
-                const tailLen = p.speed * currentSpeedMult * 2;
-                const tailX = centerX + Math.cos(p.angle - 0.1) * (p.dist + tailLen);
-                const tailY = centerY + Math.sin(p.angle - 0.1) * (p.dist + tailLen);
+                const tailLen = p.speed * gravityMult * (isRolling ? 3 : 1.5);
+                const tailX = centerX + Math.cos(p.angle - 0.05) * (p.dist + tailLen);
+                const tailY = centerY + Math.sin(p.angle - 0.05) * (p.dist + tailLen);
                 
                 ctx.beginPath();
-                ctx.strokeStyle = `rgba(167, 139, 250, ${alpha * 0.5})`;
+                ctx.strokeStyle = p.color;
+                ctx.globalAlpha = alpha * 0.3;
                 ctx.lineWidth = p.size;
                 ctx.moveTo(p.x, p.y);
                 ctx.lineTo(tailX, tailY);
@@ -103,11 +132,24 @@ const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = (
         window.removeEventListener('resize', resize);
         cancelAnimationFrame(animationFrameId);
     };
-  }, [isActive, intensity]);
+  }, [status, intensity]);
 
-  return <canvas ref={canvasRef} className="absolute inset-[-100px] w-[calc(100%+200px)] h-[calc(100%+200px)] pointer-events-none z-0 opacity-60" />;
+  return (
+    <>
+        <canvas ref={canvasRef} className="absolute inset-[-100px] w-[calc(100%+200px)] h-[calc(100%+200px)] pointer-events-none z-0 opacity-80" />
+        {/* Warp Distortion Effect Layer */}
+        {status === 'rolling' && (
+            <div className="absolute inset-[-50px] w-[calc(100%+100px)] h-[calc(100%+100px)] rounded-full animate-pulse opacity-20 pointer-events-none z-[-1]"
+                 style={{
+                     background: 'radial-gradient(circle, rgba(139,92,246,0) 0%, rgba(139,92,246,0.2) 40%, rgba(0,0,0,0) 70%)',
+                     filter: 'blur(20px)',
+                     transform: 'scale(1.2)'
+                 }}
+            />
+        )}
+    </>
+  );
 };
-
 
 const UpgradePage: React.FC = () => {
   const { inventory, userId, fetchUser, removeItem, addItem } = useUserStore();
@@ -135,8 +177,6 @@ const UpgradePage: React.FC = () => {
   const circleSize = 220; // Increased size for circular bar
   const strokeWidth = 6;
   const radius = (circleSize - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-
   // Fetch targets when user item is selected
   useEffect(() => {
     if (!selectedUserItem || !userId) {
@@ -198,19 +238,14 @@ const UpgradePage: React.FC = () => {
       clearInterval(spinInterval);
 
       // Determine final visual angle
-      // We normalize everything to 360 degrees.
-      // Win zone is from 0 to (winChance / 100) * 360.
       const winAngleMax = (winChance / 100) * 360;
       
-      // Current rotation might be very high (e.g. 7200), we need to land on a specific spot relative to module 360
       const currentMod = currentRotation % 360;
       const baseRotation = currentRotation - currentMod + 360; // Next full circle start
       
       let finalAngle = 0;
 
       if (res.success) {
-          // Land safely inside 0 to winAngleMax
-          // Add buffer to avoid visual edge cases (e.g. 5% buffer inside)
           const buffer = Math.min(5, winAngleMax * 0.1); 
           const safeMax = Math.max(0, winAngleMax - buffer);
           const safeMin = buffer;
@@ -219,24 +254,17 @@ const UpgradePage: React.FC = () => {
           finalAngle = baseRotation + randomOffset;
       } else {
           // Fail
-          // Near miss logic?
           const isNearMiss = Math.random() < 0.4; // 40% chance of near miss visual on fail
           
           if (isNearMiss) {
-              // Land JUST outside winAngleMax
-              // e.g., winAngleMax + 1 to 15 degrees
               finalAngle = baseRotation + winAngleMax + 2 + Math.random() * 15;
           } else {
-              // Hard fail: Land anywhere else in the fail zone
-              // Fail zone start: winAngleMax
-              // Fail zone end: 360
               const failZoneStart = winAngleMax + 20; 
               const failZoneEnd = 360 - 10;
               
               if (failZoneEnd > failZoneStart) {
                   finalAngle = baseRotation + failZoneStart + Math.random() * (failZoneEnd - failZoneStart);
               } else {
-                  // Fallback if chance is super high (like 90%)
                    finalAngle = baseRotation + winAngleMax + 5;
               }
           }
@@ -319,6 +347,8 @@ const UpgradePage: React.FC = () => {
     return '#ef4444'; // red
   };
 
+  const hasSelectedBoth = selectedUserItem && selectedTargetItem;
+
   return (
     <div className="flex flex-col h-full bg-[#0f0f10] overflow-hidden relative">
       
@@ -367,7 +397,7 @@ const UpgradePage: React.FC = () => {
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-white/20">
                       <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
-                        <Plus size={16} />
+                         <Plus size={16} />
                       </div>
                       <span className="text-[10px] font-medium uppercase tracking-wider">Target</span>
                   </div>
@@ -380,8 +410,8 @@ const UpgradePage: React.FC = () => {
         <div className="relative z-30 flex items-center justify-center my-4">
             
             {/* Particle Container */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px]">
-                <BlackholeParticles isActive={upgradeStatus === 'rolling'} intensity={0.5} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[340px] h-[340px]">
+                <BlackholeParticles status={upgradeStatus} intensity={0.5} />
             </div>
 
             {/* Main Interactive Circle */}
@@ -447,16 +477,16 @@ const UpgradePage: React.FC = () => {
                    }}
                    whileTap={{ scale: 0.95 }}
                    className={clsx(
-                      "w-40 h-40 rounded-full relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10",
+                      "w-44 h-44 rounded-full relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10",
                       // Background handling
                       upgradeStatus === 'rolling' ? "bg-black shadow-[0_0_60px_rgba(139,92,246,0.6)] scale-95" :
                       upgradeStatus === 'success' ? "bg-emerald-500 shadow-[0_0_100px_rgba(16,185,129,0.9)]" :
                       upgradeStatus === 'fail' ? "bg-red-500 shadow-[0_0_60px_rgba(239,68,68,0.6)]" :
-                      (selectedUserItem && selectedTargetItem) ? "bg-[#18181b] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-[#27272a]" :
-                      "bg-[#121212] border-2 border-white/5 cursor-pointer"
+                      (!hasSelectedBoth) ? "bg-white shadow-[0_0_30px_rgba(255,255,255,0.15)] border-4 border-white" :
+                      "bg-[#18181b] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-[#27272a]"
                    )}
                 >
-                   {/* Inner Blackhole Gradient */}
+                   {/* Inner Blackhole Gradient (only when rolling) */}
                    {upgradeStatus === 'rolling' && (
                        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black via-purple-900/40 to-black animate-pulse" />
                    )}
@@ -468,25 +498,26 @@ const UpgradePage: React.FC = () => {
                              {upgradeStatus === 'success' && <Zap size={48} className="text-white fill-white drop-shadow-[0_0_15px_white]" />}
                              {upgradeStatus === 'fail' && <X size={48} className="text-white drop-shadow-[0_0_15px_black]" />}
                           </>
-                       ) : (selectedUserItem && selectedTargetItem) ? (
+                       ) : hasSelectedBoth ? (
                           <>
-                             <span className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Win Chance</span>
-                             <div className="text-4xl font-black text-white tracking-tighter drop-shadow-lg" style={{ color: getChanceColor(winChance) }}>
+                             <div className="text-[10px] uppercase tracking-widest text-white/50 mb-0.5 font-medium">Win Chance</div>
+                             <div className="text-4xl font-black text-white tracking-tighter drop-shadow-lg mb-2" style={{ color: getChanceColor(winChance) }}>
                                 {winChance.toFixed(2)}%
                              </div>
-                             <div className="mt-2 px-4 py-1.5 bg-white/10 rounded-full flex items-center gap-1.5 backdrop-blur-md border border-white/5">
-                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Upgrade</span>
-                                <ArrowUpRight size={12} className="text-white" />
+                             <div className="px-5 py-2 bg-white text-black rounded-full flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
+                                <span className="text-xs font-bold uppercase tracking-wider">Upgrade</span>
+                                <Play size={10} className="fill-black" />
                              </div>
                           </>
                        ) : (
-                          <div className="flex flex-col items-center gap-2">
-                             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-1">
-                                <RotateCw size={18} className="text-white/40" />
+                          <div className="flex flex-col items-center gap-2 text-black">
+                             <div className="w-12 h-12 rounded-full bg-black/5 flex items-center justify-center mb-1">
+                                <Plus size={24} className="text-black/60" />
                              </div>
-                             <div className="text-white/40 text-xs font-bold uppercase tracking-widest px-4 leading-tight">
-                                Select Items<br/>to Upgrade
+                             <div className="text-black text-sm font-bold uppercase tracking-wider px-2 leading-tight">
+                                Select Items
                              </div>
+                             <span className="text-[10px] text-black/40 font-medium">To Start Upgrade</span>
                           </div>
                        )}
                    </div>
