@@ -57,9 +57,14 @@ export const BottomNav: React.FC = () => {
 
         <div className="w-px h-8 bg-white/10" />
 
-        <div className={navItemClass({ isActive: false })}>
+        <NavLink
+          to="/upgrade"
+          className={navItemClass}
+          onClick={() => !isDisabled && selectionChanged()}
+          onClickCapture={(e) => isDisabled && e.preventDefault()}
+        >
           <TrendingUp size={22} strokeWidth={2.5} />
-        </div>
+        </NavLink>
 
         <div className="w-px h-8 bg-white/10" />
 

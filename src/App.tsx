@@ -9,6 +9,7 @@ import CasesPage from './pages/CasesPage';
 import CaseDetailPage from './pages/CaseDetailPage';
 import ProfilePage from './pages/ProfilePage';
 import CrashGame from './pages/CrashGame';
+import UpgradePage from './pages/UpgradePage';
 
 function App() {
   const { tg, isTelegramWebApp, user: telegramUser } = useTelegram();
@@ -88,6 +89,7 @@ function App() {
           <Route path="/cases" element={<CasesPage />} />
           <Route path="/cases/:id" element={<CaseDetailPage />} />
           <Route path="/crash" element={<CrashGame />} />
+          <Route path="/upgrade" element={<UpgradePage />} />
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Routes>

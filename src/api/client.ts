@@ -80,4 +80,18 @@ export const api = {
     });
     return res.json();
   },
+
+  // Upgrade
+  getUpgradeTargets: async (userId: string, itemId: string) => {
+    const res = await fetch(`${API_URL}/upgrade/targets?userId=${userId}&itemId=${itemId}`);
+    return res.json();
+  },
+
+  upgradeItem: async (userId: string, itemId: string, targetItemId: string) => {
+    const res = await fetch(`${API_URL}/upgrade/attempt`, {
+      method: "POST",
+      body: JSON.stringify({ userId, itemId, targetItemId }),
+    });
+    return res.json();
+  },
 };
