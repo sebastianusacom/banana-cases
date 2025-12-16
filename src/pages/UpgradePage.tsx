@@ -390,14 +390,6 @@ const UpgradePage: React.FC = () => {
                    <div className="relative z-10 flex flex-col items-center justify-center text-center p-4">
                        {isUpgrading ? (
                           <>
-                             {upgradeStatus === 'rolling' && (
-                                <motion.div
-                                  animate={{ rotate: 360 }}
-                                  transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
-                                >
-                                  <Loader2 size={32} className="text-white" strokeWidth={2.5} />
-                                </motion.div>
-                             )}
                              {upgradeStatus === 'success' && (
                                 <motion.div
                                   initial={{ scale: 0, rotate: -180 }}
