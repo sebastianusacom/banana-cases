@@ -1,16 +1,119 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
-import { X, Star, ArrowUp, Loader2, Plus } from 'lucide-react';
+import { motion, AnimatePresence, useAnimation, useSpring } from 'framer-motion';
+import { X, Star, Zap, Loader2, Plus, ArrowUpRight, RotateCw } from 'lucide-react';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { api } from '../api/client';
 import clsx from 'clsx';
 import { PrizeModal } from '../components/PrizeModal';
 
+// --- Blackhole Particle System ---
+const BlackholeParticles: React.FC<{ isActive: boolean; intensity: number }> = ({ isActive, intensity }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let particles: { x: number; y: number; angle: number; dist: number; speed: number; size: number; color: string }[] = [];
+    let animationFrameId: number;
+
+    const resize = () => {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+    };
+    resize();
+    window.addEventListener('resize', resize);
+
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const maxDist = Math.max(canvas.width, canvas.height) / 1.5;
+
+    const createParticle = () => {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = maxDist;
+        return {
+            x: centerX + Math.cos(angle) * dist,
+            y: centerY + Math.sin(angle) * dist,
+            angle,
+            dist,
+            speed: Math.random() * 2 + 1,
+            size: Math.random() * 1.5 + 0.5,
+            color: Math.random() > 0.8 ? '#a78bfa' : '#ffffff' // Purple or white
+        };
+    };
+
+    // Fill initial pool
+    for(let i=0; i<50; i++) particles.push(createParticle());
+
+    const animate = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Intensity multiplier
+        const currentSpeedMult = isActive ? 3 + (intensity * 5) : 0.5;
+
+        if (particles.length < (isActive ? 150 : 50)) {
+            if (Math.random() < 0.2) particles.push(createParticle());
+        }
+
+        particles.forEach((p, i) => {
+            // Update
+            p.dist -= p.speed * currentSpeedMult;
+            p.angle += (0.01 + (1 - p.dist/maxDist) * 0.05) * currentSpeedMult; // Spiral faster as gets closer
+            
+            p.x = centerX + Math.cos(p.angle) * p.dist;
+            p.y = centerY + Math.sin(p.angle) * p.dist;
+
+            // Draw
+            const alpha = Math.min(1, (p.dist / maxDist));
+            ctx.beginPath();
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = alpha;
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Trail
+            if (isActive) {
+                const tailLen = p.speed * currentSpeedMult * 2;
+                const tailX = centerX + Math.cos(p.angle - 0.1) * (p.dist + tailLen);
+                const tailY = centerY + Math.sin(p.angle - 0.1) * (p.dist + tailLen);
+                
+                ctx.beginPath();
+                ctx.strokeStyle = `rgba(167, 139, 250, ${alpha * 0.5})`;
+                ctx.lineWidth = p.size;
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(tailX, tailY);
+                ctx.stroke();
+            }
+
+            // Reset if sucked in
+            if (p.dist < 10) {
+                particles[i] = createParticle();
+            }
+        });
+
+        animationFrameId = requestAnimationFrame(animate);
+    };
+    
+    animate();
+
+    return () => {
+        window.removeEventListener('resize', resize);
+        cancelAnimationFrame(animationFrameId);
+    };
+  }, [isActive, intensity]);
+
+  return <canvas ref={canvasRef} className="absolute inset-[-100px] w-[calc(100%+200px)] h-[calc(100%+200px)] pointer-events-none z-0 opacity-60" />;
+};
+
+
 const UpgradePage: React.FC = () => {
   const { inventory, userId, fetchUser, removeItem, addItem } = useUserStore();
   const { impactLight, impactMedium, impactHeavy, notificationSuccess, notificationError, selectionChanged } = useHaptics();
 
+  // State
   const [selectedUserItem, setSelectedUserItem] = useState<Prize | null>(null);
   const [selectedTargetItem, setSelectedTargetItem] = useState<Prize | null>(null);
   const [isUpgrading, setIsUpgrading] = useState(false);
@@ -23,13 +126,16 @@ const UpgradePage: React.FC = () => {
   const [loadingTargets, setLoadingTargets] = useState(false);
 
   // Animation states
-  const [rollValue, setRollValue] = useState(0);
-  const [showRoll, setShowRoll] = useState(false);
-  const [upgradeResult, setUpgradeResult] = useState<'success' | 'fail' | null>(null);
-  const [isFinalizing, setIsFinalizing] = useState(false);
-
-  // Use spring for smoother visual roll updates
-  const springRoll = useSpring(0, { stiffness: 60, damping: 15 });
+  const controls = useAnimation();
+  const [upgradeStatus, setUpgradeStatus] = useState<'idle' | 'rolling' | 'success' | 'fail'>('idle');
+  
+  // Roll Animation
+  const rollSpring = useSpring(0, { stiffness: 40, damping: 15 }); // Used for smooth needle movement
+  
+  const circleSize = 220; // Increased size for circular bar
+  const strokeWidth = 6;
+  const radius = (circleSize - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
 
   // Fetch targets when user item is selected
   useEffect(() => {
@@ -64,138 +170,171 @@ const UpgradePage: React.FC = () => {
     if (!selectedUserItem || !selectedTargetItem || !userId || isUpgrading) return;
 
     setIsUpgrading(true);
-    setIsFinalizing(false);
-    setShowRoll(true);
-    setRollValue(0);
-    springRoll.set(0);
-    setUpgradeResult(null);
+    setUpgradeStatus('rolling');
     impactMedium();
+    
+    // Reset roll
+    rollSpring.set(0);
+
+    // Start fast spinning visual (visual only)
+    let spinInterval: ReturnType<typeof setInterval>;
+    let currentRotation = 0;
+    
+    // Spin fast!
+    controls.start("rolling");
+    
+    // Animate rotation manually to simulate fast spinning
+    spinInterval = setInterval(() => {
+        currentRotation += 15 + Math.random() * 10; 
+        rollSpring.set(currentRotation);
+        impactLight();
+    }, 50);
 
     try {
-      // Fast jitter phase
-      const jitterInterval = setInterval(() => {
-         const randomJitter = Math.random() * 100;
-         setRollValue(randomJitter); 
-         // We don't use spring here for the jitter to make it look chaotic/fast
-         impactLight();
-      }, 50);
-
       const res = await api.upgradeItem(userId, selectedUserItem.id, selectedTargetItem.id);
       
-      clearInterval(jitterInterval);
-      
-      if (res.error) throw new Error(res.error);
+      // Ensure minimum spin time of 2s
+      await new Promise(r => setTimeout(r, 2000));
+      clearInterval(spinInterval);
 
-      // Determine final visual roll value
-      let finalRoll = 0;
+      // Determine final visual angle
+      // We normalize everything to 360 degrees.
+      // Win zone is from 0 to (winChance / 100) * 360.
+      const winAngleMax = (winChance / 100) * 360;
+      
+      // Current rotation might be very high (e.g. 7200), we need to land on a specific spot relative to module 360
+      const currentMod = currentRotation % 360;
+      const baseRotation = currentRotation - currentMod + 360; // Next full circle start
+      
+      let finalAngle = 0;
+
       if (res.success) {
-        // Success: Roll falls within 0 to winChance
-        finalRoll = Math.random() * winChance;
+          // Land safely inside 0 to winAngleMax
+          // Add buffer to avoid visual edge cases (e.g. 5% buffer inside)
+          const buffer = Math.min(5, winAngleMax * 0.1); 
+          const safeMax = Math.max(0, winAngleMax - buffer);
+          const safeMin = buffer;
+          
+          const randomOffset = Math.random() * (safeMax - safeMin) + safeMin;
+          finalAngle = baseRotation + randomOffset;
       } else {
-        // Fail logic
-        const nearMissChance = 0.4;
-        if (Math.random() < nearMissChance) {
-           // Near miss: Just above winChance
-           finalRoll = winChance + (Math.random() * 5); 
-        } else {
-           // Normal fail
-           finalRoll = winChance + 5 + (Math.random() * (100 - winChance - 5));
-        }
-        finalRoll = Math.min(finalRoll, 99.99);
+          // Fail
+          // Near miss logic?
+          const isNearMiss = Math.random() < 0.4; // 40% chance of near miss visual on fail
+          
+          if (isNearMiss) {
+              // Land JUST outside winAngleMax
+              // e.g., winAngleMax + 1 to 15 degrees
+              finalAngle = baseRotation + winAngleMax + 2 + Math.random() * 15;
+          } else {
+              // Hard fail: Land anywhere else in the fail zone
+              // Fail zone start: winAngleMax
+              // Fail zone end: 360
+              const failZoneStart = winAngleMax + 20; 
+              const failZoneEnd = 360 - 10;
+              
+              if (failZoneEnd > failZoneStart) {
+                  finalAngle = baseRotation + failZoneStart + Math.random() * (failZoneEnd - failZoneStart);
+              } else {
+                  // Fallback if chance is super high (like 90%)
+                   finalAngle = baseRotation + winAngleMax + 5;
+              }
+          }
       }
 
-      // Switch to spring animation
-      setIsFinalizing(true);
-      springRoll.jump(rollValue);
-      setTimeout(() => springRoll.set(finalRoll), 10);
-
+      // Execute final slow roll to landing
+      rollSpring.set(finalAngle);
+      
       // Wait for spring to settle roughly
       setTimeout(() => {
-         finishUpgrade(res.success);
-      }, 1500);
+          if (res.success) {
+              finishSuccess();
+          } else {
+              finishFail();
+          }
+      }, 1000);
 
     } catch (e) {
       console.error(e);
       notificationError();
       setIsUpgrading(false);
-      setIsFinalizing(false);
-      setShowRoll(false);
+      setUpgradeStatus('idle');
+      clearInterval(spinInterval!);
     }
   };
 
-  const finishUpgrade = (success: boolean) => {
-    setUpgradeResult(success ? 'success' : 'fail');
-    
-    if (success && selectedTargetItem) {
-        impactHeavy();
-        notificationSuccess();
-        removeItem(selectedUserItem!.id);
-        const newItem = { ...selectedTargetItem, id: `upgraded-${Date.now()}`, wonAt: Date.now() };
-        addItem(newItem);
-        setTimeout(() => {
-           setShowPrizeModal(true);
-           setIsUpgrading(false);
-           setIsFinalizing(false);
-        }, 800);
-    } else {
-        impactHeavy();
-        notificationError();
-        removeItem(selectedUserItem!.id);
-        setTimeout(() => {
-           setIsUpgrading(false);
-           setIsFinalizing(false);
-           setShowRoll(false); // Hide roll after delay
-           // Keep selection or reset? Usually reset source since it's burned.
-           setSelectedUserItem(null);
-           setSelectedTargetItem(null);
-        }, 2000);
-    }
-    
-    fetchUser();
+  const finishSuccess = () => {
+      setUpgradeStatus('success');
+      controls.start("success");
+      impactHeavy();
+      notificationSuccess();
+
+      // Process inventory changes
+      removeItem(selectedUserItem!.id);
+      const newItem = { ...selectedTargetItem!, id: `upgraded-${Date.now()}`, wonAt: Date.now() };
+      addItem(newItem);
+
+      setTimeout(() => {
+         setShowPrizeModal(true);
+         setIsUpgrading(false);
+         setUpgradeStatus('idle');
+         controls.start("idle");
+         rollSpring.set(0);
+      }, 1500);
+      fetchUser();
+  };
+
+  const finishFail = () => {
+      setUpgradeStatus('fail');
+      controls.start("fail");
+      impactHeavy();
+      notificationError();
+
+      // Burn item
+      removeItem(selectedUserItem!.id);
+
+      setTimeout(() => {
+         setIsUpgrading(false);
+         setUpgradeStatus('idle');
+         controls.start("idle");
+         setSelectedUserItem(null);
+         setSelectedTargetItem(null);
+         rollSpring.set(0);
+      }, 2000);
+      fetchUser();
   };
 
   const reset = () => {
     setSelectedUserItem(null);
     setSelectedTargetItem(null);
-    setUpgradeResult(null);
-    setShowRoll(false);
-    springRoll.set(0);
+    setUpgradeStatus('idle');
     setIsUpgrading(false);
-    setIsFinalizing(false);
     setAvailableTargets([]);
+    rollSpring.set(0);
   };
 
   const getChanceColor = (chance: number) => {
-    if (chance > 50) return '#4ade80'; // green-400
-    if (chance > 20) return '#facc15'; // yellow-400
-    return '#f87171'; // red-400
+    if (chance > 50) return '#4ade80'; // green
+    if (chance > 20) return '#facc15'; // yellow
+    return '#ef4444'; // red
   };
 
-  // Circle configuration
-  const circleSize = 140; // Slightly larger
-  const strokeWidth = 4;
-  const radius = (circleSize - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const dashOffset = circumference - (winChance / 100) * circumference;
-
   return (
-    <div className="flex-1 flex flex-col bg-[#0a0a0b] overflow-hidden relative font-sans h-full pb-safe">
+    <div className="flex flex-col h-full bg-[#0f0f10] overflow-hidden relative">
       
-      <div className="relative z-10 flex-1 flex flex-col p-6 max-w-lg mx-auto w-full">
-        {/* Header */}
-        <header className="flex items-center justify-between mb-8 mt-4">
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            Upgrade
-          </h1>
-        </header>
+      {/* Grid Background Effect */}
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" 
+           style={{
+             backgroundImage: `radial-gradient(circle at center, #2a2a30 1px, transparent 1px)`,
+             backgroundSize: '24px 24px'
+           }} 
+      />
 
-        {/* Main Interaction Area */}
-        <div className="flex-1 flex flex-col relative justify-center gap-12">
-           
-           {/* Target Slot (Top) */}
-           <div className="flex flex-col items-center justify-center relative z-10">
-              <motion.button
-                whileTap={{ scale: 0.95 }}
+      <div className="flex-1 flex flex-col items-center justify-center relative z-10 w-full p-4 max-w-lg mx-auto gap-4">
+        
+        {/* --- Top: Target Slot --- */}
+        <div className="relative z-20 w-full flex justify-center">
+            <motion.button
                 onClick={() => {
                   if (!isUpgrading && selectedUserItem) {
                       setShowTargets(true);
@@ -203,152 +342,163 @@ const UpgradePage: React.FC = () => {
                   }
                 }}
                 disabled={!selectedUserItem || isUpgrading}
-                className={clsx(
-                    "w-36 h-36 rounded-3xl border flex items-center justify-center transition-all duration-300 relative overflow-hidden backdrop-blur-md z-20",
-                    selectedTargetItem
-                      ? "bg-[#151516] border-white/10"
-                      : "bg-[#151516] border-dashed border-white/10 opacity-50 hover:opacity-80"
-                )}
-              >
-                  {selectedTargetItem ? (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative z-10 w-full h-full flex items-center justify-center p-6"
-                    >
-                        <img src={selectedTargetItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
-                        <div className="absolute bottom-3 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full flex items-center gap-1.5 border border-white/5">
-                            <Star size={10} className="text-white fill-white" />
-                            <span className="text-white font-bold text-xs">{selectedTargetItem.value}</span>
-                        </div>
-                    </motion.div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-3 opacity-40">
-                        <Plus size={24} />
-                    </div>
-                  )}
-              </motion.button>
-           </div>
-
-           {/* Middle Action Area */}
-           <div className="h-32 flex items-center justify-center relative z-30">
-              <AnimatePresence mode="wait">
-                 {isUpgrading || showRoll ? (
-                    <motion.div
-                       key="rolling"
-                       initial={{ scale: 0.9, opacity: 0 }}
-                       animate={{ scale: 1, opacity: 1 }}
-                       exit={{ scale: 0.9, opacity: 0 }}
-                       className="w-full flex flex-col items-center gap-6"
-                    >
-                       {/* Sleek Rolling Visualizer */}
-                       <div className="relative w-72 h-2 bg-[#1a1a1c] rounded-full overflow-hidden">
-                          {/* Success Zone */}
-                          <div 
-                             className="absolute top-0 bottom-0 left-0 bg-emerald-500 rounded-full transition-all duration-300"
-                             style={{ width: `${winChance}%` }}
-                          />
-                          
-                          {/* Cursor/Needle */}
-                          <RollCursor spring={springRoll} value={rollValue} isSpring={isFinalizing} />
-                       </div>
-                       
-                       {/* Text Status */}
-                       <div className="h-6 flex items-center justify-center overflow-hidden">
-                          <AnimatePresence mode="wait">
-                              {upgradeResult === 'fail' ? (
-                                 <motion.div 
-                                    key="fail"
-                                    initial={{ y: 10, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    className="flex items-center gap-2 text-red-500"
-                                 >
-                                    <span className="font-bold tracking-wide uppercase text-xs">Failed</span>
-                                 </motion.div>
-                              ) : upgradeResult === 'success' ? (
-                                 <motion.div 
-                                    key="success"
-                                    initial={{ y: 10, opacity: 0 }}
-                                    animate={{ y: 0, opacity: 1 }}
-                                    className="flex items-center gap-2 text-emerald-500"
-                                 >
-                                    <span className="font-bold tracking-wide uppercase text-xs">Success</span>
-                                 </motion.div>
-                              ) : (
-                                 <motion.div
-                                    key="rolling-text"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                 >
-                                    <RollingNumber value={isFinalizing ? springRoll : rollValue} />
-                                 </motion.div>
-                              )}
-                          </AnimatePresence>
-                       </div>
-
-                    </motion.div>
-                 ) : selectedUserItem && selectedTargetItem ? (
-                    <motion.button
-                       key="upgrade-btn"
-                       initial={{ scale: 0.9, opacity: 0 }}
-                       animate={{ scale: 1, opacity: 1 }}
-                       exit={{ scale: 0.9, opacity: 0 }}
-                       whileHover={{ scale: 1.05 }}
-                       whileTap={{ scale: 0.95 }}
-                       onClick={handleUpgrade}
-                       className="relative group flex items-center justify-center cursor-pointer"
-                       style={{ width: circleSize, height: circleSize }}
-                    >
-                        {/* Circular Progress Bar */}
-                        <svg width={circleSize} height={circleSize} className="absolute inset-0 rotate-[-90deg]">
-                            <circle
-                                cx={circleSize / 2}
-                                cy={circleSize / 2}
-                                r={radius}
-                                stroke="#1a1a1c"
-                                strokeWidth={strokeWidth}
-                                fill="transparent"
-                            />
-                            <motion.circle
-                                cx={circleSize / 2}
-                                cy={circleSize / 2}
-                                r={radius}
-                                stroke={getChanceColor(winChance)}
-                                strokeWidth={strokeWidth}
-                                fill="transparent"
-                                strokeDasharray={circumference}
-                                initial={{ strokeDashoffset: circumference }}
-                                animate={{ strokeDashoffset: dashOffset }}
-                                transition={{ duration: 0.8, ease: "easeOut" }}
-                                strokeLinecap="round"
-                            />
-                        </svg>
-
-                        {/* Button Inner */}
-                        <div className="absolute inset-[6px] rounded-full bg-[#151516] flex flex-col items-center justify-center z-10 shadow-lg">
-                             <div className="flex flex-col items-center gap-1">
-                                <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">Chance</span>
-                                <span className="text-3xl font-bold text-white tracking-tighter">
-                                    {winChance.toFixed(2)}<span className="text-lg text-white/30">%</span>
-                                </span>
-                                <div className="mt-1 px-3 py-1 rounded-full bg-white/5 flex items-center gap-1">
-                                   <ArrowUp size={12} className={clsx(`text-[${getChanceColor(winChance)}]`)} style={{ color: getChanceColor(winChance) }} />
-                                   <span className="text-[9px] font-bold text-white uppercase">Roll</span>
-                                </div>
-                             </div>
-                        </div>
-                    </motion.button>
-                 ) : (
-                    <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                 )}
-              </AnimatePresence>
-           </div>
-
-           {/* Source Slot (Bottom) */}
-           <div className="flex flex-col items-center justify-center relative z-10">
-              <motion.button
                 whileTap={{ scale: 0.95 }}
+                animate={upgradeStatus === 'success' ? { scale: [1, 1.2, 1], filter: ["brightness(1)", "brightness(2)", "brightness(1)"] } : {}}
+                className={clsx(
+                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
+                    selectedTargetItem
+                      ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
+                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60"
+                )}
+            >
+                {selectedTargetItem ? (
+                  <motion.div 
+                     initial={{ opacity: 0, scale: 0.5 }}
+                     animate={{ opacity: 1, scale: 1 }}
+                     key={selectedTargetItem.id}
+                     className="relative w-full h-full p-3"
+                  >
+                      <img src={selectedTargetItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
+                      <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
+                         <Star size={8} className="text-yellow-400 fill-yellow-400" />
+                         <span className="text-[10px] font-bold text-white">{selectedTargetItem.value}</span>
+                      </div>
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-white/20">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <Plus size={16} />
+                      </div>
+                      <span className="text-[10px] font-medium uppercase tracking-wider">Target</span>
+                  </div>
+                )}
+            </motion.button>
+        </div>
+
+
+        {/* --- Middle: Blackhole Reactor --- */}
+        <div className="relative z-30 flex items-center justify-center my-4">
+            
+            {/* Particle Container */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px]">
+                <BlackholeParticles isActive={upgradeStatus === 'rolling'} intensity={0.5} />
+            </div>
+
+            {/* Main Interactive Circle */}
+            <div 
+                className="relative flex items-center justify-center" 
+                style={{ width: circleSize, height: circleSize }}
+            >
+                {/* SVG Progress/Chance Bar */}
+                {selectedTargetItem && (
+                    <svg className="absolute inset-0 rotate-[-90deg] drop-shadow-2xl z-20 pointer-events-none" width={circleSize} height={circleSize}>
+                        {/* Track */}
+                        <circle
+                            cx={circleSize / 2}
+                            cy={circleSize / 2}
+                            r={radius}
+                            fill="none"
+                            stroke="#1a1a1c"
+                            strokeWidth={strokeWidth}
+                        />
+                        {/* Win Zone Arc */}
+                        <motion.circle
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: winChance / 100 }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            cx={circleSize / 2}
+                            cy={circleSize / 2}
+                            r={radius}
+                            fill="none"
+                            stroke={getChanceColor(winChance)}
+                            strokeWidth={strokeWidth}
+                            strokeLinecap="round"
+                        />
+                    </svg>
+                )}
+
+                {/* Rotating Needle Indicator */}
+                {selectedTargetItem && (
+                    <motion.div 
+                        className="absolute inset-0 z-30 pointer-events-none"
+                        style={{ rotate: rollSpring }}
+                    >
+                        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-[4px]">
+                           <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[10px] border-t-white drop-shadow-[0_0_5px_white]" />
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Center Button */}
+                <motion.button
+                   disabled={isUpgrading}
+                   onClick={() => {
+                        if (!isUpgrading) {
+                             if (!selectedUserItem) {
+                                  setShowInventory(true);
+                                  selectionChanged();
+                             } else if (!selectedTargetItem) {
+                                  setShowTargets(true);
+                                  selectionChanged();
+                             } else {
+                                  handleUpgrade();
+                             }
+                        }
+                   }}
+                   whileTap={{ scale: 0.95 }}
+                   className={clsx(
+                      "w-40 h-40 rounded-full relative flex items-center justify-center overflow-hidden transition-all duration-500 z-10",
+                      // Background handling
+                      upgradeStatus === 'rolling' ? "bg-black shadow-[0_0_60px_rgba(139,92,246,0.6)] scale-95" :
+                      upgradeStatus === 'success' ? "bg-emerald-500 shadow-[0_0_100px_rgba(16,185,129,0.9)]" :
+                      upgradeStatus === 'fail' ? "bg-red-500 shadow-[0_0_60px_rgba(239,68,68,0.6)]" :
+                      (selectedUserItem && selectedTargetItem) ? "bg-[#18181b] shadow-[0_0_40px_rgba(0,0,0,0.5)] border-4 border-[#27272a]" :
+                      "bg-[#121212] border-2 border-white/5 cursor-pointer"
+                   )}
+                >
+                   {/* Inner Blackhole Gradient */}
+                   {upgradeStatus === 'rolling' && (
+                       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-black via-purple-900/40 to-black animate-pulse" />
+                   )}
+                   
+                   <div className="relative z-10 flex flex-col items-center justify-center text-center p-4">
+                       {isUpgrading ? (
+                          <>
+                             {upgradeStatus === 'rolling' && <Loader2 size={40} className="animate-spin text-white opacity-80" />}
+                             {upgradeStatus === 'success' && <Zap size={48} className="text-white fill-white drop-shadow-[0_0_15px_white]" />}
+                             {upgradeStatus === 'fail' && <X size={48} className="text-white drop-shadow-[0_0_15px_black]" />}
+                          </>
+                       ) : (selectedUserItem && selectedTargetItem) ? (
+                          <>
+                             <span className="text-[10px] uppercase tracking-widest text-white/40 mb-1">Win Chance</span>
+                             <div className="text-4xl font-black text-white tracking-tighter drop-shadow-lg" style={{ color: getChanceColor(winChance) }}>
+                                {winChance.toFixed(2)}%
+                             </div>
+                             <div className="mt-2 px-4 py-1.5 bg-white/10 rounded-full flex items-center gap-1.5 backdrop-blur-md border border-white/5">
+                                <span className="text-[10px] font-bold text-white uppercase tracking-wider">Upgrade</span>
+                                <ArrowUpRight size={12} className="text-white" />
+                             </div>
+                          </>
+                       ) : (
+                          <div className="flex flex-col items-center gap-2">
+                             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mb-1">
+                                <RotateCw size={18} className="text-white/40" />
+                             </div>
+                             <div className="text-white/40 text-xs font-bold uppercase tracking-widest px-4 leading-tight">
+                                Select Items<br/>to Upgrade
+                             </div>
+                          </div>
+                       )}
+                   </div>
+                </motion.button>
+
+            </div>
+        </div>
+
+
+        {/* --- Bottom: Source Slot --- */}
+        <div className="relative z-20 w-full flex justify-center">
+            <motion.button
                 onClick={() => {
                   if (!isUpgrading) {
                       setShowInventory(true);
@@ -356,41 +506,48 @@ const UpgradePage: React.FC = () => {
                   }
                 }}
                 disabled={isUpgrading}
+                whileTap={{ scale: 0.95 }}
                 className={clsx(
-                    "w-28 h-28 rounded-3xl border flex items-center justify-center transition-all duration-300 relative overflow-hidden backdrop-blur-md z-20",
+                    "w-24 h-24 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300",
                     selectedUserItem
-                      ? "bg-[#151516] border-white/10"
-                      : "bg-[#151516] border-dashed border-white/10 opacity-50 hover:opacity-80"
+                      ? "bg-[#18181b] border-white/10 shadow-lg"
+                      : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60"
                 )}
-              >
-                  {selectedUserItem ? (
-                    <motion.div 
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        className="relative z-10 w-full h-full flex items-center justify-center p-5"
-                    >
-                        <img src={selectedUserItem.image} className="w-full h-full object-contain drop-shadow-xl" alt="" />
-                        <div className="absolute bottom-2 px-2.5 py-0.5 bg-black/40 backdrop-blur-md rounded-full flex items-center gap-1 border border-white/5">
-                            <Star size={9} className="text-white fill-white" />
-                            <span className="text-white font-bold text-[10px]">{selectedUserItem.value}</span>
-                        </div>
-                    </motion.div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2 opacity-40">
-                        <Plus size={20} />
-                    </div>
-                  )}
-              </motion.button>
-           </div>
-
+            >
+                {selectedUserItem ? (
+                  <motion.div 
+                     key={selectedUserItem.id}
+                     initial={{ opacity: 0, scale: 0.5 }}
+                     animate={{ 
+                         opacity: upgradeStatus === 'rolling' ? 0 : 1, 
+                         scale: upgradeStatus === 'rolling' ? 0 : 1,
+                         rotate: upgradeStatus === 'rolling' ? 180 : 0
+                     }}
+                     transition={{ duration: 0.5 }}
+                     className="relative w-full h-full p-3"
+                  >
+                      <img src={selectedUserItem.image} className="w-full h-full object-contain drop-shadow-xl" alt="" />
+                  </motion.div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-white/20">
+                      <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                        <RotateCw size={16} />
+                      </div>
+                      <span className="text-[10px] font-medium uppercase tracking-wider">Source</span>
+                  </div>
+                )}
+            </motion.button>
         </div>
+
       </div>
 
+      {/* --- Drawers & Modals --- */}
+      
       {/* Inventory Drawer */}
       <Drawer 
         isOpen={showInventory} 
         onClose={() => setShowInventory(false)} 
-        title="Select Item"
+        title="Select Item to Upgrade"
       >
           <div className="grid grid-cols-3 gap-3">
              {inventory.map(item => (
@@ -418,7 +575,7 @@ const UpgradePage: React.FC = () => {
       <Drawer 
         isOpen={showTargets} 
         onClose={() => setShowTargets(false)} 
-        title="Select Target"
+        title="Select Target Item"
       >
          {loadingTargets ? (
             <div className="py-20 flex items-center justify-center">
@@ -445,7 +602,6 @@ const UpgradePage: React.FC = () => {
          )}
       </Drawer>
 
-      {/* Win Modal */}
       <AnimatePresence>
          {showPrizeModal && selectedTargetItem && (
             <PrizeModal 
@@ -461,7 +617,7 @@ const UpgradePage: React.FC = () => {
   );
 };
 
-// Subcomponents for cleaner code
+// --- Subcomponents ---
 
 const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => (
   <AnimatePresence>
@@ -472,22 +628,22 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; title: string; ch
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60]"
+          className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
         />
         <motion.div
           initial={{ y: '100%' }}
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 bg-[#121212] rounded-t-[2rem] z-[70] max-h-[75vh] flex flex-col shadow-2xl"
+          className="fixed bottom-0 left-0 right-0 bg-[#121212] rounded-t-[2rem] z-[70] max-h-[80vh] flex flex-col shadow-2xl ring-1 ring-white/10"
         >
-          <div className="p-5 flex items-center justify-between">
+          <div className="p-5 flex items-center justify-between border-b border-white/5">
             <h3 className="font-bold text-white text-lg tracking-tight">{title}</h3>
             <button onClick={onClose} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition-colors">
               <X size={16} className="text-white/70" />
             </button>
           </div>
-          <div className="p-5 pt-0 overflow-y-auto pb-safe">
+          <div className="p-5 overflow-y-auto pb-safe">
             {children}
           </div>
         </motion.div>
@@ -499,43 +655,42 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; title: string; ch
 const ItemCard: React.FC<{ item: Prize; onClick: () => void }> = ({ item, onClick }) => (
   <button
     onClick={onClick}
-    className="bg-[#1a1a1c] rounded-2xl p-3 flex flex-col items-center gap-3 active:scale-95 transition-all hover:bg-[#202022] group"
+    className="bg-[#1a1a1c] rounded-xl p-3 flex flex-col items-center gap-3 active:scale-95 transition-all group border border-white/5"
   >
      <div className="w-full aspect-square relative flex items-center justify-center">
-        <img src={item.image} className="w-full h-full object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300" alt="" />
+        <img src={item.image} className="w-full h-full object-contain drop-shadow-lg transition-transform duration-300" alt="" />
      </div>
      <div className="w-full">
-        <div className="flex items-center justify-center gap-1.5 bg-white/5 rounded-full py-1 px-2">
+        <div className="flex items-center justify-center gap-1.5 bg-white/5 rounded-md py-1 px-1.5">
            <Star size={10} className="fill-white text-white" />
-           <p className="text-xs font-bold text-white text-center">{item.value}</p>
+           <p className="text-[10px] font-bold text-white text-center truncate w-full">{item.value}</p>
         </div>
      </div>
   </button>
 );
 
 const TargetCard: React.FC<{ item: Prize; onClick: () => void }> = ({ item, onClick }) => {
-   const chanceColor = item.chance > 50 ? '#4ade80' : item.chance > 20 ? '#facc15' : '#f87171';
+   const chanceColor = item.chance > 50 ? '#4ade80' : item.chance > 20 ? '#facc15' : '#ef4444';
    
    return (
       <button
         onClick={onClick}
-        className="bg-[#1a1a1c] rounded-2xl p-1 flex flex-col items-center gap-2 active:scale-95 transition-all hover:bg-[#202022] group relative overflow-hidden"
+        className="bg-[#1a1a1c] rounded-xl p-2 flex flex-col items-center gap-2 active:scale-95 transition-all group relative overflow-hidden border border-white/5"
       >
-        <div className="absolute top-2 right-2 z-10 text-[10px] font-bold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-md">
+        <div className="absolute top-1.5 right-1.5 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10">
            {item.chance?.toFixed(2)}%
         </div>
 
-        <div className="w-full aspect-square relative flex items-center justify-center p-2">
-           <img src={item.image} className="w-full h-full object-contain drop-shadow-lg group-hover:scale-110 transition-transform duration-300" alt="" />
+        <div className="w-full aspect-square relative flex items-center justify-center p-2 mt-1">
+           <img src={item.image} className="w-full h-full object-contain drop-shadow-lg transition-transform duration-300" alt="" />
         </div>
         
-        <div className="w-full px-2 pb-2">
-            <div className="flex items-center justify-center gap-1.5 mb-2">
-                <Star size={10} className="fill-white text-white" />
-                <p className="text-xs font-bold text-white text-center">{item.value}</p>
+        <div className="w-full px-1 pb-1">
+            <div className="flex items-center justify-center gap-1 mb-2">
+                <Star size={8} className="fill-white text-white" />
+                <p className="text-[10px] font-bold text-white text-center truncate">{item.value}</p>
             </div>
-            {/* Minimal bar */}
-            <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-0.5 w-full bg-white/10 rounded-full overflow-hidden">
                <div 
                   className="h-full rounded-full" 
                   style={{ width: `${Math.min(item.chance || 0, 100)}%`, backgroundColor: chanceColor }} 
@@ -544,46 +699,6 @@ const TargetCard: React.FC<{ item: Prize; onClick: () => void }> = ({ item, onCl
         </div>
       </button>
    );
-};
-
-// Helper for Roll Value Animation
-const RollCursor = ({ spring, value, isSpring }: { spring: any, value: number, isSpring: boolean }) => {
-   const springLeft = useTransform(spring, (v: number) => `${v}%`);
-   
-   return (
-      <motion.div 
-         className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_10px_white] z-10"
-         style={{ 
-            left: isSpring ? springLeft : `${value}%`,
-            transition: isSpring ? 'none' : 'left 0.05s linear'
-         }}
-      />
-   );
-};
-
-// Helper for text number animation
-const RollingNumber = ({ value }: { value: any }) => {
-   const ref = useRef<HTMLSpanElement>(null);
-   
-   // Subscribe to motion value changes
-   useEffect(() => {
-      // If it's a motion value
-      if (value && typeof value.onChange === 'function') {
-         const unsubscribe = value.onChange((v: number) => {
-            if (ref.current) {
-               ref.current.textContent = `${v.toFixed(2)}%`;
-            }
-         });
-         return unsubscribe;
-      } else {
-         // If it's a raw number (fallback)
-         if (ref.current) {
-            ref.current.textContent = `${Number(value).toFixed(2)}%`;
-         }
-      }
-   }, [value]);
-
-   return <span ref={ref} className="text-white/60 font-mono text-sm tracking-wider" />;
 };
 
 export default UpgradePage;
