@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useSpring, useTransform } from 'framer-motion';
-import { X, Star, ArrowUp, Loader2, Plus, Sparkles } from 'lucide-react';
+import { X, Star, ArrowUp, Loader2, Plus } from 'lucide-react';
 import { useUserStore, type Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { api } from '../api/client';
