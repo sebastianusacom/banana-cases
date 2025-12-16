@@ -81,15 +81,14 @@ const UpgradePage: React.FC = () => {
     // Spin fast!
     controls.start("rolling");
     
-    // Start shake animation - more pronounced
+    // Start shake animation
     buttonControls.start({
-      x: [0, -6, 6, -5, 5, -4, 4, -3, 3, 0],
-      y: [0, -3, 3, -2, 2, -1, 1, 0],
-      rotate: [0, -2, 2, -1, 1, 0],
+      x: [0, -4, 4, -4, 4, -3, 3, 0],
+      y: [0, -2, 2, -2, 2, -1, 1, 0],
       transition: {
-        duration: 0.08,
+        duration: 0.1,
         repeat: Infinity,
-        ease: "easeInOut"
+        repeatType: "reverse" as const
       }
     });
     
