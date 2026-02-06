@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "git config --local http.postBuffer 524288000 && git config --local http.timeout 300 && gh-pages -d dist"
   },
   "dependencies": {
     "@aws-amplify/pubsub": "^5.6.4",
