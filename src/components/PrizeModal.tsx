@@ -65,7 +65,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
                <div className="text-center space-y-1">
                   <div className="flex items-center justify-center relative">
                     <div className="flex items-center justify-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl relative overflow-hidden">
-                      <InnerStroke borderRadius="9999px" className="opacity-40" />
+                      <InnerStroke borderRadius="9999px" inset="0" className="opacity-40" />
                       <Star size={14} className="text-yellow-400 fill-yellow-400 relative z-10" />
                       <span className="text-lg font-black text-white tracking-wide relative z-10">
                         {formatStars(prize.value)}
@@ -88,7 +88,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
                 // Share logic here
             }}
           >
-            <InnerStroke borderRadius="9999px" className="opacity-35" />
+            <InnerStroke borderRadius="9999px" inset="0" className="opacity-35" />
             <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity" />
             <Share2 size={20} />
             <span>Share (2x Luck)</span>
@@ -100,7 +100,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               onClick={handleSellAll}
               className="relative overflow-hidden py-4 rounded-full bg-[#1c1c1e] text-white font-bold text-base active:bg-white/5 transition-colors flex items-center justify-center gap-1"
             >
-              <InnerStroke borderRadius="9999px" className="opacity-30" />
+              <InnerStroke borderRadius="9999px" inset="0" className="opacity-30" />
               <span>Sell for {formatStars(totalValue)}</span>
               <Star size={12} className="fill-white text-white" />
             </motion.button>
@@ -112,7 +112,7 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
               }}
               className="relative overflow-hidden py-4 rounded-full bg-[#1c1c1e] text-[var(--tg-theme-hint-color)] font-bold text-base active:bg-white/5 transition-colors"
             >
-              <InnerStroke borderRadius="9999px" className="opacity-30" />
+              <InnerStroke borderRadius="9999px" inset="0" className="opacity-30" />
               Keep Prize
             </motion.button>
           </div>
