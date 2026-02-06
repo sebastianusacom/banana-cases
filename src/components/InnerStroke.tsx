@@ -11,7 +11,7 @@ interface InnerStrokeProps {
 
 export const InnerStroke: React.FC<InnerStrokeProps> = ({ 
   borderRadius = "2rem", 
-  inset = "0px",
+  inset = "1px",
   className = "opacity-35" 
 }) => {
   return (
