@@ -554,7 +554,7 @@ const CrashGame: React.FC = () => {
                   transition={{ delay: index * 0.1 }}
                   className="relative overflow-hidden px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap bg-white/10 text-white/60"
                 >
-                  <InnerStroke borderRadius="9999px" className="opacity-25" />
+                  <InnerStroke borderRadius="9999px" className="opacity-25" inset="0" />
                   {multiplier.toFixed(2)}x
                 </motion.div>
               ))}
@@ -633,7 +633,7 @@ const CrashGame: React.FC = () => {
 
             {/* Other Bets List */}
             <div className="relative bg-white/5 rounded-[2.7rem] p-4 min-h-[120px] max-h-40 overflow-y-auto overflow-hidden">
-              <InnerStroke borderRadius="calc(2.7rem - 1px)" className="opacity-20" />
+              <InnerStroke borderRadius="calc(2.7rem - 1px)" className="opacity-20" inset="0" />
               {(() => {
                 const otherBets = currentBets.filter(bet => bet.id !== 'player');
                 if (otherBets.length === 0) {
