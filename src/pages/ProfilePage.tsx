@@ -4,6 +4,8 @@ import { Star, PackageOpen, Download, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
+import { InnerStroke } from '../components/InnerStroke';
+import { formatStars } from '../utils/formatStars';
 
 const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = ({ item, onSell }) => {
     const { impactMedium } = useHaptics();
@@ -43,18 +45,21 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
-            className="bg-white/5 rounded-2xl p-3 flex flex-col gap-3 group border border-white/5"
+            className="bg-white/5 rounded-3xl p-3 flex flex-col gap-3 group relative overflow-hidden"
         >
+            <InnerStroke borderRadius="1.5rem" className="opacity-20" />
             <div className="aspect-square bg-black/20 rounded-xl p-2 relative overflow-hidden">
                  <UniversalMedia src={item.lottie || item.image} alt={item.name} className="w-full h-full object-contain relative z-10" />
-                 <div className="absolute top-2 right-2 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 z-20 border border-white/10">
-                    <Star size={10} className="text-yellow-400 fill-yellow-400" />
-                    <span className="text-[10px] font-bold text-white">{item.value}</span>
-                 </div>
             </div>
 
             <div>
-                <p className="text-xs font-medium text-white/90 truncate text-center mb-3 px-1">{item.name}</p>
+                <div className="flex items-center justify-center gap-2 mb-3 px-1">
+                    <p className="text-xs font-medium text-white/90 truncate">{item.name}</p>
+                    <div className="bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-full flex items-center gap-1 border border-white/10 flex-shrink-0">
+                        <Star size={10} className="text-yellow-400 fill-yellow-400" />
+                        <span className="text-[10px] font-bold text-white">{formatStars(item.value)}</span>
+                    </div>
+                </div>
                 
                 <div className="grid grid-cols-2 gap-2">
                     <button
@@ -62,19 +67,21 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
                             impactMedium();
                             onSell(item.id);
                         }}
-                        className="h-9 rounded-lg bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-medium text-white/60 hover:text-white transition-colors"
+                        className="h-9 rounded-3xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-medium text-white/60 hover:text-white transition-colors relative overflow-hidden"
                     >
+                        <InnerStroke borderRadius="1.5rem" className="opacity-25" />
                         Sell
                     </button>
                     
                     <button
                         disabled={isLocked}
-                        className={`h-9 rounded-lg flex items-center justify-center gap-1.5 text-xs font-bold transition-all ${
+                        className={`h-9 rounded-3xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all relative overflow-hidden ${
                             isLocked 
                                 ? 'bg-white/5 text-white/20 cursor-not-allowed' 
                                 : 'bg-white text-black hover:bg-white/90 shadow-sm'
                         }`}
                     >
+                        <InnerStroke borderRadius="1.5rem" className="opacity-25" />
                         {isLocked ? (
                             <>
                                 <Clock size={12} />
@@ -99,7 +106,8 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto pt-4 px-2 h-full">
       {/* User Stats */}
-      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-2xl p-6 text-white shadow-lg mb-8 relative overflow-hidden mx-auto">
+      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-3xl p-6 text-white shadow-lg mb-8 relative overflow-hidden mx-auto">
+          <InnerStroke borderRadius="1.5rem" />
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="flex items-center justify-between mb-2 relative z-10">
@@ -111,7 +119,7 @@ const ProfilePage: React.FC = () => {
               </div>
           </div>
           <h2 className="text-4xl font-black tracking-tight flex items-baseline">
-              {stars.toLocaleString()} <span className="text-lg ml-2 font-normal opacity-80">Stars</span>
+              {formatStars(stars)} <span className="text-lg ml-2 font-normal opacity-80">Stars</span>
           </h2>
       </div>
 
@@ -125,7 +133,8 @@ const ProfilePage: React.FC = () => {
 
       {/* Inventory Grid */}
       {inventory.length === 0 ? (
-          <div className="text-center py-20 text-white/20 bg-white/5 rounded-2xl border border-dashed border-white/10 mx-2">
+          <div className="text-center py-20 text-white/20 bg-white/5 rounded-3xl mx-2 relative overflow-hidden">
+              <InnerStroke borderRadius="1.5rem" />
               <p>No items yet. Go open some cases!</p>
           </div>
       ) : (

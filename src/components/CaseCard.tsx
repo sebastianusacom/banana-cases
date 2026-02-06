@@ -7,6 +7,7 @@ import { Star, Timer } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import * as LucideIcons from 'lucide-react';
 import { UniversalMedia } from './UniversalMedia';
+import { InnerStroke } from './InnerStroke';
 
 interface CaseCardProps {
   caseItem: Case;
@@ -17,25 +18,45 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
   const { selectionChanged } = useHaptics();
   const isYellow = variant === 'yellow';
   const isFree = caseItem.price === 0;
+  const [isActive, setIsActive] = React.useState(false);
 
   const bgClass = isYellow
-    ? 'bg-gradient-to-br from-yellow-500/20 to-orange-600/20 border-yellow-500/30 group-hover:from-yellow-500/30 group-hover:to-orange-600/30'
-    : 'bg-white/5 backdrop-blur-md border border-white/10 group-hover:bg-white/10';
+    ? `bg-gradient-to-br border-yellow-500/30 from-yellow-500/20 to-orange-600/20 group-hover:from-yellow-500/30 group-hover:to-orange-600/30 ${
+        isActive ? 'from-yellow-500/30 to-orange-600/30' : ''
+      }`
+    : `bg-white/5 backdrop-blur-md group-hover:bg-white/10 ${isActive ? 'bg-white/10' : ''}`;
 
   const glowClass = isYellow
     ? 'bg-yellow-400 blur-[50px] opacity-30 left-1/4'
-    : 'bg-[#eab308] opacity-20 blur-[40px] left-1/2';
+    : `bg-[#eab308] opacity-20 blur-[40px] left-1/2 ${isActive ? 'opacity-30' : ''}`;
+
+  const handlePointerDown = () => {
+    setIsActive(true);
+  };
+
+  const handlePointerUp = () => {
+    setIsActive(false);
+  };
 
   return (
     <Link to={`/cases/${caseItem.id}`} onClick={() => selectionChanged()}>
       <motion.div
         whileHover={{ y: -5 }}
         whileTap={{ scale: 0.96 }}
-        className={`group relative flex ${isYellow ? 'flex-row items-center p-4' : 'flex-col items-center p-5'} rounded-[2rem] overflow-hidden transition-all duration-300 h-full`}
+        animate={isActive ? { y: -5 } : { y: 0 }}
+        onMouseEnter={handlePointerDown}
+        onMouseLeave={handlePointerUp}
+        onTouchStart={handlePointerDown}
+        onTouchEnd={handlePointerUp}
+        onTouchCancel={handlePointerUp}
+        className={`group relative flex ${isYellow ? 'flex-row items-center p-4' : 'flex-col items-center p-5'} rounded-[2.7rem] overflow-hidden transition-all duration-300 h-full`}
       >
         {/* Background */}
         <div className={`absolute inset-0 rounded-[2rem] transition-colors duration-300 ${bgClass}`} />
-        
+
+        {/* Stroke Effect: like BottomNav, around edge but mostly top/bottom */}
+        <InnerStroke borderRadius="calc(2.7rem - 1px)" inset="1px" className="opacity-30" />
+
         {/* Glow Effect behind image */}
         <div className={`absolute top-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full group-hover:opacity-30 transition-opacity ${glowClass}`} />
 
@@ -62,7 +83,9 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
         })()}
 
         {/* Image/Lottie Container */}
-        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 flex-shrink-0 overflow-visible`}>
+        <div className={`${isYellow ? 'w-20 h-20 mr-4' : 'w-28 h-28 mb-4'} relative z-10 drop-shadow-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3 ${
+          isActive ? 'scale-110 rotate-3' : ''
+        } flex-shrink-0 overflow-visible`}>
           {caseItem.lottie ? (
             <div className="relative w-full h-full overflow-visible">
               <img
@@ -112,24 +135,26 @@ export const CaseCard: React.FC<CaseCardProps> = ({ caseItem, variant = 'default
           <div className={`flex ${isYellow ? 'justify-start' : 'justify-center'} items-center gap-1.5 text-sm font-medium text-[var(--tg-theme-hint-color)]`}>
             {isFree ? (
               <motion.div
-                className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 px-3 py-1 rounded-full"
+                className="relative inline-flex items-center gap-1.5 bg-yellow-400 px-3 py-1 rounded-full overflow-hidden"
               >
-                <span className="text-white font-black text-sm tracking-wider uppercase drop-shadow-sm">
+                <InnerStroke borderRadius="999px" inset="0" className="opacity-100 z-0" />
+                <span className="text-white font-black text-sm tracking-wider uppercase drop-shadow-sm relative z-10">
                   FREE
                 </span>
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
                 >
-                  <Star size={12} className="fill-white text-white drop-shadow-sm" />
+                  <Star size={12} className="fill-white text-white drop-shadow-sm relative z-10" />
                 </motion.div>
               </motion.div>
             ) : (
-              <div className="inline-flex items-center gap-1.5 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 px-3 py-1 rounded-full">
-                <span className="text-white font-black text-sm tracking-wider drop-shadow-sm">
+              <div className="relative inline-flex items-center gap-1.5 bg-yellow-400 px-3 py-1 rounded-full overflow-hidden">
+                <InnerStroke borderRadius="999px" inset="0" className="opacity-60 z-0" />
+                <span className="text-white font-black text-sm tracking-wider drop-shadow-sm relative z-10">
                   {caseItem.price}
                 </span>
-                <Star size={12} className="fill-white text-white drop-shadow-sm" />
+                <Star size={12} className="fill-white text-white drop-shadow-sm relative z-10" />
               </div>
             )}
           </div>

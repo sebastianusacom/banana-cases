@@ -8,6 +8,7 @@ import StarField from '../components/StarField';
 import { useCrashGameStore } from '../store/crashGameStore';
 import { useTelegram } from '../hooks/useTelegram';
 import { api } from '../api/client';
+import { InnerStroke } from '../components/InnerStroke';
 
 interface GameState {
   phase: 'waiting' | 'flying' | 'crashed';
@@ -551,8 +552,9 @@ const CrashGame: React.FC = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: index * 0.1 }}
-                  className="px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap bg-white/10 text-white/60"
+                  className="relative overflow-hidden px-3 py-1 rounded-full text-sm font-semibold whitespace-nowrap bg-white/10 text-white/60"
                 >
+                  <InnerStroke borderRadius="9999px" className="opacity-25" />
                   {multiplier.toFixed(2)}x
                 </motion.div>
               ))}
@@ -630,7 +632,8 @@ const CrashGame: React.FC = () => {
             })()}
 
             {/* Other Bets List */}
-            <div className="bg-white/5 rounded-2xl p-4 min-h-[120px] max-h-40 overflow-y-auto">
+            <div className="relative bg-white/5 rounded-3xl p-4 min-h-[120px] max-h-40 overflow-y-auto overflow-hidden">
+              <InnerStroke borderRadius="1.5rem" className="opacity-20" />
               {(() => {
                 const otherBets = currentBets.filter(bet => bet.id !== 'player');
                 if (otherBets.length === 0) {
@@ -766,7 +769,7 @@ const CrashGame: React.FC = () => {
               return (
                 <button
                   onClick={() => setShowBetDrawer(true)}
-                  className="w-full h-14 bg-white hover:bg-white/90 text-black font-bold rounded-2xl shadow-lg shadow-white/20 hover:shadow-white/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-white hover:bg-white/90 text-black font-bold rounded-full shadow-lg shadow-white/20 hover:shadow-white/30 transition-all flex items-center justify-center gap-2"
                 >
                   <Flame size={20} />
                   <span>Place Bet</span>

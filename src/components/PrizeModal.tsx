@@ -5,6 +5,8 @@ import { useUserStore } from '../store/userStore';
 import { Star, Share2 } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from './UniversalMedia';
+import { InnerStroke } from './InnerStroke';
+import { formatStars } from '../utils/formatStars';
 
 interface PrizeModalProps {
   prizes: Prize[];
@@ -61,10 +63,15 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
                </div>
                
                <div className="text-center space-y-1">
-                   <div className="flex items-center justify-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-xl shadow-xl">
-                      <Star size={14} className="text-yellow-400 fill-yellow-400" />
-                      <span className="text-lg font-black text-white tracking-wide">{prize.value}</span>
-                   </div>
+                  <div className="flex items-center justify-center relative">
+                    <div className="flex items-center justify-center gap-1.5 bg-white/10 px-4 py-1.5 rounded-full backdrop-blur-xl shadow-xl relative overflow-hidden">
+                      <InnerStroke borderRadius="9999px" className="opacity-40" />
+                      <Star size={14} className="text-yellow-400 fill-yellow-400 relative z-10" />
+                      <span className="text-lg font-black text-white tracking-wide relative z-10">
+                        {formatStars(prize.value)}
+                      </span>
+                    </div>
+                  </div>
                </div>
             </motion.div>
           ))}
@@ -72,15 +79,16 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
       </div>
 
       {/* Actions Footer */}
-      <div className="w-full p-6 pb-10 bg-[#0f0f10] border-t border-white/5 space-y-3 z-20">
+      <div className="w-full p-6 pb-10 bg-[#0f0f10] space-y-3 z-20">
           <motion.button
             whileTap={{ scale: 0.98 }}
-            className="w-full py-4 rounded-2xl bg-[#eab308] text-white font-bold text-lg shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2 relative overflow-hidden"
+            className="w-full py-4 rounded-full bg-[#eab308] text-white font-bold text-lg shadow-lg shadow-yellow-500/20 flex items-center justify-center gap-2 relative overflow-hidden"
             onClick={() => {
                 impactMedium();
                 // Share logic here
             }}
           >
+            <InnerStroke borderRadius="9999px" className="opacity-35" />
             <div className="absolute inset-0 bg-white/10 opacity-0 hover:opacity-100 transition-opacity" />
             <Share2 size={20} />
             <span>Share (2x Luck)</span>
@@ -90,9 +98,10 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
             <motion.button
               whileTap={{ scale: 0.98 }}
               onClick={handleSellAll}
-              className="py-4 rounded-2xl bg-[#1c1c1e] text-white font-bold text-base border border-white/10 active:bg-white/5 transition-colors flex items-center justify-center gap-1"
+              className="relative overflow-hidden py-4 rounded-full bg-[#1c1c1e] text-white font-bold text-base active:bg-white/5 transition-colors flex items-center justify-center gap-1"
             >
-              <span>Sell for {totalValue}</span>
+              <InnerStroke borderRadius="9999px" className="opacity-30" />
+              <span>Sell for {formatStars(totalValue)}</span>
               <Star size={12} className="fill-white text-white" />
             </motion.button>
             <motion.button
@@ -101,8 +110,9 @@ export const PrizeModal: React.FC<PrizeModalProps> = ({ prizes, onClose }) => {
                   impactMedium();
                   onClose();
               }}
-              className="py-4 rounded-2xl bg-[#1c1c1e] text-[var(--tg-theme-hint-color)] font-bold text-base border border-white/10 active:bg-white/5 transition-colors"
+              className="relative overflow-hidden py-4 rounded-full bg-[#1c1c1e] text-[var(--tg-theme-hint-color)] font-bold text-base active:bg-white/5 transition-colors"
             >
+              <InnerStroke borderRadius="9999px" className="opacity-30" />
               Keep Prize
             </motion.button>
           </div>

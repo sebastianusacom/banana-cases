@@ -4,6 +4,7 @@ import { useUserStore } from '../store/userStore';
 import { useCrashGameStore } from '../store/crashGameStore';
 import { Star, Plus } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
+import { formatStars } from '../utils/formatStars';
 
 interface LiveDrop {
   id: string;
@@ -130,7 +131,7 @@ export const TopLiveBar: React.FC = () => {
                   <div className="mt-1 flex items-center gap-0.5 bg-white/10 backdrop-blur-xl px-1.5 py-0.5 rounded-full border border-white/20 shadow-xl">
                      <Star size={8} className="text-yellow-400 fill-yellow-400" />
                      <span className="text-[9px] font-bold text-white/90 tabular-nums leading-none">
-                        {drop.price}
+                        {formatStars(drop.price)}
                      </span>
                   </div>
                 </motion.div>
@@ -148,7 +149,7 @@ export const TopLiveBar: React.FC = () => {
              <div className="flex items-center gap-1.5">
                 <Star size={10} className="fill-yellow-400 text-yellow-400" />
                 <span className="text-xs font-bold text-white/90 tabular-nums">
-                    {stars.toLocaleString()}
+                    {formatStars(stars)}
                 </span>
              </div>
              <button 

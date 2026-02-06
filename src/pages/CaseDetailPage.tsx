@@ -10,6 +10,7 @@ import clsx from 'clsx';
 import { Roulette } from '../components/Roulette';
 import { PrizeModal } from '../components/PrizeModal';
 import { api } from '../api/client';
+import { InnerStroke } from '../components/InnerStroke';
 
 const CaseDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -317,7 +318,8 @@ const CaseDetailPage: React.FC = () => {
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
                 {caseItem.id !== 'free-case' && (
-                    <div className={clsx("h-11 bg-white/5 p-1 rounded-xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                    <div className={clsx("h-11 bg-white/5 p-1 rounded-3xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                        <InnerStroke borderRadius="1.5rem" />
                         <button
                             onClick={() => {
                               if (!isDemoMode) return;
@@ -326,18 +328,20 @@ const CaseDetailPage: React.FC = () => {
                             }}
                             disabled={isOpening}
                             className={clsx(
-                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
+                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-3xl font-bold text-xs uppercase tracking-wide transition-all duration-150",
                                 !isDemoMode ? "text-green-500" : "text-white/40 hover:text-white/60"
                             )}
                         >
                             {!isDemoMode && (
                                 <motion.div
                                     layoutId="mode-active"
-                                    className="absolute inset-0 bg-green-500/10 border border-green-500/20 rounded-lg shadow-sm"
+                                    className="absolute inset-0 bg-[#0f0f10] rounded-3xl shadow-sm"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
-                                />
+                                >
+                                    <InnerStroke borderRadius="1.5rem" inset="0" />
+                                </motion.div>
                             )}
                             <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
                             <span className="relative z-10">Real</span>
@@ -350,18 +354,20 @@ const CaseDetailPage: React.FC = () => {
                             }}
                             disabled={isOpening}
                             className={clsx(
-                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-lg font-bold text-xs uppercase tracking-wide transition-all duration-150",
+                                "flex-1 relative z-10 flex items-center justify-center gap-1.5 rounded-3xl font-bold text-xs uppercase tracking-wide transition-all duration-150",
                                 isDemoMode ? "text-yellow-500" : "text-white/40 hover:text-white/60"
                             )}
                         >
                             {isDemoMode && (
                                 <motion.div
                                     layoutId="mode-active"
-                                    className="absolute inset-0 bg-yellow-500/10 border border-yellow-500/20 rounded-lg shadow-sm"
+                                    className="absolute inset-0 bg-[#0f0f10] rounded-3xl shadow-sm"
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
-                                />
+                                >
+                                    <InnerStroke borderRadius="1.5rem" inset="0" />
+                                </motion.div>
                             )}
                             <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
                             <span className="relative z-10">Demo</span>
@@ -378,21 +384,33 @@ const CaseDetailPage: React.FC = () => {
                           duration: 0.25,
                           ease: "easeOut"
                         }}
-                        className="flex gap-1 bg-white/5 p-1 rounded-xl"
+                        className="relative flex gap-1 bg-white/5 p-1 rounded-3xl"
                     >
+                        <InnerStroke borderRadius="1.5rem" />
                         {[1, 2, 3].map((c) => (
                             <button
                                 key={c}
                                 onClick={() => handleCountChange(c as 1 | 2 | 3)}
                                 disabled={isOpening}
                                 className={clsx(
-                                    "h-9 w-11 rounded-lg font-bold transition-all text-sm",
+                                    "h-9 w-11 relative z-10 flex items-center justify-center rounded-3xl font-bold transition-all text-sm",
                                     count === c
-                                        ? "bg-[#0f0f10] text-white shadow-sm"
+                                        ? "text-white"
                                         : "text-white/40 hover:text-white/80"
                                 )}
                             >
-                                {c}x
+                                {count === c && (
+                                    <motion.div
+                                        layoutId="count-active"
+                                        className="absolute inset-0 bg-[#0f0f10] rounded-3xl shadow-sm"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                                        initial={{ scale: 0.8 }}
+                                        animate={{ scale: 1 }}
+                                    >
+                                        <InnerStroke borderRadius="1.5rem" inset="0" />
+                                    </motion.div>
+                                )}
+                                <span className="relative z-10">{c}x</span>
                             </button>
                         ))}
                     </motion.div>
@@ -409,12 +427,12 @@ const CaseDetailPage: React.FC = () => {
                 onTouchEnd={handleMouseUp}
                 disabled={isOpening || isPending || (!isDemoMode && !canAfford)}
                 className={clsx(
-                    "w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
+                    "w-full h-16 rounded-4xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group",
                     (isOpening || isPending)
-                        ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-t border-black/10 opacity-40'
+                        ? 'bg-gradient-to-b from-[#ca8a04] to-[#854d0e] text-white/90 cursor-wait shadow-inner border-black/10 opacity-40'
                         : (!isDemoMode && !canAfford)
                             ? 'bg-white/5 text-white/20 cursor-not-allowed'
-                            : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20'
+                            : 'bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-white/20'
                 )}
             >
                 {(isOpening || isPending) && (
@@ -450,7 +468,7 @@ const CaseDetailPage: React.FC = () => {
                                 {caseItem.id === 'free-case' ? "OPEN FOR FREE" : (isDemoMode ? "OPEN FREE" : "OPEN FOR")}
                             </span>
                             {caseItem.id !== 'free-case' && !isDemoMode && (
-                                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-3xl shadow-inner">
                                     <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{totalPrice}</span>
                                     <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                                 </div>
@@ -477,10 +495,11 @@ const CaseDetailPage: React.FC = () => {
                 onClick={() => setShowDropsDrawer(true)}
                 disabled={isOpening}
                 className={clsx(
-                    "w-fit mx-auto px-6 h-10 text-xs font-bold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-2 uppercase tracking-widest rounded-full",
+                    "relative w-fit mx-auto px-6 h-10 text-xs font-bold text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition-all flex items-center justify-center gap-2 uppercase tracking-widest rounded-3xl",
                     isOpening && "opacity-20 pointer-events-none"
                 )}
             >
+                <InnerStroke borderRadius="1.5rem" />
                 <ShieldCheck size={14} />
                 <span>Case Contents</span>
             </button>
@@ -506,7 +525,7 @@ const CaseDetailPage: React.FC = () => {
                     animate={{ y: 0 }}
                     exit={{ y: '100%' }}
                     transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                    className="fixed bottom-0 left-0 right-0 bg-[#1c1c1e] rounded-t-[2rem] z-50 border-t border-white/10 max-h-[80vh] flex flex-col"
+                    className="fixed bottom-0 left-0 right-0 bg-[#1c1c1e] rounded-t-3xl z-50 max-h-[80vh] flex flex-col"
                 >
                     <div className="p-6 flex-1 overflow-hidden flex flex-col">
                         <div className="flex items-center justify-between mb-6">
@@ -522,7 +541,8 @@ const CaseDetailPage: React.FC = () => {
                         <div className="overflow-y-auto flex-1 pb-10 pr-2 custom-scrollbar">
                             <div className="grid grid-cols-3 gap-3">
                                 {caseItem.items.sort((a,b) => b.value - a.value).map((item) => (
-                                    <div key={item.id} className="relative bg-white/5 rounded-2xl p-3 border border-white/5">
+                                    <div key={item.id} className="relative bg-white/5 rounded-3xl p-3">
+                                        <InnerStroke borderRadius="1.5rem" />
                                         <div className="w-full aspect-square mb-2 bg-black/20 rounded-xl p-2">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
                                         </div>

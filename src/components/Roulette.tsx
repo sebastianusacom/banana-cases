@@ -3,6 +3,8 @@ import { motion, useAnimation, useMotionValue } from 'framer-motion';
 import type { Prize } from '../store/userStore';
 import { useHaptics } from '../hooks/useHaptics';
 import { Star } from 'lucide-react';
+import { InnerStroke } from './InnerStroke';
+import { formatStars } from '../utils/formatStars';
 
 interface RouletteProps {
   items: Prize[];
@@ -154,6 +156,17 @@ export const Roulette: React.FC<RouletteProps> = ({
 
       impactHeavy();
       setIsFinished(true);
+
+      // Center the prize after it stops
+      const exactCenterTargetX = viewportCenter - winnerCenter;
+      await controls.start({
+        x: exactCenterTargetX,
+        transition: {
+          duration: 0.8,
+          ease: "backOut",
+        },
+      });
+
       await new Promise((resolve) => setTimeout(resolve, 1000));
       
       onComplete();
@@ -224,10 +237,11 @@ export const Roulette: React.FC<RouletteProps> = ({
               <img src={item.image} alt="" className={`${config.image} object-contain drop-shadow-2xl mb-1`} />
               
               <div
-                className={`flex items-center gap-1.5 rounded-full bg-white/10 border border-white/20 backdrop-blur-xl shadow-xl ${config.padding}`}
+                className={`relative flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-xl shadow-xl ${config.padding}`}
               >
-                <Star size={config.star} className="text-yellow-400 fill-yellow-400" />
-                <span className={`font-black text-white tracking-wide ${config.font}`}>{item.value}</span>
+                <InnerStroke borderRadius="999px" className="opacity-40" />
+                <Star size={config.star} className="text-yellow-400 fill-yellow-400 relative z-10" />
+                <span className={`font-black text-white tracking-wide relative z-10 ${config.font}`}>{formatStars(item.value)}</span>
               </div>
             </motion.div>
           </motion.div>
