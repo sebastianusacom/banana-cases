@@ -34,6 +34,9 @@ const CaseDetailPage: React.FC = () => {
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
   const apiPromiseRef = useRef<Promise<Prize[]> | null>(null);
+  const modeToggleRef = useRef<HTMLDivElement>(null);
+  const countToggleRef = useRef<HTMLDivElement>(null);
+  const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     setDemoMode(false);
@@ -281,6 +284,47 @@ const CaseDetailPage: React.FC = () => {
     setCount(newCount);
   };
 
+  // Mobile: hold + drag + release toggles — selection is based on release position
+  const handleModeTouchMove = (e: React.TouchEvent) => {
+    const t = e.changedTouches?.[0] || e.touches?.[0];
+    if (t) lastTouchRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleModeTouchEnd = (e: React.TouchEvent) => {
+    const t = e.changedTouches?.[0];
+    if (!t || !modeToggleRef.current) return;
+    e.preventDefault();
+    const rect = modeToggleRef.current.getBoundingClientRect();
+    const x = t.clientX;
+    const mid = rect.left + rect.width / 2;
+    const wantDemo = x >= mid;
+    if (wantDemo !== isDemoMode) {
+      selectionChanged();
+      setDemoMode(wantDemo);
+    }
+    lastTouchRef.current = null;
+  };
+  const handleCountTouchMove = (e: React.TouchEvent) => {
+    const t = e.changedTouches?.[0] || e.touches?.[0];
+    if (t) lastTouchRef.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleCountTouchEnd = (e: React.TouchEvent) => {
+    const t = e.changedTouches?.[0];
+    if (!t || !countToggleRef.current || isOpening) return;
+    e.preventDefault();
+    const rect = countToggleRef.current.getBoundingClientRect();
+    const x = t.clientX - rect.left;
+    const third = rect.width / 3;
+    let newCount: 1 | 2 | 3 = 1;
+    if (x < third) newCount = 1;
+    else if (x < third * 2) newCount = 2;
+    else newCount = 3;
+    if (newCount !== count) {
+      selectionChanged();
+      setCount(newCount);
+    }
+    lastTouchRef.current = null;
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
@@ -318,7 +362,13 @@ const CaseDetailPage: React.FC = () => {
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
                 {caseItem.id !== 'free-case' && (
-                    <div className={clsx("h-11 bg-white/5 p-1 rounded-3xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
+                    <div
+                        ref={modeToggleRef}
+                        onTouchMove={handleModeTouchMove}
+                        onTouchEnd={handleModeTouchEnd}
+                        onTouchCancel={() => { lastTouchRef.current = null; }}
+                        className={clsx("h-11 bg-white/5 p-1 rounded-3xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}
+                    >
                         <InnerStroke borderRadius="1.5rem" />
                         <button
                             onClick={() => {
@@ -377,6 +427,10 @@ const CaseDetailPage: React.FC = () => {
 
                 {caseItem.id !== 'free-case' && !isDemoMode && (
                     <motion.div
+                        ref={countToggleRef}
+                        onTouchMove={handleCountTouchMove}
+                        onTouchEnd={handleCountTouchEnd}
+                        onTouchCancel={() => { lastTouchRef.current = null; }}
                         initial={{ opacity: 0, scale: 0.85, x: 10 }}
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9, x: 5 }}
