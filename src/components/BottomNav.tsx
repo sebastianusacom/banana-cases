@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Gift, User, Rocket, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useHaptics } from '../hooks/useHaptics';
 import { useCrashGameStore } from '../store/crashGameStore';
 import clsx from 'clsx';
@@ -10,8 +11,8 @@ export const BottomNav: React.FC = () => {
   const { hasBet } = useCrashGameStore();
   const [isUpgradeSpinning, setIsUpgradeSpinning] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const navRef = useRef<HTMLElement>(null);
-  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
   
   const navItems = [
     { path: '/cases', icon: Gift },
@@ -20,7 +21,6 @@ export const BottomNav: React.FC = () => {
     { path: '/profile', icon: User },
   ];
   
-  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
   const [isMounted, setIsMounted] = useState(false);
   
   // Listen for upgrade spinning events
@@ -42,35 +42,8 @@ export const BottomNav: React.FC = () => {
     setIsMounted(true);
   }, []);
   
-  // Update sliding indicator position when route changes
-  useEffect(() => {
-    const activeIndex = navItems.findIndex(item => location.pathname === item.path);
-    if (activeIndex !== -1 && itemRefs.current[activeIndex]) {
-      const activeItem = itemRefs.current[activeIndex];
-      const navElement = navRef.current;
-      
-      if (activeItem && navElement) {
-        const navRect = navElement.getBoundingClientRect();
-        const itemRect = activeItem.getBoundingClientRect();
-        
-        setIndicatorStyle({
-          left: itemRect.left - navRect.left,
-          width: itemRect.width,
-        });
-      }
-    }
-  }, [location.pathname]);
-  
   // Disable navigation when player has a bet placed (or queued) or when upgrade is spinning
   const isDisabled = hasBet || isUpgradeSpinning;
-
-  const navItemClass = ({ isActive }: { isActive: boolean }) =>
-    clsx(
-      'relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 z-10',
-      isActive 
-        ? 'text-white bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)] scale-110' 
-        : 'text-white/60 hover:text-white hover:bg-white/5'
-    );
 
   return (
     <div className={clsx(
@@ -85,15 +58,7 @@ export const BottomNav: React.FC = () => {
           isDisabled && "opacity-30 pointer-events-none"
         )}
       >
-        {/* Sliding indicator */}
-        <div
-          className="absolute h-14 rounded-full bg-yellow-500/20 transition-all duration-500 ease-out pointer-events-none"
-          style={{
-            left: `${indicatorStyle.left}px`,
-            width: `${indicatorStyle.width}px`,
-          }}
-        />
-        
+        {/* Border gradient */}
         <div 
           className="absolute inset-0 rounded-full p-[1px] pointer-events-none bg-gradient-to-b from-white/50 to-transparent z-0"
           style={{
@@ -106,18 +71,49 @@ export const BottomNav: React.FC = () => {
         
         {navItems.map((item, index) => {
           const Icon = item.icon;
+          const isActive = location.pathname === item.path;
+          
           return (
             <NavLink
               key={item.path}
               to={item.path}
-              ref={(el) => {
-                itemRefs.current[index] = el;
-              }}
-              className={navItemClass}
+              className={({ isActive }) => clsx(
+                'relative flex items-center justify-center w-14 h-14 rounded-full transition-all duration-300 z-10',
+                isActive 
+                  ? 'text-white scale-110' 
+                  : 'text-white/60 hover:text-white hover:bg-white/5'
+              )}
               onClick={() => !isDisabled && selectionChanged()}
               onClickCapture={(e) => isDisabled && e.preventDefault()}
             >
-              <Icon size={22} strokeWidth={2.5} />
+              <span className="relative z-10">
+                <Icon size={22} strokeWidth={2.5} />
+              </span>
+              
+              {isActive && (
+                <motion.div
+                  layoutId="nav-pill"
+                  className="absolute inset-0 bg-yellow-500 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.4)] z-0"
+                  initial={false}
+                  transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
+                  drag="x"
+                  dragConstraints={navRef}
+                  dragElastic={0.2}
+                  dragSnapToOrigin
+                  onDragEnd={(_, info) => {
+                     // item width 56px (w-14) + gap 16px (gap-4) = 72px
+                     const pitch = 72;
+                     const offset = info.offset.x;
+                     const steps = Math.round(offset / pitch);
+                     const targetIndex = Math.max(0, Math.min(navItems.length - 1, index + steps));
+                     
+                     if (targetIndex !== index) {
+                         selectionChanged();
+                         navigate(navItems[targetIndex].path);
+                     }
+                  }}
+                />
+              )}
             </NavLink>
           );
         })}

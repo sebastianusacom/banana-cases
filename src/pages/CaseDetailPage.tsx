@@ -34,9 +34,9 @@ const CaseDetailPage: React.FC = () => {
   const [showDropsDrawer, setShowDropsDrawer] = useState(false);
   const [isHolding, setIsHolding] = useState(false);
   const apiPromiseRef = useRef<Promise<Prize[]> | null>(null);
+  
   const modeToggleRef = useRef<HTMLDivElement>(null);
   const countToggleRef = useRef<HTMLDivElement>(null);
-  const lastTouchRef = useRef<{ x: number; y: number } | null>(null);
 
   useEffect(() => {
     setDemoMode(false);
@@ -284,47 +284,6 @@ const CaseDetailPage: React.FC = () => {
     setCount(newCount);
   };
 
-  // Mobile: hold + drag + release toggles — selection is based on release position
-  const handleModeTouchMove = (e: React.TouchEvent) => {
-    const t = e.changedTouches?.[0] || e.touches?.[0];
-    if (t) lastTouchRef.current = { x: t.clientX, y: t.clientY };
-  };
-  const handleModeTouchEnd = (e: React.TouchEvent) => {
-    const t = e.changedTouches?.[0];
-    if (!t || !modeToggleRef.current) return;
-    e.preventDefault();
-    const rect = modeToggleRef.current.getBoundingClientRect();
-    const x = t.clientX;
-    const mid = rect.left + rect.width / 2;
-    const wantDemo = x >= mid;
-    if (wantDemo !== isDemoMode) {
-      selectionChanged();
-      setDemoMode(wantDemo);
-    }
-    lastTouchRef.current = null;
-  };
-  const handleCountTouchMove = (e: React.TouchEvent) => {
-    const t = e.changedTouches?.[0] || e.touches?.[0];
-    if (t) lastTouchRef.current = { x: t.clientX, y: t.clientY };
-  };
-  const handleCountTouchEnd = (e: React.TouchEvent) => {
-    const t = e.changedTouches?.[0];
-    if (!t || !countToggleRef.current || isOpening) return;
-    e.preventDefault();
-    const rect = countToggleRef.current.getBoundingClientRect();
-    const x = t.clientX - rect.left;
-    const third = rect.width / 3;
-    let newCount: 1 | 2 | 3 = 1;
-    if (x < third) newCount = 1;
-    else if (x < third * 2) newCount = 2;
-    else newCount = 3;
-    if (newCount !== count) {
-      selectionChanged();
-      setCount(newCount);
-    }
-    lastTouchRef.current = null;
-  };
-
   return (
     <div className="flex-1 flex flex-col bg-[#0f0f10] overflow-hidden min-h-0">
       <div className="flex-1 flex flex-col items-center justify-center relative z-10 min-h-0 w-full py-2">
@@ -362,13 +321,7 @@ const CaseDetailPage: React.FC = () => {
             
             <div className={clsx("flex items-center justify-between gap-2 transition-opacity duration-300", isOpening && "opacity-20 pointer-events-none")}>
                 {caseItem.id !== 'free-case' && (
-                    <div
-                        ref={modeToggleRef}
-                        onTouchMove={handleModeTouchMove}
-                        onTouchEnd={handleModeTouchEnd}
-                        onTouchCancel={() => { lastTouchRef.current = null; }}
-                        className={clsx("h-11 bg-white/5 p-1 rounded-3xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}
-                    >
+                    <div ref={modeToggleRef} className={clsx("h-11 bg-white/5 p-1 rounded-3xl flex relative isolate transition-all duration-100 ease-out", isDemoMode ? "flex-[2]" : "flex-1")}>
                         <InnerStroke borderRadius="1.5rem" />
                         <button
                             onClick={() => {
@@ -389,12 +342,27 @@ const CaseDetailPage: React.FC = () => {
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
+                                    drag="x"
+                                    dragConstraints={modeToggleRef}
+                                    dragElastic={0.1}
+                                    dragSnapToOrigin
+                                    dragMomentum={false}
+                                    onDragEnd={(_, info) => {
+                                        if (!modeToggleRef.current) return;
+                                        const width = modeToggleRef.current.offsetWidth;
+                                        // Since there are 2 items, each is approx width/2.
+                                        // If dragged more than half of the item width (width/4), toggle.
+                                        if (info.offset.x > width / 4) {
+                                            selectionChanged();
+                                            toggleDemoMode();
+                                        }
+                                    }}
                                 >
                                     <InnerStroke borderRadius="1.5rem" inset="0" />
                                 </motion.div>
                             )}
-                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
-                            <span className="relative z-10">Real</span>
+                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 pointer-events-none transition-all duration-200", !isDemoMode ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]" : "bg-white/20")} />
+                            <span className="relative z-10 pointer-events-none">Real</span>
                         </button>
                         <button
                             onClick={() => {
@@ -415,12 +383,25 @@ const CaseDetailPage: React.FC = () => {
                                     transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
+                                    drag="x"
+                                    dragConstraints={modeToggleRef}
+                                    dragElastic={0.1}
+                                    dragSnapToOrigin
+                                    dragMomentum={false}
+                                    onDragEnd={(_, info) => {
+                                        if (!modeToggleRef.current) return;
+                                        const width = modeToggleRef.current.offsetWidth;
+                                        if (info.offset.x < -width / 4) {
+                                            selectionChanged();
+                                            toggleDemoMode();
+                                        }
+                                    }}
                                 >
                                     <InnerStroke borderRadius="1.5rem" inset="0" />
                                 </motion.div>
                             )}
-                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
-                            <span className="relative z-10">Demo</span>
+                            <div className={clsx("w-1.5 h-1.5 rounded-full relative z-10 pointer-events-none transition-all duration-200", isDemoMode ? "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.5)]" : "bg-white/20")} />
+                            <span className="relative z-10 pointer-events-none">Demo</span>
                         </button>
                     </div>
                 )}
@@ -428,9 +409,6 @@ const CaseDetailPage: React.FC = () => {
                 {caseItem.id !== 'free-case' && !isDemoMode && (
                     <motion.div
                         ref={countToggleRef}
-                        onTouchMove={handleCountTouchMove}
-                        onTouchEnd={handleCountTouchEnd}
-                        onTouchCancel={() => { lastTouchRef.current = null; }}
                         initial={{ opacity: 0, scale: 0.85, x: 10 }}
                         animate={{ opacity: 1, scale: 1, x: 0 }}
                         exit={{ opacity: 0, scale: 0.9, x: 5 }}
@@ -460,11 +438,28 @@ const CaseDetailPage: React.FC = () => {
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.3 }}
                                         initial={{ scale: 0.8 }}
                                         animate={{ scale: 1 }}
+                                        drag="x"
+                                        dragConstraints={countToggleRef}
+                                        dragElastic={0.1}
+                                        dragSnapToOrigin
+                                        dragMomentum={false}
+                                        onDragEnd={(_, info) => {
+                                            if (!countToggleRef.current) return;
+                                            const width = countToggleRef.current.offsetWidth;
+                                            const step = width / 3;
+                                            const draggedSteps = Math.round(info.offset.x / step);
+                                            const target = c + draggedSteps;
+                                            const clamped = Math.max(1, Math.min(3, target)) as 1 | 2 | 3;
+                                            
+                                            if (clamped !== c) {
+                                                handleCountChange(clamped);
+                                            }
+                                        }}
                                     >
                                         <InnerStroke borderRadius="1.5rem" inset="0" />
                                     </motion.div>
                                 )}
-                                <span className="relative z-10">{c}x</span>
+                                <span className="relative z-10 pointer-events-none">{c}x</span>
                             </button>
                         ))}
                     </motion.div>
