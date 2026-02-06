@@ -72,7 +72,7 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
                         className="h-9 bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-medium text-white/60 hover:text-white transition-colors relative overflow-hidden"
                         style={{ borderRadius: BORDER_RADIUS }}
                     >
-                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} className="opacity-25" />
+                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} inset="0" className="opacity-25" />
                         Sell
                     </button>
                     
@@ -85,7 +85,7 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
                         }`}
                         style={{ borderRadius: BORDER_RADIUS }}
                     >
-                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} className="opacity-25" />
+                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} inset="0" className="opacity-25" />
                         {isLocked ? (
                             <>
                                 <Clock size={12} />
