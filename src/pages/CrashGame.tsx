@@ -576,7 +576,7 @@ const CrashGame: React.FC = () => {
                   key={playerBet.id}
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className={`rounded-2xl p-4 flex items-center justify-between ${
+                  className={`rounded-[2.7rem] p-4 flex items-center justify-between ${
                     playerBet.status === 'cashed_out'
                       ? 'bg-green-500/10 border border-green-500/30'
                       : playerBet.status === 'lost'
@@ -599,7 +599,7 @@ const CrashGame: React.FC = () => {
                     <span className="text-white text-sm font-medium">{playerBet.username}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-[2rem] border border-white/10 shadow-inner">
                       <span className="text-white font-black text-sm leading-none">
                         {playerBet.status === 'active' && gameState.phase === 'flying'
                           ? Math.floor(playerBet.betAmount * gameState.multiplier)
@@ -632,8 +632,8 @@ const CrashGame: React.FC = () => {
             })()}
 
             {/* Other Bets List */}
-            <div className="relative bg-white/5 rounded-3xl p-4 min-h-[120px] max-h-40 overflow-y-auto overflow-hidden">
-              <InnerStroke borderRadius="1.5rem" className="opacity-20" />
+            <div className="relative bg-white/5 rounded-[2.7rem] p-4 min-h-[120px] max-h-40 overflow-y-auto overflow-hidden">
+              <InnerStroke borderRadius="calc(2.7rem - 1px)" className="opacity-20" />
               {(() => {
                 const otherBets = currentBets.filter(bet => bet.id !== 'player');
                 if (otherBets.length === 0) {
@@ -654,7 +654,7 @@ const CrashGame: React.FC = () => {
                           initial={{ opacity: 0, x: -20 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: index * 0.1 }}
-                          className={`rounded-lg p-3 flex items-center justify-between transition-colors ${
+                          className={`rounded-[2rem] p-3 flex items-center justify-between transition-colors ${
                             bet.status === 'cashed_out'
                               ? 'border border-green-500/30'
                               : bet.status === 'lost'
@@ -679,7 +679,7 @@ const CrashGame: React.FC = () => {
                             <span className="text-white text-sm font-medium">{bet.username}</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                            <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-[2rem] border border-white/10 shadow-inner">
                               <span className="text-white font-black text-sm leading-none">
                                 {bet.status === 'active' && gameState.phase === 'flying'
                                   ? Math.floor(bet.betAmount * gameState.multiplier)
@@ -735,7 +735,7 @@ const CrashGame: React.FC = () => {
               return (
                 <motion.button
                   onClick={cashout}
-                  className="w-full h-16 rounded-2xl font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20"
+                  className="w-full h-16 rounded-[2.7rem] font-bold text-lg flex items-center justify-center gap-3 transition-all relative overflow-hidden group bg-gradient-to-b from-[#eab308] to-[#ca8a04] text-white shadow-lg shadow-yellow-500/20 hover:shadow-yellow-500/30 border-t border-white/20"
                 >
                   <motion.div
                     initial={{ x: '-100%' }}
@@ -748,7 +748,7 @@ const CrashGame: React.FC = () => {
                         <span className="uppercase tracking-wide font-black text-lg opacity-90 leading-none">CASH OUT</span>
                         {gameState.autoCashout && <span className="text-[10px] text-yellow-200/80 font-bold tracking-wider leading-none mt-0.5">AUTO @ {gameState.autoCashout}x</span>}
                     </div>
-                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-[2rem] border border-white/10 shadow-inner">
                       <span className="text-white font-black text-2xl drop-shadow-sm leading-none">{Math.floor(gameState.betAmount * gameState.multiplier)}</span>
                       <Star size={22} className="fill-yellow-400 text-yellow-400 drop-shadow-sm" />
                     </div>
@@ -759,7 +759,7 @@ const CrashGame: React.FC = () => {
               return (
                 <button
                   onClick={cancelBet}
-                  className="w-full h-14 bg-red-500 hover:bg-red-600 text-white font-bold rounded-2xl shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all flex items-center justify-center gap-2"
+                  className="w-full h-14 bg-red-500 hover:bg-red-600 text-white font-bold rounded-[2.7rem] shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all flex items-center justify-center gap-2"
                 >
                   <X size={20} />
                   <span>{hasQueuedBet ? 'Cancel Bet (Next Round)' : 'Cancel Bet'}</span>
@@ -804,7 +804,7 @@ const CrashGame: React.FC = () => {
                   <h3 className="text-lg font-semibold text-white/90">Place Bet</h3>
                   <button
                     onClick={() => setShowBetDrawer(false)}
-                    className="absolute right-0 p-1.5 hover:bg-white/5 rounded-lg transition-colors"
+                    className="absolute right-0 p-1.5 hover:bg-white/5 rounded-[2rem] transition-colors"
                   >
                     <X size={18} className="text-white/60" />
                   </button>
@@ -813,7 +813,7 @@ const CrashGame: React.FC = () => {
                 <div className="space-y-4 flex-1">
                   {/* Bet Amount Display */}
                   <div className="py-3 flex flex-col items-center gap-2">
-                    <div className="flex items-center gap-2 bg-white/5 rounded-2xl border border-white/10 px-4 py-3 shadow-inner">
+                    <div className="flex items-center gap-2 bg-white/5 rounded-[2.7rem] border border-white/10 px-4 py-3 shadow-inner">
                       <input
                         type="number"
                         inputMode="numeric"
@@ -985,7 +985,7 @@ const CrashGame: React.FC = () => {
                       <span className="uppercase tracking-wide font-semibold">
                         {gameState.phase === 'flying' ? 'Bet for Next Round' : 'Place Bet'}
                       </span>
-                      <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-xl border border-white/10 shadow-inner">
+                      <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1.5 rounded-[2rem] border border-white/10 shadow-inner">
                         <span className="text-white font-black text-lg leading-none">{gameState.betAmount || 0}</span>
                         <Star size={18} className="fill-yellow-300 text-yellow-300 drop-shadow-sm" />
                       </div>

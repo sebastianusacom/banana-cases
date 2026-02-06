@@ -5,6 +5,7 @@ import { useCrashGameStore } from '../store/crashGameStore';
 import { Star, Plus } from 'lucide-react';
 import { useHaptics } from '../hooks/useHaptics';
 import { formatStars } from '../utils/formatStars';
+import { InnerStroke } from './InnerStroke';
 
 interface LiveDrop {
   id: string;
@@ -128,7 +129,8 @@ export const TopLiveBar: React.FC = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-1 flex items-center gap-0.5 bg-white/10 backdrop-blur-xl px-1.5 py-0.5 rounded-full border border-white/20 shadow-xl">
+                  <div className="mt-1 flex items-center gap-0.5 bg-white/10 backdrop-blur-xl px-1.5 py-0.5 rounded-full shadow-xl relative">
+                     <InnerStroke borderRadius="9999px" />
                      <Star size={8} className="text-yellow-400 fill-yellow-400" />
                      <span className="text-[9px] font-bold text-white/90 tabular-nums leading-none">
                         {formatStars(drop.price)}
@@ -145,7 +147,8 @@ export const TopLiveBar: React.FC = () => {
 
       {/* Right Side: Minimal Balance Capsule */}
       <div className="pointer-events-auto flex-shrink-0">
-        <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md pl-3 pr-1 py-1 rounded-full border border-white/5 transition-all hover:bg-black/40">
+        <div className="flex items-center gap-2 bg-black/20 backdrop-blur-md pl-3 pr-1 py-1 rounded-full transition-all hover:bg-black/40 relative">
+             <InnerStroke borderRadius="9999px" />
              <div className="flex items-center gap-1.5">
                 <Star size={10} className="fill-yellow-400 text-yellow-400" />
                 <span className="text-xs font-bold text-white/90 tabular-nums">
@@ -154,8 +157,9 @@ export const TopLiveBar: React.FC = () => {
              </div>
              <button 
                 onClick={handleAddStars}
-                className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all active:scale-95"
+                className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center hover:bg-white/20 transition-all active:scale-95 relative"
              >
+                <InnerStroke borderRadius="9999px" />
                 <Plus size={10} className="text-white/80" />
              </button>
         </div>

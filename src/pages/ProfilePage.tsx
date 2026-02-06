@@ -6,6 +6,7 @@ import { useHaptics } from '../hooks/useHaptics';
 import { UniversalMedia } from '../components/UniversalMedia';
 import { InnerStroke } from '../components/InnerStroke';
 import { formatStars } from '../utils/formatStars';
+import { BORDER_RADIUS } from '../constants';
 
 const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = ({ item, onSell }) => {
     const { impactMedium } = useHaptics();
@@ -45,10 +46,11 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0 }}
-            className="bg-white/5 rounded-3xl p-3 flex flex-col gap-3 group relative overflow-hidden"
+            className="bg-white/5 p-3 flex flex-col gap-3 group relative overflow-hidden"
+            style={{ borderRadius: BORDER_RADIUS }}
         >
-            <InnerStroke borderRadius="1.5rem" className="opacity-20" />
-            <div className="aspect-square bg-black/20 rounded-xl p-2 relative overflow-hidden">
+            <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} className="opacity-20" />
+            <div className="aspect-square bg-black/20 rounded-[2rem] p-2 relative overflow-hidden">
                  <UniversalMedia src={item.lottie || item.image} alt={item.name} className="w-full h-full object-contain relative z-10" />
             </div>
 
@@ -67,21 +69,23 @@ const InventoryItem: React.FC<{ item: Prize; onSell: (id: string) => void }> = (
                             impactMedium();
                             onSell(item.id);
                         }}
-                        className="h-9 rounded-3xl bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-medium text-white/60 hover:text-white transition-colors relative overflow-hidden"
+                        className="h-9 bg-white/5 hover:bg-white/10 flex items-center justify-center text-xs font-medium text-white/60 hover:text-white transition-colors relative overflow-hidden"
+                        style={{ borderRadius: BORDER_RADIUS }}
                     >
-                        <InnerStroke borderRadius="1.5rem" className="opacity-25" />
+                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} className="opacity-25" />
                         Sell
                     </button>
                     
                     <button
                         disabled={isLocked}
-                        className={`h-9 rounded-3xl flex items-center justify-center gap-1.5 text-xs font-bold transition-all relative overflow-hidden ${
+                        className={`h-9 flex items-center justify-center gap-1.5 text-xs font-bold transition-all relative overflow-hidden ${
                             isLocked 
                                 ? 'bg-white/5 text-white/20 cursor-not-allowed' 
                                 : 'bg-white text-black hover:bg-white/90 shadow-sm'
                         }`}
+                        style={{ borderRadius: BORDER_RADIUS }}
                     >
-                        <InnerStroke borderRadius="1.5rem" className="opacity-25" />
+                        <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} className="opacity-25" />
                         {isLocked ? (
                             <>
                                 <Clock size={12} />
@@ -106,8 +110,8 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="flex-1 overflow-y-auto pt-4 px-2 h-full">
       {/* User Stats */}
-      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-3xl p-6 text-white shadow-lg mb-8 relative overflow-hidden mx-auto">
-          <InnerStroke borderRadius="1.5rem" />
+      <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-6 text-white shadow-lg mb-8 relative overflow-hidden mx-auto" style={{ borderRadius: BORDER_RADIUS }}>
+          <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} />
           <div className="absolute -right-10 -top-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="flex items-center justify-between mb-2 relative z-10">
@@ -133,8 +137,8 @@ const ProfilePage: React.FC = () => {
 
       {/* Inventory Grid */}
       {inventory.length === 0 ? (
-          <div className="text-center py-20 text-white/20 bg-white/5 rounded-3xl mx-2 relative overflow-hidden">
-              <InnerStroke borderRadius="1.5rem" />
+          <div className="text-center py-20 text-white/20 bg-white/5 mx-2 relative overflow-hidden" style={{ borderRadius: BORDER_RADIUS }}>
+              <InnerStroke borderRadius={`calc(${BORDER_RADIUS} - 1px)`} />
               <p>No items yet. Go open some cases!</p>
           </div>
       ) : (

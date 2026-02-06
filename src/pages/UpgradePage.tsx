@@ -248,7 +248,7 @@ const UpgradePage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 animate={upgradeStatus === 'success' ? { scale: [1, 1.2, 1], filter: ["brightness(1)", "brightness(2)", "brightness(1)"] } : {}}
                 className={clsx(
-                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
+                    "w-28 h-28 rounded-[2.7rem] border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
                     selectedTargetItem
                       ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
                       : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60",
@@ -263,7 +263,7 @@ const UpgradePage: React.FC = () => {
                      className="relative w-full h-full p-3"
                   >
                       <img src={selectedTargetItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-[2rem] px-1.5 py-0.5 border border-white/10">
                          <Star size={8} className="text-yellow-400 fill-yellow-400" />
                          <span className="text-[10px] font-bold text-white">{selectedTargetItem.value}</span>
                       </div>
@@ -449,7 +449,7 @@ const UpgradePage: React.FC = () => {
                 disabled={isUpgrading}
                 whileTap={{ scale: 0.95 }}
                 className={clsx(
-                    "w-28 h-28 rounded-2xl border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
+                    "w-28 h-28 rounded-[2.7rem] border-2 flex items-center justify-center relative overflow-hidden transition-all duration-300 cursor-pointer",
                     selectedUserItem
                       ? "bg-[#18181b] border-white/10 shadow-[0_0_30px_-10px_rgba(255,255,255,0.1)]"
                       : "bg-[#18181b]/50 border-dashed border-white/10 opacity-60",
@@ -468,7 +468,7 @@ const UpgradePage: React.FC = () => {
                      className="relative w-full h-full p-3"
                   >
                       <img src={selectedUserItem.image} className="w-full h-full object-contain drop-shadow-2xl" alt="" />
-                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-md px-1.5 py-0.5 border border-white/10">
+                      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-[2rem] px-1.5 py-0.5 border border-white/10">
                          <Star size={8} className="text-yellow-400 fill-yellow-400" />
                          <span className="text-[10px] font-bold text-white">{selectedUserItem.value}</span>
                       </div>
@@ -580,7 +580,7 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; title: string; ch
           animate={{ y: 0 }}
           exit={{ y: '100%' }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="fixed bottom-0 left-0 right-0 bg-[#121212] rounded-t-[2rem] z-[70] max-h-[80vh] flex flex-col shadow-2xl ring-1 ring-white/10"
+          className="fixed bottom-0 left-0 right-0 bg-[#121212] rounded-t-[2.7rem] z-[70] max-h-[80vh] flex flex-col shadow-2xl ring-1 ring-white/10"
         >
           <div className="p-5 flex items-center justify-between border-b border-white/5">
             <h3 className="font-bold text-white text-lg tracking-tight">{title}</h3>
@@ -600,13 +600,13 @@ const Drawer: React.FC<{ isOpen: boolean; onClose: () => void; title: string; ch
 const ItemCard: React.FC<{ item: Prize; onClick: () => void }> = ({ item, onClick }) => (
   <button
     onClick={onClick}
-    className="bg-[#1a1a1c] rounded-xl p-3 flex flex-col items-center gap-3 active:scale-95 transition-all group border border-white/5"
+    className="bg-[#1a1a1c] rounded-[2rem] p-3 flex flex-col items-center gap-3 active:scale-95 transition-all group border border-white/5"
   >
      <div className="w-full aspect-square relative flex items-center justify-center">
         <img src={item.image} className="w-full h-full object-contain drop-shadow-lg transition-transform duration-300" alt="" />
      </div>
      <div className="w-full">
-        <div className="flex items-center justify-center gap-1.5 bg-white/5 rounded-md py-1 px-1.5">
+        <div className="flex items-center justify-center gap-1.5 bg-white/5 rounded-[2rem] py-1 px-1.5">
            <Star size={10} className="fill-white text-white" />
            <p className="text-[10px] font-bold text-white text-center truncate w-full">{item.value}</p>
         </div>
@@ -620,7 +620,7 @@ const TargetCard: React.FC<{ item: Prize; onClick: () => void }> = ({ item, onCl
    return (
       <button
         onClick={onClick}
-        className="bg-[#1a1a1c] rounded-xl p-2 flex flex-col items-center gap-2 active:scale-95 transition-all group relative overflow-hidden border border-white/5"
+        className="bg-[#1a1a1c] rounded-[2rem] p-2 flex flex-col items-center gap-2 active:scale-95 transition-all group relative overflow-hidden border border-white/5"
       >
         <div className="absolute top-1.5 right-1.5 z-10 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-md border border-white/10">
            {item.chance?.toFixed(2)}%
